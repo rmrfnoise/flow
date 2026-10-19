@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="green">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="flow，一个暗色终端风的个人待办清单，用 #标签 自动归类，一件一件慢慢来"
+    />
+    <meta name="theme-color" content="#050806" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="flow" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <title>flow // 待办</title>
+    <script>
+      try {
+        var savedTheme = localStorage.getItem('flow.neonTheme.v1')
+        var allowedThemes = ['green', 'ice', 'pink', 'ember', 'sakura', 'apricot']
+        if (allowedThemes.indexOf(savedTheme) !== -1) {
+          document.documentElement.dataset.theme = savedTheme
+        }
+      } catch (error) {
+        // The default palette is used if storage is unavailable.
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+node_modules
+dist
+dist-ssr
+*.local
+*.tsbuildinfo
+
+# Local tooling, signing keys and QA artifacts
+.npm-cache
+.chrome-*
+.qa-*
+.font-*
+.pip-*
+.release-keys/
+*.p12
+*.jks
+*.keystore
+fonts-src
+shot-*.png
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.log
