@@ -5,7 +5,7 @@ import {
   type PointerEvent,
 } from 'react'
 import { Check, Clock3, Trash2 } from 'lucide-react'
-import TagBadge from './TagBadge'
+import { useI18n } from '../i18n/I18nProvider'
 import {
   formatCountdown,
   formatDeadlineLong,
@@ -14,30 +14,9 @@ import {
 } from '../lib/date'
 import type { Todo } from '../types'
 
-const DELETE_WIDTH = 92
+const DELETE_WIDTH = 88
 
-const STATUS_STYLES = {
-  normal: {
-    pill:
-      'border border-[var(--status-normal-border)] bg-[var(--status-normal-bg)] text-[var(--status-normal-text)]',
-    dot: 'bg-[#5ce1ff]',
-    label: '时间还宽裕',
-  },
-  urgent: {
-    pill:
-      'border border-[var(--status-urgent-border)] bg-[var(--status-urgent-bg)] text-[var(--status-urgent-text)]',
-    dot: 'bg-[#ffc857]',
-    label: '快到截止时间了',
-  },
-  overdue: {
-    pill:
-      'border border-[var(--status-overdue-border)] bg-[var(--status-overdue-bg)] text-[var(--status-overdue-text)]',
-    dot: 'bg-[#ff5c7a]',
-    label: '已经超时',
-  },
-} as const
-
-interface TodoCardProps {
+interface TodoRowProps {
   todo: Todo
   now: number
   onToggle: (id: string) => void
@@ -49,13 +28,14 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
-export default function TodoCard({
+export default function TodoRow({
   todo,
   now,
   onToggle,
   onDelete,
   onEdit,
-}: TodoCardProps) {
+}: TodoRowProps) {
+  const { locale, m } = useI18n()
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
 
@@ -75,7 +55,13 @@ export default function TodoCard({
     completed,
     now,
   )
-  const statusStyle = STATUS_STYLES[status]
+  const dueTone = completed
+    ? 'text-[var(--text-3)]'
+    : status === 'overdue'
+      ? 'text-[var(--danger)]'
+      : status === 'urgent'
+        ? 'text-[var(--warning)]'
+        : 'text-[var(--text-3)]'
   const hasMeta = todo.tags.length > 0 || todo.dueAt !== null
 
   function updateOffset(next: number) {
@@ -188,27 +174,29 @@ export default function TodoCard({
   }
 
   return (
-    <div className="card-enter chamfer-sm relative overflow-hidden bg-[var(--surface-0)]">
+    <li className="relative overflow-hidden border-b border-[var(--line)] last:border-b-0">
       <div
-        className="delete-stripes absolute inset-y-0 right-0 flex w-[92px] items-stretch justify-end border-l border-[var(--delete-border)]"
+        className={`absolute inset-y-0 right-0 flex w-[88px] items-stretch justify-end bg-[var(--danger)] ${
+          offset === 0 ? 'invisible' : ''
+        }`}
         aria-hidden={offset === 0}
       >
         <button
           type="button"
           tabIndex={offset === 0 ? -1 : 0}
           onClick={() => onDelete(todo)}
-          aria-label={`删除待办：${todo.text}`}
-          className="flex w-full flex-col items-center justify-center gap-1.5 font-mono text-[var(--delete-text)] transition-colors active:bg-[var(--delete-active-bg)]"
+          aria-label={m.row.deleteAria(todo.text)}
+          className="flex w-full flex-col items-center justify-center gap-1 text-[var(--on-danger)] transition-opacity active:opacity-80"
         >
-          <Trash2 size={16} strokeWidth={1.8} />
-          <span className="text-[11.5px] tracking-[0.16em]">删除</span>
+          <Trash2 size={17} strokeWidth={1.9} />
+          <span className="text-[12px] font-medium">{m.row.delete}</span>
         </button>
       </div>
 
       <article
         ref={elementRef}
         tabIndex={0}
-        aria-label={`待办：${todo.text}，点击编辑，向左滑动可以删除`}
+        aria-label={m.row.aria(todo.text)}
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -222,92 +210,65 @@ export default function TodoCard({
             : 'transform 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           touchAction: 'pan-y',
         }}
-        className={`relative flex cursor-pointer select-none items-start gap-3 border px-3.5 py-3.5 outline-none transition-colors ${
-          completed
-            ? 'border-[var(--line-whisper)] bg-[var(--surface-0)]'
-            : dragging
-              ? 'border-[var(--accent-strong)] bg-[var(--surface-2)]'
-              : 'border-[var(--line-soft)] bg-[var(--surface-1)]'
-        } focus-visible:border-[var(--accent-strong)] focus-visible:shadow-[0_0_0_1px_var(--accent-glow-soft)]`}
+        className={`relative flex cursor-pointer select-none items-start gap-3 bg-[var(--surface)] px-4 py-3.5 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
+          dragging ? 'bg-[var(--surface-sunken)]' : ''
+        }`}
       >
-        <span
-          aria-hidden="true"
-          className={`pointer-events-none absolute right-0 top-0 h-4 w-4 border-b border-l ${
-            completed ? 'border-[var(--line-soft)]' : 'border-[var(--line-mid)]'
-          }`}
-        />
-
         <button
           type="button"
           role="checkbox"
           aria-checked={completed}
-          aria-label={completed ? '把待办标为未完成' : '完成这条待办'}
+          aria-label={completed ? m.row.markIncomplete : m.row.markComplete}
           onClick={(event) => {
             event.stopPropagation()
             onToggle(todo.id)
           }}
           onPointerDown={(event) => event.stopPropagation()}
-          className={`mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[2px] border transition-all duration-200 active:scale-90 ${
+          className={`relative mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full border-[1.5px] transition-all duration-150 after:absolute after:-inset-2 after:content-[''] active:scale-90 ${
             completed
-              ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)] shadow-[0_0_12px_var(--accent-glow-soft)]'
-              : 'border-[var(--line-strong)] bg-[var(--surface-deep)] text-transparent hover:border-[var(--accent-strong)] hover:bg-[var(--accent-surface)]'
+              ? 'border-transparent bg-[var(--accent)] text-[var(--on-accent)]'
+              : 'border-[var(--checkbox-border)] text-transparent hover:border-[var(--accent)]'
           }`}
         >
           <Check
             size={13}
             strokeWidth={3}
-            className={completed ? 'check-pop' : 'opacity-20'}
+            className={completed ? 'check-pop' : ''}
           />
         </button>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 pt-[1px]">
           <p
-            className={`break-words font-mono text-[16.5px] font-medium leading-[1.68] tracking-[0.005em] ${
+            className={`break-words text-[16px] leading-[1.45] tracking-[-0.004em] sm:text-[17px] ${
               completed
-                ? 'text-[var(--muted)] line-through decoration-[var(--muted)] decoration-[1.3px]'
-                : 'text-[var(--ink)]'
+                ? 'text-[var(--text-3)] line-through decoration-[var(--text-3)] decoration-[1.5px]'
+                : 'text-[var(--text)]'
             }`}
           >
             {todo.text}
           </p>
 
           {hasMeta && (
-            <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
-              {todo.tags.map((tag) => (
-                <TagBadge key={tag} tag={tag} muted={completed} />
-              ))}
-
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px] leading-[1.4] sm:text-[13px]">
               {todo.dueAt !== null && (
                 <span
-                  title={formatDeadlineLong(todo.dueAt, todo.dueHasTime)}
-                  className={`inline-flex h-[23px] items-center gap-1 font-mono text-[12px] tabular-nums ${
-                    completed
-                      ? 'text-[var(--faint)]'
-                      : status === 'overdue'
-                        ? 'text-[#ff8098]'
-                        : 'text-[var(--muted)]'
-                  }`}
+                  title={`${formatDeadlineLong(todo.dueAt, todo.dueHasTime, locale)} · ${formatCountdown(todo.dueAt, todo.dueHasTime, now, locale)}`}
+                  className={`inline-flex items-center gap-1 ${dueTone}`}
                 >
-                  <Clock3 size={11} strokeWidth={1.8} />
-                  {formatDueDate(todo.dueAt, todo.dueHasTime, now)}
+                  <Clock3 size={11} strokeWidth={1.9} />
+                  {formatDueDate(todo.dueAt, todo.dueHasTime, now, locale)}
                 </span>
               )}
 
-              {todo.dueAt !== null && !completed && (
-                <span
-                  title={statusStyle.label}
-                  className={`chamfer-sm ml-auto inline-flex h-[23px] items-center gap-1 px-1.5 font-mono text-[11.5px] tabular-nums ${statusStyle.pill}`}
-                >
-                  <span
-                    className={`h-1 w-1 rounded-full ${statusStyle.dot}`}
-                  />
-                  {formatCountdown(todo.dueAt, todo.dueHasTime, now)}
+              {todo.tags.map((tag) => (
+                <span key={tag} className="text-[var(--text-3)]">
+                  #{tag}
                 </span>
-              )}
+              ))}
             </div>
           )}
         </div>
       </article>
-    </div>
+    </li>
   )
 }

@@ -1,4 +1,4 @@
-import { tagStyle } from '../data/tags'
+import { useI18n } from '../i18n/I18nProvider'
 
 interface FilterBarProps {
   tags: string[]
@@ -6,39 +6,36 @@ interface FilterBarProps {
   onSelect: (tag: string | null) => void
 }
 
+const baseChip =
+  'h-8 shrink-0 rounded-full px-3.5 text-[13px] font-medium transition-colors'
+
 export default function FilterBar({
   tags,
   selected,
   onSelect,
 }: FilterBarProps) {
+  const { m } = useI18n()
+
   return (
     <div
-      className="hide-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5"
+      className="hide-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 py-1"
       role="group"
-      aria-label="按标签筛选待办"
+      aria-label={m.filter.label}
     >
       <button
         type="button"
         aria-pressed={selected === null}
         onClick={() => onSelect(null)}
-        className={`chamfer-sm flex h-9 shrink-0 items-center gap-1 border px-3 font-mono text-[13px] tracking-[0.04em] transition-all duration-200 active:scale-[0.97] ${
+        className={`${baseChip} ${
           selected === null
-            ? 'border-[var(--accent-strong)] bg-[var(--accent-soft)] text-[var(--accent-ink)] shadow-[0_0_18px_var(--accent-glow-soft)]'
-            : 'border-[var(--line-soft)] bg-[var(--surface-0)] text-[var(--muted)] hover:border-[var(--line-strong)]'
+            ? 'bg-[var(--text)] text-[var(--bg)]'
+            : 'border border-[var(--line)] bg-[var(--surface)] text-[var(--text-2)] hover:text-[var(--text)]'
         }`}
       >
-        <span
-          className={
-            selected === null ? 'text-[var(--accent-strong)]' : 'text-[var(--accent-dim)]'
-          }
-        >
-          &gt;
-        </span>
-        全部
+        {m.filter.all}
       </button>
 
       {tags.map((tag) => {
-        const style = tagStyle(tag)
         const active = selected === tag
         return (
           <button
@@ -46,13 +43,12 @@ export default function FilterBar({
             type="button"
             aria-pressed={active}
             onClick={() => onSelect(tag)}
-            className={`chamfer-sm flex h-9 shrink-0 items-center gap-0.5 border px-2.5 font-mono text-[13px] tracking-[0.02em] transition-all duration-200 active:scale-[0.97] ${
+            className={`${baseChip} ${
               active
-                ? style.active
-                : `${style.border} ${style.background} ${style.text} opacity-75 hover:opacity-100`
+                ? 'bg-[var(--text)] text-[var(--bg)]'
+                : 'border border-[var(--line)] bg-[var(--surface)] text-[var(--text-2)] hover:text-[var(--text)]'
             }`}
           >
-            <span className="opacity-50">#</span>
             {tag}
           </button>
         )

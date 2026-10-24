@@ -1,19 +1,34 @@
-import { useEffect, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react'
+
+type LoadResult = 'valid' | 'missing' | 'invalid' | 'error' | 'user'
 
 export function usePersistentState<T>(
   key: string,
   initialValue: T | (() => T),
   validate?: (value: unknown) => value is T,
 ) {
-  const [value, setValue] = useState<T>(() => {
+  const loadResultRef = useRef<LoadResult>('missing')
+
+  const [value, setValueState] = useState<T>(() => {
     try {
       const stored = window.localStorage.getItem(key)
-      if (stored) {
+      if (stored !== null) {
         const parsed: unknown = JSON.parse(stored)
-        if (!validate || validate(parsed)) return parsed as T
+        if (!validate || validate(parsed)) {
+          loadResultRef.current = 'valid'
+          return parsed as T
+        }
+        loadResultRef.current = 'invalid'
       }
     } catch {
-      // Fall through to the initializer when storage is unavailable or invalid.
+      loadResultRef.current = 'error'
     }
 
     return typeof initialValue === 'function'
@@ -21,7 +36,21 @@ export function usePersistentState<T>(
       : initialValue
   })
 
+  const setValue: Dispatch<SetStateAction<T>> = useCallback((next) => {
+    loadResultRef.current = 'user'
+    setValueState(next)
+  }, [])
+
   useEffect(() => {
+    // Do not erase an unreadable value on first mount. Keep the raw
+    // localStorage entry available for recovery until the user edits.
+    if (
+      loadResultRef.current === 'invalid' ||
+      loadResultRef.current === 'error'
+    ) {
+      return
+    }
+
     try {
       window.localStorage.setItem(key, JSON.stringify(value))
     } catch {
@@ -34,7 +63,10 @@ export function usePersistentState<T>(
       if (event.key !== key || event.newValue === null) return
       try {
         const parsed: unknown = JSON.parse(event.newValue)
-        if (!validate || validate(parsed)) setValue(parsed as T)
+        if (!validate || validate(parsed)) {
+          loadResultRef.current = 'valid'
+          setValueState(parsed as T)
+        }
       } catch {
         // Ignore malformed values written by another tab.
       }

@@ -1,36 +1,39 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="green">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content"
     />
     <meta
       name="description"
-      content="flow，一个暗色终端风的个人待办清单，用 #标签 自动归类，一件一件慢慢来"
+      content="A quiet, local-first home for tasks, habits, and spending. Organize with #tags, build routines, and track expenses — stored only on your device."
     />
-    <meta name="theme-color" content="#050806" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#f5f5f7" />
+    <meta name="color-scheme" content="light dark" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="flow" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <title>flow // 待办</title>
+    <title>flow</title>
     <script>
       try {
-        var savedTheme = localStorage.getItem('flow.neonTheme.v1')
-        var allowedThemes = ['green', 'ice', 'pink', 'ember', 'sakura', 'apricot']
-        if (allowedThemes.indexOf(savedTheme) !== -1) {
-          document.documentElement.dataset.theme = savedTheme
+        var stored = localStorage.getItem('flow.appearance.v1');
+        var dark =
+          stored === 'dark' ||
+          ((stored === null || stored === 'system') &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        var themeColor = document.querySelector('meta[name="theme-color"]');
+        if (themeColor) {
+          themeColor.content = dark ? '#0b0c0e' : '#f5f5f7';
         }
       } catch (error) {
-        // The default palette is used if storage is unavailable.
+        // The default light palette is used if storage is unavailable.
       }
     </script>
   </head>

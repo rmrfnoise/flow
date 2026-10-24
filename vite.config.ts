@@ -11,18 +11,18 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'flow // 待办',
+        name: 'flow',
         short_name: 'flow',
         description:
-          '一个暗色终端风的个人待办清单，用 #标签 自动归类，一件一件慢慢来',
-        lang: 'zh-CN',
+          'A quiet, local-first home for tasks, habits, and spending — stored only on your device.',
+        lang: 'en',
         start_url: '/',
         scope: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
-        background_color: '#050806',
-        theme_color: '#050806',
-        categories: ['productivity', 'lifestyle'],
+        background_color: '#f5f5f7',
+        theme_color: '#f5f5f7',
+        categories: ['productivity', 'lifestyle', 'finance'],
         icons: [
           {
             src: '/icons/icon-192.png',
@@ -51,9 +51,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: [
-          '**/*.{js,css,html,svg,png,ico,webmanifest,woff2}',
-        ],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest}'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         navigateFallback: 'index.html',

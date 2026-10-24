@@ -92,6 +92,8 @@ jobs:
           body: |
             **flow** Android APK，基于 `${{ github.sha }}` 构建。
 
+            - 待办、习惯打卡、记账
+            - 中英文界面，浅色 / 深色 / 跟随系统
             - release 签名，可直接安装
             - 数据仅保存在 APK 内，与浏览器 PWA 相互独立
             - 不是 Play Store 构建

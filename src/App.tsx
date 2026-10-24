@@ -1,21 +1,70 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import {
   CheckCheck,
   ChevronDown,
-  Eraser,
-  Palette,
+  ChevronLeft,
+  ListTodo,
+  Pencil,
   Plus,
+  Repeat,
+  Settings as SettingsIcon,
+  Trash2,
+  Wallet,
 } from 'lucide-react'
 import AddTodoSheet from './components/AddTodoSheet'
 import BrandMark from './components/BrandMark'
 import ConfirmDialog from './components/ConfirmDialog'
 import EmptyState from './components/EmptyState'
+import ExpenseSheet, {
+  type ExpenseSaveInput,
+} from './components/ExpenseSheet'
 import FilterBar from './components/FilterBar'
-import ThemeSheet from './components/ThemeSheet'
+import HabitDetail from './components/HabitDetail'
+import HabitSheet from './components/HabitSheet'
+import HabitsView from './components/HabitsView'
+import MoneyView, { type MoneyTab } from './components/MoneyView'
+import SettingsView from './components/SettingsView'
 import Toast from './components/Toast'
-import TodoCard from './components/TodoCard'
-import { useNeonTheme } from './hooks/useNeonTheme'
-import { formatHeaderDate } from './lib/date'
+import TodoRow from './components/TodoRow'
+import { useAppearance } from './hooks/useAppearance'
+import { useI18n } from './i18n/I18nProvider'
+import {
+  formatHeaderDate,
+  getActiveDueBucket,
+  type DueBucket,
+} from './lib/date'
+import {
+  CUSTOM_CATEGORIES_STORAGE_KEY,
+  EXPENSES_STORAGE_KEY,
+  MISC_CATEGORY_ID,
+  countExpensesForCategory,
+  isCategoryNameTaken,
+  isCustomCategoryArray,
+  isExpenseArray,
+  type CustomExpenseCategory,
+  type Expense,
+} from './lib/expenses'
+import {
+  HABITS_STORAGE_KEY,
+  HABIT_CHECKINS_STORAGE_KEY,
+  formatHabitSchedule,
+  formatMonthDay,
+  getHabitDates,
+  getHabitDayState,
+  isHabitArray,
+  isHabitCheckins,
+  isScheduled,
+  toDateKey,
+  type Habit,
+  type HabitCheckins,
+  type HabitSchedule,
+} from './lib/habits'
 import { makeId, usePersistentState } from './lib/storage'
 import { TODOS_STORAGE_KEY, isTodoArray } from './lib/todos'
 import type { NewTodoInput, Todo } from './types'
@@ -26,38 +75,199 @@ interface ToastState {
   onAction?: () => void
 }
 
-function SectionHeader({
-  index,
-  title,
-  count,
-  hint,
-  id,
-}: {
-  index: string
+type Route =
+  | { name: 'tasks' }
+  | { name: 'habits' }
+  | { name: 'habit'; id: string }
+  | { name: 'money'; tab: MoneyTab }
+  | { name: 'settings' }
+
+function readRoute(): Route {
+  const hash = window.location.hash
+  if (hash === '#/settings') return { name: 'settings' }
+  if (hash === '#/habits') return { name: 'habits' }
+  if (hash === '#/money') {
+    return { name: 'money', tab: 'records' }
+  }
+  if (hash === '#/money/week' || hash === '#/money/reports') {
+    return { name: 'money', tab: 'week' }
+  }
+  if (hash === '#/money/month') {
+    return { name: 'money', tab: 'month' }
+  }
+
+  const match = /^#\/habits\/([^/]+)$/u.exec(hash)
+  if (match) {
+    try {
+      return { name: 'habit', id: decodeURIComponent(match[1]) }
+    } catch {
+      return { name: 'habits' }
+    }
+  }
+
+  return { name: 'tasks' }
+}
+
+const GROUPS: Array<{
+  bucket: Exclude<DueBucket, 'none'>
+  danger?: boolean
+}> = [
+  { bucket: 'overdue', danger: true },
+  { bucket: 'today' },
+  { bucket: 'tomorrow' },
+  { bucket: 'later' },
+]
+
+interface TaskGroupProps {
   title: string
+  todos: Todo[]
+  now: number
+  danger?: boolean
+  onToggle: (id: string) => void
+  onDelete: (todo: Todo) => void
+  onEdit: (todo: Todo) => void
+}
+
+function SidebarFilter({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string
   count: number
-  hint: string
-  id: string
+  active: boolean
+  onClick: () => void
 }) {
   return (
-    <div className="mb-2.5 mt-6 flex items-center gap-2">
-      <span className="font-mono text-[11px] tabular-nums text-[var(--faint)]">
-        {index}
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`flex h-9 items-center justify-between rounded-[8px] px-2.5 text-[13.5px] transition-colors ${
+        active
+          ? 'bg-[var(--surface)] font-medium text-[var(--text)] shadow-[var(--shadow-card)]'
+          : 'text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text)]'
+      }`}
+    >
+      <span className="truncate">{label}</span>
+      <span className="ml-2 font-mono text-[11.5px] tabular-nums text-[var(--text-3)]">
+        {count}
       </span>
-      <span className="h-px w-3 bg-[var(--line-whisper)]" />
-      <h2
-        id={id}
-        className="font-display text-[13px] tracking-[0.08em] text-[var(--ink-soft)]"
+    </button>
+  )
+}
+
+function NavItem({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: ReactNode
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-current={active ? 'page' : undefined}
+      onClick={onClick}
+      className={`flex h-9 items-center gap-2.5 rounded-[8px] px-2.5 text-[13.5px] transition-colors ${
+        active
+          ? 'bg-[var(--surface)] font-medium text-[var(--text)] shadow-[var(--shadow-card)]'
+          : 'text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text)]'
+      }`}
+    >
+      <span
+        className={
+          active ? 'text-[var(--accent)]' : 'text-[var(--text-3)]'
+        }
       >
-        {title}
-      </h2>
-      <span className="font-mono text-[11px] tabular-nums text-[var(--faint)]">
-        [{count}]
+        {icon}
       </span>
-      <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--ghost)]">
-        {hint}
+      {label}
+    </button>
+  )
+}
+
+function BottomNavItem({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: ReactNode
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-current={active ? 'page' : undefined}
+      onClick={onClick}
+      className={`relative flex h-14 flex-col items-center justify-center gap-1 text-[10.5px] font-medium transition-colors ${
+        active ? 'text-[var(--accent)]' : 'text-[var(--text-3)]'
+      }`}
+    >
+      <span
+        aria-hidden="true"
+        className={`absolute top-0 h-[2px] w-6 rounded-full bg-[var(--accent)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          active
+            ? 'scale-x-100 opacity-100'
+            : 'scale-x-50 opacity-0'
+        }`}
+      />
+      <span
+        className={`transition-transform duration-200 ${
+          active ? '-translate-y-[1px]' : ''
+        }`}
+      >
+        {icon}
       </span>
-    </div>
+      {label}
+    </button>
+  )
+}
+
+function TaskGroup({
+  title,
+  todos,
+  now,
+  danger = false,
+  onToggle,
+  onDelete,
+  onEdit,
+}: TaskGroupProps) {
+  return (
+    <section className="mt-6 first:mt-2">
+      <div className="mb-2 flex items-baseline justify-between px-1">
+        <h2
+          className={`text-[13px] font-medium ${
+            danger ? 'text-[var(--danger)]' : 'text-[var(--text-2)]'
+          }`}
+        >
+          {title}
+        </h2>
+        <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-3)]">
+          {todos.length}
+        </span>
+      </div>
+      <ul className="overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+        {todos.map((todo) => (
+          <TodoRow
+            key={todo.id}
+            todo={todo}
+            now={now}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onEdit={onEdit}
+          />
+        ))}
+      </ul>
+    </section>
   )
 }
 
@@ -67,23 +277,105 @@ export default function App() {
     [],
     isTodoArray,
   )
+  const [habits, setHabits] = usePersistentState<Habit[]>(
+    HABITS_STORAGE_KEY,
+    [],
+    isHabitArray,
+  )
+  const [habitCheckins, setHabitCheckins] =
+    usePersistentState<HabitCheckins>(
+      HABIT_CHECKINS_STORAGE_KEY,
+      {},
+      isHabitCheckins,
+    )
+  const [expenses, setExpenses] = usePersistentState<Expense[]>(
+    EXPENSES_STORAGE_KEY,
+    [],
+    isExpenseArray,
+  )
+  const [customCategories, setCustomCategories] = usePersistentState<
+    CustomExpenseCategory[]
+  >(CUSTOM_CATEGORIES_STORAGE_KEY, [], isCustomCategoryArray)
 
-  const { theme, setTheme } = useNeonTheme()
+  const { mode: appearanceMode, setMode: setAppearanceMode } =
+    useAppearance()
+  const { locale, m } = useI18n()
+  const [route, setRoute] = useState<Route>(readRoute)
   const [filter, setFilter] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [completedOpen, setCompletedOpen] = useState(false)
   const [clearOpen, setClearOpen] = useState(false)
-  const [themeOpen, setThemeOpen] = useState(false)
+  const [habitSheetOpen, setHabitSheetOpen] = useState(false)
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
+  const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null)
+  const [expenseSheetOpen, setExpenseSheetOpen] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(
+    null,
+  )
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<CustomExpenseCategory | null>(null)
   const [toast, setToast] = useState<ToastState | null>(null)
   const [now, setNow] = useState(() => Date.now())
 
   const toastTimerRef = useRef<number | null>(null)
+  const todayKey = toDateKey(new Date(now))
+  const categoryExpenseCount = categoryToDelete
+    ? countExpensesForCategory(expenses, categoryToDelete.id)
+    : 0
+  const recentCategoryIds = useMemo(() => {
+    const seen = new Set<string>()
+    const ids: string[] = []
+    const sorted = [...expenses].sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1
+      return b.createdAt - a.createdAt
+    })
+    for (const expense of sorted) {
+      if (seen.has(expense.categoryId)) continue
+      seen.add(expense.categoryId)
+      ids.push(expense.categoryId)
+      if (ids.length >= 4) break
+    }
+    return ids
+  }, [expenses])
+  const activeHabit =
+    route.name === 'habit'
+      ? habits.find((habit) => habit.id === route.id) ?? null
+      : null
+  const showHabitsList =
+    route.name === 'habits' ||
+    (route.name === 'habit' && activeHabit === null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000)
     return () => window.clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    function handleHashChange() {
+      setRoute(readRoute())
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  useEffect(() => {
+    if (route.name === 'habit' && !activeHabit) {
+      window.location.hash = '#/habits'
+    }
+  }, [activeHabit, route])
+
+  useEffect(() => {
+    let title = m.meta.title
+    if (route.name === 'settings') title = m.meta.settingsTitle
+    else if (route.name === 'habits') title = m.meta.habitsTitle
+    else if (route.name === 'money') title = m.meta.moneyTitle
+    else if (route.name === 'habit' && activeHabit) {
+      title = `flow · ${activeHabit.name}`
+    }
+    document.title = title
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [activeHabit, m, route])
 
   useEffect(() => {
     return () => {
@@ -96,9 +388,7 @@ export default function App() {
   const allTags = useMemo(() => {
     const tags: string[] = []
     const seen = new Set<string>()
-    const newestFirst = [...todos].sort(
-      (a, b) => b.createdAt - a.createdAt,
-    )
+    const newestFirst = [...todos].sort((a, b) => b.createdAt - a.createdAt)
 
     for (const todo of newestFirst) {
       for (const tag of todo.tags) {
@@ -117,6 +407,17 @@ export default function App() {
     }
   }, [allTags, filter])
 
+  const tagCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const todo of todos) {
+      if (todo.completedAt !== null) continue
+      for (const tag of todo.tags) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1)
+      }
+    }
+    return counts
+  }, [todos])
+
   const visibleTodos = useMemo(
     () =>
       filter === null
@@ -130,24 +431,6 @@ export default function App() {
     [visibleTodos],
   )
 
-  const deadlineTodos = useMemo(
-    () =>
-      activeVisible
-        .filter(
-          (todo): todo is Todo & { dueAt: number } => todo.dueAt !== null,
-        )
-        .sort((a, b) => a.dueAt - b.dueAt),
-    [activeVisible],
-  )
-
-  const undatedTodos = useMemo(
-    () =>
-      activeVisible
-        .filter((todo) => todo.dueAt === null)
-        .sort((a, b) => b.createdAt - a.createdAt),
-    [activeVisible],
-  )
-
   const completedVisible = useMemo(
     () =>
       visibleTodos
@@ -159,55 +442,66 @@ export default function App() {
     [visibleTodos],
   )
 
+  const groups = useMemo(() => {
+    const buckets: Record<DueBucket, Todo[]> = {
+      overdue: [],
+      today: [],
+      tomorrow: [],
+      later: [],
+      none: [],
+    }
+
+    for (const todo of activeVisible) {
+      buckets[getActiveDueBucket(todo.dueAt, todo.dueHasTime, now)].push(todo)
+    }
+
+    const byDueAt = (a: Todo, b: Todo) => (a.dueAt ?? 0) - (b.dueAt ?? 0)
+    buckets.overdue.sort(byDueAt)
+    buckets.today.sort(byDueAt)
+    buckets.tomorrow.sort(byDueAt)
+    buckets.later.sort(byDueAt)
+    buckets.none.sort((a, b) => b.createdAt - a.createdAt)
+
+    return buckets
+  }, [activeVisible, now])
+
   const activeAllCount = todos.filter(
     (todo) => todo.completedAt === null,
   ).length
   const completedAllCount = todos.length - activeAllCount
   const totalCount = todos.length
-  const deadlineAllCount = todos.filter(
-    (todo) => todo.completedAt === null && todo.dueAt !== null,
-  ).length
-
-  const dateInfo = formatHeaderDate(new Date(now))
+  const dateInfo = formatHeaderDate(new Date(now), locale)
+  const { planned: todayPlannedCount, done: todayDone } =
+    useMemo(() => {
+      const planned = habits.filter(
+        (habit) =>
+          todayKey >= habit.startDate &&
+          isScheduled(habit, todayKey),
+      )
+      return {
+        planned: planned.length,
+        done: planned.filter((habit) =>
+          getHabitDates(habitCheckins, habit.id).includes(todayKey),
+        ).length,
+      }
+    }, [habitCheckins, habits, todayKey])
+  const habitSubtitle =
+    habits.length === 0
+      ? m.habits.subtitleEmpty
+      : todayPlannedCount === 0
+        ? m.habits.restDay
+        : m.habits.todaySummary(todayDone, todayPlannedCount)
   const visibleTotal = activeVisible.length + completedVisible.length
-  const progressSegments = 14
-  const completedSegments =
-    totalCount === 0
-      ? 0
-      : Math.min(
-          progressSegments,
-          Math.max(
-            completedAllCount > 0 ? 1 : 0,
-            Math.round((completedAllCount / totalCount) * progressSegments),
-          ),
-        )
-
-  const headline =
-    activeAllCount > 0 ? (
-      <>
-        TODO <span className="text-[var(--accent-dim)]">//</span>{' '}
-        <span className="text-[var(--accent)] drop-shadow-[0_0_14px_var(--accent-glow)]">
-          [{String(activeAllCount).padStart(2, '0')}]
-        </span>
-      </>
-    ) : totalCount === 0 ? (
-      <>
-        TODO <span className="text-[var(--accent-dim)]">//</span> EMPTY
-      </>
-    ) : (
-      <>
-        TODO <span className="text-[var(--accent-dim)]">//</span> DONE
-      </>
-    )
-
   const subtitle =
     totalCount === 0
-      ? '写下第一条，终端开始运转'
-      : activeAllCount === 0
-        ? '全部归档，给自己一点空白'
-        : deadlineAllCount > 0
-          ? 'DDL 优先排序，其余自由巡航'
-          : '没有 DDL，按自己的节奏运行'
+      ? m.app.subtitleEmpty
+      : activeVisible.length === 0
+        ? completedVisible.length > 0
+          ? m.app.allDone
+          : m.app.noMatches
+        : groups.overdue.length > 0
+          ? `${m.app.activeCount(activeVisible.length)} · ${m.app.overdueCount(groups.overdue.length)}`
+          : m.app.activeCount(activeVisible.length)
 
   function dismissToast() {
     if (toastTimerRef.current !== null) {
@@ -217,7 +511,7 @@ export default function App() {
     setToast(null)
   }
 
-  function showToast(next: ToastState, duration = 5000) {
+  function showToast(next: ToastState, duration = 4200) {
     if (toastTimerRef.current !== null) {
       window.clearTimeout(toastTimerRef.current)
     }
@@ -260,7 +554,7 @@ export default function App() {
       )
       setNow(Date.now())
       closeSheet()
-      showToast({ message: '已更新这条待办' }, 2600)
+      showToast({ message: m.toast.saved }, 2600)
     } else {
       const todo: Todo = {
         id: makeId('todo'),
@@ -307,8 +601,8 @@ export default function App() {
     )
     showToast(
       {
-        message: '已删除这条待办',
-        actionLabel: '撤销',
+        message: m.toast.deleted,
+        actionLabel: m.toast.undo,
         onAction: () => {
           setTodos((current) =>
             current.some((item) => item.id === todo.id)
@@ -321,6 +615,203 @@ export default function App() {
       },
       5200,
     )
+  }
+
+  function navigate(
+    next: 'tasks' | 'habits' | 'money' | 'settings',
+  ) {
+    const hash =
+      next === 'settings'
+        ? '#/settings'
+        : next === 'habits'
+          ? '#/habits'
+          : next === 'money'
+            ? '#/money'
+            : '#/tasks'
+    if (window.location.hash !== hash) {
+      window.location.hash = hash
+    } else {
+      setRoute(
+        next === 'tasks'
+          ? { name: 'tasks' }
+          : next === 'habits'
+            ? { name: 'habits' }
+            : next === 'money'
+              ? { name: 'money', tab: 'records' }
+              : { name: 'settings' },
+      )
+    }
+    dismissToast()
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
+  function navigateMoney(tab: MoneyTab) {
+    const hash =
+      tab === 'week'
+        ? '#/money/week'
+        : tab === 'month'
+          ? '#/money/month'
+          : '#/money'
+    if (window.location.hash !== hash) {
+      window.location.hash = hash
+    } else {
+      setRoute({ name: 'money', tab })
+    }
+    dismissToast()
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
+  function openHabit(id: string) {
+    const hash = `#/habits/${encodeURIComponent(id)}`
+    if (window.location.hash !== hash) {
+      window.location.hash = hash
+    } else {
+      setRoute({ name: 'habit', id })
+    }
+    dismissToast()
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
+  function openHabitSheet(habit?: Habit) {
+    setEditingHabit(habit ?? null)
+    setHabitSheetOpen(true)
+  }
+
+  function closeHabitSheet() {
+    setHabitSheetOpen(false)
+    setEditingHabit(null)
+  }
+
+  function handleSaveHabit(input: {
+    name: string
+    schedule: HabitSchedule
+  }) {
+    const timestamp = Date.now()
+
+    if (editingHabit) {
+      setHabits((current) =>
+        current.map((habit) =>
+          habit.id === editingHabit.id
+            ? {
+                ...habit,
+                name: input.name,
+                schedule: input.schedule,
+                updatedAt: timestamp,
+              }
+            : habit,
+        ),
+      )
+      showToast({ message: m.toast.saved }, 2600)
+    } else {
+      const habit: Habit = {
+        id: makeId('habit'),
+        name: input.name,
+        schedule: input.schedule,
+        startDate: todayKey,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+      setHabits((current) => [...current, habit])
+    }
+
+    setNow(timestamp)
+    closeHabitSheet()
+  }
+
+  function toggleHabitDate(habit: Habit, dateKey: string) {
+    const dates = getHabitDates(habitCheckins, habit.id)
+    const checked = dates.includes(dateKey)
+    const state = getHabitDayState(
+      habit,
+      dateKey,
+      checked,
+      todayKey,
+    )
+
+    if (state === 'out-of-window') {
+      showToast({ message: m.habits.outOfWindow }, 3200)
+      return
+    }
+
+    if (state === 'checked') {
+      setHabitCheckins((current) => ({
+        ...current,
+        [habit.id]: (current[habit.id] ?? []).filter(
+          (date) => date !== dateKey,
+        ),
+      }))
+      setNow(Date.now())
+      showToast(
+        {
+          message: m.habits.toastCanceled,
+          actionLabel: m.toast.undo,
+          onAction: () => {
+            setHabitCheckins((current) => {
+              const existing = current[habit.id] ?? []
+              if (existing.includes(dateKey)) return current
+              return {
+                ...current,
+                [habit.id]: [...existing, dateKey].sort(),
+              }
+            })
+            setNow(Date.now())
+            dismissToast()
+          },
+        },
+        5200,
+      )
+      return
+    }
+
+    if (state === 'available') {
+      setHabitCheckins((current) => {
+        const existing = current[habit.id] ?? []
+        if (existing.includes(dateKey)) return current
+        return {
+          ...current,
+          [habit.id]: [...existing, dateKey].sort(),
+        }
+      })
+      setNow(Date.now())
+      showToast(
+        {
+          message:
+            dateKey === todayKey
+              ? m.habits.toastChecked
+              : m.habits.toastMadeUp(
+                  formatMonthDay(dateKey, locale),
+                ),
+          actionLabel: m.toast.undo,
+          onAction: () => {
+            setHabitCheckins((current) => ({
+              ...current,
+              [habit.id]: (current[habit.id] ?? []).filter(
+                (date) => date !== dateKey,
+              ),
+            }))
+            setNow(Date.now())
+            dismissToast()
+          },
+        },
+        5200,
+      )
+    }
+  }
+
+  function handleDeleteHabit() {
+    if (!habitToDelete) return
+    const habitId = habitToDelete.id
+    setHabits((current) =>
+      current.filter((habit) => habit.id !== habitId),
+    )
+    setHabitCheckins((current) => {
+      const next = { ...current }
+      delete next[habitId]
+      return next
+    })
+    setHabitToDelete(null)
+    navigate('habits')
+    showToast({ message: m.habits.toastDeleted }, 3000)
   }
 
   function handleFilterSelect(next: string | null) {
@@ -336,206 +827,346 @@ export default function App() {
     setCompletedOpen(false)
     setClearOpen(false)
     showToast(
-      { message: `已清空 ${completedAllCount} 条已完成待办` },
-      3600,
+      { message: m.toast.cleared(completedAllCount) },
+      3200,
     )
   }
 
+  function openExpenseSheet(expense?: Expense) {
+    setEditingExpense(expense ?? null)
+    setExpenseSheetOpen(true)
+  }
+
+  function closeExpenseSheet() {
+    setExpenseSheetOpen(false)
+    setEditingExpense(null)
+  }
+
+  function handleSaveExpense(input: ExpenseSaveInput) {
+    const timestamp = Date.now()
+
+    if (editingExpense) {
+      setExpenses((current) =>
+        current.map((expense) =>
+          expense.id === editingExpense.id
+            ? { ...expense, ...input, updatedAt: timestamp }
+            : expense,
+        ),
+      )
+      showToast({ message: m.toast.saved }, 2600)
+    } else {
+      const expense: Expense = {
+        id: makeId('expense'),
+        ...input,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+      setExpenses((current) => [expense, ...current])
+    }
+
+    setNow(timestamp)
+    closeExpenseSheet()
+  }
+
+  function deleteExpense(expense: Expense) {
+    setExpenses((current) =>
+      current.filter((item) => item.id !== expense.id),
+    )
+    showToast(
+      {
+        message: m.money.toastDeleted,
+        actionLabel: m.toast.undo,
+        onAction: () => {
+          setExpenses((current) =>
+            current.some((item) => item.id === expense.id)
+              ? current
+              : [expense, ...current],
+          )
+          setNow(Date.now())
+          dismissToast()
+        },
+      },
+      5200,
+    )
+  }
+
+  function handleAddCustomCategory(name: string) {
+    const trimmed = name.trim()
+    if (
+      !trimmed ||
+      trimmed.length > 20 ||
+      isCategoryNameTaken(trimmed, customCategories)
+    ) {
+      return null
+    }
+    const category: CustomExpenseCategory = {
+      id: makeId('category'),
+      name: trimmed,
+      createdAt: Date.now(),
+    }
+    setCustomCategories((current) => [...current, category])
+    return category.id
+  }
+
+  function requestDeleteCategory(category: CustomExpenseCategory) {
+    setCategoryToDelete(category)
+  }
+
+  function handleDeleteCategory() {
+    if (!categoryToDelete) return
+    const categoryId = categoryToDelete.id
+    const count = countExpensesForCategory(expenses, categoryId)
+
+    setCustomCategories((current) =>
+      current.filter((category) => category.id !== categoryId),
+    )
+    if (count > 0) {
+      setExpenses((current) =>
+        current.map((expense) =>
+          expense.categoryId === categoryId
+            ? {
+                ...expense,
+                categoryId: MISC_CATEGORY_ID,
+                updatedAt: Date.now(),
+              }
+            : expense,
+        ),
+      )
+    }
+    setCategoryToDelete(null)
+    setNow(Date.now())
+    if (editingExpense?.categoryId === categoryId) {
+      setExpenseSheetOpen(false)
+      setEditingExpense(null)
+    }
+    showToast({ message: m.money.toastCategoryDeleted }, 3000)
+  }
+
   return (
-    <div className="app-canvas relative mx-auto flex min-h-dvh w-full max-w-[560px] flex-col overflow-x-clip font-sans text-[var(--ink)] sm:min-h-[calc(100dvh-48px)]">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden"
-      >
-        <span className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[var(--accent)]/10 blur-[90px]" />
-        <span className="absolute -left-24 top-28 h-48 w-48 rounded-full bg-[#ff4fd8]/10 blur-[80px]" />
-        <span className="absolute left-[18%] top-[196px] h-[3px] w-[3px] bg-[#5ce1ff]/60" />
-      </div>
-
-      <header className="relative z-10 px-5 pt-safe">
-        <div className="flex flex-wrap items-center justify-between gap-2 gap-y-2">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[1040px] flex-col px-5 sm:px-6 lg:flex-row lg:gap-12 lg:px-8">
+      <aside className="hidden lg:flex lg:w-[220px] lg:shrink-0 lg:flex-col lg:pt-10">
+        <div className="flex h-10 items-center">
           <BrandMark />
-          <div className="ml-auto flex items-center gap-2">
-            <div className="chamfer-sm flex items-center gap-2 border border-[var(--line-mid)] bg-[var(--surface-2)] px-3 py-1.5 font-mono text-[13.5px] tabular-nums text-[var(--ink-soft)]">
-              <span>{dateInfo.date}</span>
-              <span className="text-[12px] text-[var(--faint)]">//</span>
-              <span className="text-[15px] font-semibold text-[var(--accent)]">
-                {dateInfo.weekdayShort}
-              </span>
-            </div>
-            <button
-              type="button"
-              aria-label="切换霓虹配色"
-              aria-haspopup="dialog"
-              onClick={() => setThemeOpen(true)}
-              className="chamfer-sm grid h-[34px] w-[34px] place-items-center border border-[var(--accent-line)] bg-[var(--surface-2)] text-[var(--accent)] transition-colors hover:bg-[var(--accent-surface)]"
-            >
-              <Palette size={15} strokeWidth={1.8} />
-            </button>
-          </div>
         </div>
 
-        <div className="mt-8">
-          <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--muted)]">
-            <span className="h-1 w-1 bg-[var(--accent)] shadow-[0_0_6px_var(--accent-glow-strong)]" />
-            SYSTEM ONLINE // QUEUE READY
-          </p>
-          <h1 className="mt-2 font-display text-[32px] font-semibold leading-[1.32] tracking-[0.005em] text-[var(--ink)]">
-            {headline}
-          </h1>
-          <p className="mt-2 font-mono text-[14px] leading-[1.8] text-[var(--muted)]">
-            <span className="mr-1 text-[var(--accent)]">&gt;</span>
-            {subtitle}
-          </p>
-        </div>
+        <nav
+          className="mt-8 flex flex-col gap-0.5"
+          aria-label={m.nav.label}
+        >
+          <NavItem
+            icon={<ListTodo size={16} strokeWidth={1.9} />}
+            label={m.nav.tasks}
+            active={route.name === 'tasks'}
+            onClick={() => navigate('tasks')}
+          />
+          <NavItem
+            icon={<Repeat size={16} strokeWidth={1.9} />}
+            label={m.nav.habits}
+            active={
+              route.name === 'habits' || route.name === 'habit'
+            }
+            onClick={() => navigate('habits')}
+          />
+          <NavItem
+            icon={<Wallet size={16} strokeWidth={1.9} />}
+            label={m.nav.money}
+            active={route.name === 'money'}
+            onClick={() => navigate('money')}
+          />
+          <NavItem
+            icon={<SettingsIcon size={16} strokeWidth={1.9} />}
+            label={m.nav.settings}
+            active={route.name === 'settings'}
+            onClick={() => navigate('settings')}
+          />
+        </nav>
 
-        <div className="mt-4 flex min-h-[28px] items-center gap-3">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+        {route.name === 'tasks' && (
+          <div className="mt-6">
+            <p className="px-2.5 pb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
+              {m.filter.tags}
+            </p>
             <div
-              className="flex h-[5px] min-w-[60px] flex-1 gap-[2px]"
-              aria-hidden="true"
+              className="flex flex-col gap-0.5"
+              role="group"
+              aria-label={m.filter.label}
             >
-              {Array.from({ length: progressSegments }, (_, index) => (
-                <span
-                  key={index}
-                  className={`h-full flex-1 ${
-                    index < completedSegments
-                      ? 'bg-[var(--accent)] shadow-[0_0_6px_var(--accent-glow)]'
-                      : 'bg-[var(--track)]'
-                  }`}
+              <SidebarFilter
+                label={m.filter.all}
+                count={activeAllCount}
+                active={filter === null}
+                onClick={() => handleFilterSelect(null)}
+              />
+              {allTags.map((tag) => (
+                <SidebarFilter
+                  key={tag}
+                  label={`#${tag}`}
+                  count={tagCounts.get(tag) ?? 0}
+                  active={filter === tag}
+                  onClick={() => handleFilterSelect(tag)}
                 />
               ))}
             </div>
-            <span className="shrink-0 font-mono text-[11px] tabular-nums text-[var(--muted)]">
-              DONE {completedAllCount}/{totalCount}
-            </span>
           </div>
+        )}
 
-          {completedAllCount > 0 && (
-            <button
-              type="button"
-              onClick={() => setClearOpen(true)}
-              className="chamfer-sm flex h-8 shrink-0 items-center gap-1 border border-[var(--danger-line)] bg-[var(--danger-surface)] px-2 font-mono text-[11px] text-[var(--danger-ink)] transition-all active:scale-[0.97] hover:border-[var(--danger-hover-line)] hover:text-[var(--danger-hover-ink)]"
-            >
-              <Eraser size={10} strokeWidth={1.8} />
-              清空已完成
-            </button>
+        {route.name === 'tasks' && (
+          <p className="mt-6 border-t border-[var(--line)] px-2.5 pt-4 text-[12px] text-[var(--text-3)]">
+            {m.app.completedCount(completedAllCount)}
+          </p>
+        )}
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="pt-[max(1.25rem,env(safe-area-inset-top))] sm:pt-10">
+          {route.name === 'habit' && activeHabit ? (
+            <>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-label={m.habits.back}
+                  onClick={() => navigate('habits')}
+                  className="-ml-2 grid h-9 w-9 shrink-0 place-items-center rounded-full text-[var(--text-2)] transition-colors hover:bg-[var(--surface-sunken)] hover:text-[var(--text)]"
+                >
+                  <ChevronLeft size={20} strokeWidth={2} />
+                </button>
+                <h1 className="min-w-0 flex-1 truncate text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text)] sm:text-[30px]">
+                  {activeHabit.name}
+                </h1>
+                <button
+                  type="button"
+                  aria-label={m.habits.edit}
+                  onClick={() => openHabitSheet(activeHabit)}
+                  className="-mr-2 grid h-9 w-9 shrink-0 place-items-center rounded-full text-[var(--text-2)] transition-colors hover:bg-[var(--surface-sunken)] hover:text-[var(--text)]"
+                >
+                  <Pencil size={17} strokeWidth={1.9} />
+                </button>
+              </div>
+              <p className="mt-1.5 text-[13px] text-[var(--text-2)]">
+                {formatHabitSchedule(
+                  activeHabit,
+                  locale,
+                  m.habits.everyDay,
+                )}
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-[32px] font-semibold leading-[1.12] tracking-[-0.028em] text-[var(--text)] sm:text-[36px]">
+                {route.name === 'settings'
+                  ? m.settings.title
+                  : route.name === 'money'
+                    ? m.money.title
+                    : showHabitsList
+                      ? m.habits.title
+                      : m.app.title}
+              </h1>
+              <p className="mt-2 text-[13.5px] text-[var(--text-2)]">
+                {route.name === 'settings' ? (
+                  m.settings.subtitle
+                ) : route.name === 'money' ? (
+                  m.money.subtitle
+                ) : showHabitsList ? (
+                  habitSubtitle
+                ) : (
+                  <>
+                    {dateInfo}
+                    <span className="mx-1.5 text-[var(--text-3)]">
+                      ·
+                    </span>
+                    {subtitle}
+                  </>
+                )}
+              </p>
+            </>
           )}
-        </div>
-      </header>
+        </header>
 
-      <div className="sticky top-0 z-30 mt-5 border-y border-[var(--line-whisper)] bg-[var(--surface-0)]/92 px-5 py-3 backdrop-blur-xl">
-        <FilterBar
-          tags={allTags}
-          selected={filter}
-          onSelect={handleFilterSelect}
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-y-0 right-0 w-7 bg-gradient-to-l from-[var(--surface-0)] via-[var(--surface-0)]/85 to-transparent"
-        />
-      </div>
+        {route.name === 'tasks' && allTags.length > 0 && (
+          <div className="relative sticky top-0 z-20 -mx-5 mt-5 bg-[var(--bg)] px-5 pb-1 pt-2 sm:-mx-6 sm:px-6 lg:hidden">
+            <FilterBar
+              tags={allTags}
+              selected={filter}
+              onSelect={handleFilterSelect}
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[var(--bg)] to-transparent"
+            />
+          </div>
+        )}
 
-      <main className="flex-1 px-5 pb-36">
-        {visibleTotal === 0 ? (
+        {route.name === 'tasks' && (
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+150px)] pt-1 lg:pb-32">
+            {visibleTotal === 0 ? (
           <EmptyState
             filtered={filter !== null}
             onAdd={openAddSheet}
           />
         ) : (
           <>
+            {GROUPS.map(({ bucket, danger }) => {
+              const items = groups[bucket]
+              if (items.length === 0) return null
+              return (
+                <TaskGroup
+                  key={bucket}
+                  title={m.app.groups[bucket]}
+                  todos={items}
+                  now={now}
+                  danger={danger}
+                  onToggle={toggleTodo}
+                  onDelete={deleteTodo}
+                  onEdit={openEditSheet}
+                />
+              )
+            })}
+
+            {groups.none.length > 0 && (
+              <TaskGroup
+                title={m.app.groups.none}
+                todos={groups.none}
+                now={now}
+                onToggle={toggleTodo}
+                onDelete={deleteTodo}
+                onEdit={openEditSheet}
+              />
+            )}
+
             {activeVisible.length === 0 && completedVisible.length > 0 && (
-              <div className="chamfer-sm mt-6 flex items-center gap-3 border border-[var(--line-mid)] bg-[var(--surface-1)] px-3.5 py-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center border border-[var(--accent-line)] bg-[var(--accent-soft)] text-[var(--accent)]">
-                  <CheckCheck size={16} strokeWidth={2.2} />
-                </span>
-                <div>
-                  <p className="font-mono text-[12.5px] uppercase tracking-[0.12em] text-[var(--accent-ink)]">
-                    [ ALL CLEAR ]
-                  </p>
-                  <p className="mt-1 font-mono text-[12px] text-[var(--muted)]">
-                    这组待办都完成啦，可以安心歇一会儿
-                  </p>
+              <div className="fade-enter mt-10 flex flex-col items-center text-center">
+                <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+                  <CheckCheck size={22} strokeWidth={1.8} />
                 </div>
+                <p className="mt-3 text-[15px] font-medium text-[var(--text)]">
+                  {m.app.allDone}
+                </p>
+                <p className="mt-1 text-[13px] text-[var(--text-3)]">
+                  {m.app.allDoneHint}
+                </p>
               </div>
             )}
 
-            {deadlineTodos.length > 0 && (
-              <section aria-labelledby="deadline-group">
-                <SectionHeader
-                  id="deadline-group"
-                  index="01"
-                  title="有截止时间"
-                  count={deadlineTodos.length}
-                  hint="sort // asc"
-                />
-                <div className="space-y-2">
-                  {deadlineTodos.map((todo) => (
-                    <TodoCard
-                      key={todo.id}
-                      todo={todo}
-                      now={now}
-                      onToggle={toggleTodo}
-                      onDelete={deleteTodo}
-                      onEdit={openEditSheet}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {undatedTodos.length > 0 && (
-              <section aria-labelledby="undated-group">
-                <SectionHeader
-                  id="undated-group"
-                  index={deadlineTodos.length > 0 ? '02' : '01'}
-                  title="没有截止时间"
-                  count={undatedTodos.length}
-                  hint="sort // new"
-                />
-                <div className="space-y-2">
-                  {undatedTodos.map((todo) => (
-                    <TodoCard
-                      key={todo.id}
-                      todo={todo}
-                      now={now}
-                      onToggle={toggleTodo}
-                      onDelete={deleteTodo}
-                      onEdit={openEditSheet}
-                    />
-                  ))}
-                </div>
-              </section>
-            )}
-
             {completedVisible.length > 0 && (
-              <section className="mt-6" aria-labelledby="completed-group">
+              <section className="mt-8">
                 <button
                   type="button"
                   onClick={() => setCompletedOpen((value) => !value)}
                   aria-expanded={completedOpen}
                   aria-controls="completed-list"
-                  className="chamfer-sm flex w-full items-center gap-2.5 border border-[var(--line-soft)] bg-[var(--surface-2)] px-3.5 py-3 text-left transition-colors hover:border-[var(--line-strong)] hover:bg-[var(--accent-surface)]"
+                  className="flex w-full items-center justify-between rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5 shadow-[var(--shadow-card)] transition-colors hover:bg-[var(--surface-sunken)]"
                 >
-                  <span className="grid h-7 w-7 place-items-center border border-[var(--accent-line)] bg-[var(--accent-soft)] text-[var(--muted)]">
-                    <CheckCheck size={13} strokeWidth={2.2} />
-                  </span>
-                  <span
-                    id="completed-group"
-                    className="font-mono text-[12.5px] uppercase tracking-[0.13em] text-[var(--ink-soft)]"
-                  >
-                    已完成
-                  </span>
-                  <span className="font-mono text-[11px] tabular-nums text-[var(--faint)]">
-                    [{completedVisible.length}]
-                  </span>
-                  <span className="ml-auto font-mono text-[11px] text-[var(--faint)]">
-                    {completedOpen ? '收起' : '展开'}
+                  <span className="flex items-center gap-2 text-[14px] font-medium text-[var(--text-2)]">
+                    <CheckCheck size={16} strokeWidth={1.9} />
+                    {m.app.completed}
+                    <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-3)]">
+                      {completedVisible.length}
+                    </span>
                   </span>
                   <ChevronDown
-                    size={14}
-                    strokeWidth={1.8}
-                    className={`text-[var(--faint)] transition-transform duration-200 ${
+                    size={16}
+                    strokeWidth={1.9}
+                    className={`text-[var(--text-3)] transition-transform duration-200 ${
                       completedOpen ? 'rotate-180' : ''
                     }`}
                   />
@@ -543,11 +1174,15 @@ export default function App() {
 
                 <div
                   id="completed-list"
-                  className="mt-2 space-y-2 overflow-hidden"
+                  className={
+                    completedOpen
+                      ? 'fade-enter mt-2 overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]'
+                      : 'hidden'
+                  }
                 >
-                  {completedOpen &&
-                    completedVisible.map((todo) => (
-                      <TodoCard
+                  <ul>
+                    {completedVisible.map((todo) => (
+                      <TodoRow
                         key={todo.id}
                         todo={todo}
                         now={now}
@@ -556,71 +1191,214 @@ export default function App() {
                         onEdit={openEditSheet}
                       />
                     ))}
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => setClearOpen(true)}
+                    className="flex h-11 w-full items-center justify-center gap-1.5 border-t border-[var(--line)] text-[13px] font-medium text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)]"
+                  >
+                    <Trash2 size={14} strokeWidth={1.9} />
+                    {m.app.clearCompleted}
+                  </button>
                 </div>
               </section>
             )}
-
-            <div className="mt-7 flex items-center justify-center gap-2.5 font-mono text-[13px] tracking-[0.08em] text-[var(--muted)]">
-              <span className="h-px w-5 bg-[var(--accent-line)]" />
-              勾选完成 · 轻点编辑 · 左滑删除
-              <span className="h-px w-5 bg-[var(--accent-line)]" />
-            </div>
           </>
+            )}
+          </main>
         )}
-      </main>
 
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30">
-        <div className="relative mx-auto h-[126px] max-w-[560px]">
-          <div className="absolute inset-x-0 bottom-0 h-[112px] bg-gradient-to-t from-[var(--canvas-base)] via-[var(--canvas-base)]/90 to-transparent" />
-          <button
-            type="button"
-            aria-label="添加待办"
-            onClick={openAddSheet}
-            className="fab-shadow pointer-events-auto absolute bottom-[max(1.25rem,calc(env(safe-area-inset-bottom)+0.9rem))] right-5 grid h-[58px] w-[58px] place-items-center rounded-[4px] border border-[var(--accent-strong)] bg-[var(--accent-surface)] text-[var(--accent)] transition-all duration-200 active:scale-95 hover:bg-[var(--accent-surface-hover)] sm:bottom-12"
-          >
-            <Plus size={24} strokeWidth={1.8} />
-            <span className="absolute right-2 top-2 h-1 w-1 bg-[#ff4fd8] shadow-[0_0_6px_rgba(255,79,216,0.9)]" />
-            <span className="absolute bottom-2 left-1/2 -translate-x-1/2 font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--accent-dim)]">
-              new
-            </span>
-          </button>
-        </div>
+        {showHabitsList && (
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+150px)] pt-1 lg:pb-32">
+            <HabitsView
+              habits={habits}
+              checkins={habitCheckins}
+              todayKey={todayKey}
+              onOpen={openHabit}
+              onToggleToday={(habit) =>
+                toggleHabitDate(habit, todayKey)
+              }
+              onAdd={() => openHabitSheet()}
+            />
+          </main>
+        )}
+
+        {route.name === 'habit' && activeHabit && (
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-16">
+            <HabitDetail
+              key={activeHabit.id}
+              habit={activeHabit}
+              dates={getHabitDates(habitCheckins, activeHabit.id)}
+              todayKey={todayKey}
+              onDelete={() => setHabitToDelete(activeHabit)}
+              onToggle={(dateKey) =>
+                toggleHabitDate(activeHabit, dateKey)
+              }
+            />
+          </main>
+        )}
+
+        {route.name === 'money' && (
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+150px)] pt-1 lg:pb-32">
+            <MoneyView
+              expenses={expenses}
+              customCategories={customCategories}
+              todayKey={todayKey}
+              tab={route.tab}
+              onTabChange={navigateMoney}
+              onAdd={() => openExpenseSheet()}
+              onEdit={openExpenseSheet}
+              onDelete={deleteExpense}
+            />
+          </main>
+        )}
+
+        {route.name === 'settings' && (
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-6 lg:pb-16">
+            <SettingsView
+              appearanceMode={appearanceMode}
+              onAppearanceModeChange={setAppearanceMode}
+              taskCount={todos.length}
+              habitCount={habits.length}
+              expenseCount={expenses.length}
+            />
+          </main>
+        )}
       </div>
+
+      {((route.name === 'tasks' && visibleTotal > 0) ||
+        (showHabitsList && habits.length > 0)) && (
+        <div className="pointer-events-none fixed inset-0 z-30">
+          <div className="mx-auto flex h-full w-full max-w-[1040px] px-5 sm:px-6 lg:px-8">
+            <div
+              aria-hidden="true"
+              className="hidden lg:mr-12 lg:block lg:w-[220px] lg:shrink-0"
+            />
+            <div className="relative min-w-0 flex-1 lg:max-w-[720px]">
+              <button
+                type="button"
+                aria-label={
+                  showHabitsList
+                    ? m.habits.addHabit
+                    : m.app.addTask
+                }
+                onClick={
+                  showHabitsList
+                    ? () => openHabitSheet()
+                    : openAddSheet
+                }
+                className="pointer-events-auto absolute bottom-[calc(env(safe-area-inset-bottom)+72px)] right-0 grid h-14 w-14 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] shadow-[var(--shadow-fab)] transition-all active:scale-95 hover:bg-[var(--accent-hover)] lg:bottom-6"
+              >
+                <Plus size={24} strokeWidth={2.1} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)] lg:hidden"
+        aria-label={m.nav.label}
+      >
+        <div className="mx-auto grid max-w-[500px] grid-cols-4">
+          <BottomNavItem
+            icon={<ListTodo size={19} strokeWidth={1.9} />}
+            label={m.nav.tasks}
+            active={route.name === 'tasks'}
+            onClick={() => navigate('tasks')}
+          />
+          <BottomNavItem
+            icon={<Repeat size={19} strokeWidth={1.9} />}
+            label={m.nav.habits}
+            active={
+              route.name === 'habits' || route.name === 'habit'
+            }
+            onClick={() => navigate('habits')}
+          />
+          <BottomNavItem
+            icon={<Wallet size={19} strokeWidth={1.9} />}
+            label={m.nav.money}
+            active={route.name === 'money'}
+            onClick={() => navigate('money')}
+          />
+          <BottomNavItem
+            icon={<SettingsIcon size={19} strokeWidth={1.9} />}
+            label={m.nav.settings}
+            active={route.name === 'settings'}
+            onClick={() => navigate('settings')}
+          />
+        </div>
+      </nav>
 
       {sheetOpen && (
         <AddTodoSheet
           initialTodo={editingTodo ?? undefined}
+          availableTags={allTags}
           onClose={closeSheet}
           onSave={handleSave}
         />
       )}
 
-      {clearOpen && (
-        <ConfirmDialog
-          title="清空已完成？"
-          description={
-            <>
-              <p>
-                这 {completedAllCount} 条已完成的待办会被移除
-              </p>
-              <p className="mt-1">清空后不能找回，确定吗？</p>
-            </>
-          }
-          cancelLabel="再想想"
-          confirmLabel="清空"
-          onClose={() => setClearOpen(false)}
-          onConfirm={handleClearCompleted}
+      {habitSheetOpen && (
+        <HabitSheet
+          initialHabit={editingHabit ?? undefined}
+          onClose={closeHabitSheet}
+          onSave={handleSaveHabit}
         />
       )}
 
-      {themeOpen && (
-        <ThemeSheet
-          current={theme}
-          onClose={() => setThemeOpen(false)}
-          onSelect={(nextTheme) => {
-            setTheme(nextTheme)
-            setThemeOpen(false)
-          }}
+      {habitToDelete && (
+        <ConfirmDialog
+          title={m.habits.deleteTitle}
+          description={m.habits.deleteDescription(
+            habitToDelete.name,
+          )}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.habits.deleteConfirm}
+          onClose={() => setHabitToDelete(null)}
+          onConfirm={handleDeleteHabit}
+        />
+      )}
+
+      {expenseSheetOpen && (
+        <ExpenseSheet
+          initialExpense={editingExpense ?? undefined}
+          customCategories={customCategories}
+          recentCategoryIds={recentCategoryIds}
+          todayKey={todayKey}
+          onClose={closeExpenseSheet}
+          onSave={handleSaveExpense}
+          onAddCustom={handleAddCustomCategory}
+          onRequestDeleteCategory={requestDeleteCategory}
+        />
+      )}
+
+      {categoryToDelete && (
+        <ConfirmDialog
+          title={m.money.deleteCategoryTitle}
+          description={
+            categoryExpenseCount > 0
+              ? m.money.deleteCategoryUsed(
+                  categoryToDelete.name,
+                  categoryExpenseCount,
+                )
+              : m.money.deleteCategoryUnused(categoryToDelete.name)
+          }
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.money.deleteCategory}
+          onClose={() => setCategoryToDelete(null)}
+          onConfirm={handleDeleteCategory}
+        />
+      )}
+
+      {clearOpen && (
+        <ConfirmDialog
+          title={m.app.clearTitle}
+          description={m.app.clearDescription(completedAllCount)}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.app.clearConfirm}
+          onClose={() => setClearOpen(false)}
+          onConfirm={handleClearCompleted}
         />
       )}
 

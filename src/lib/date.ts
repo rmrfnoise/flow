@@ -1,73 +1,150 @@
+import { getMessages, type Locale } from '../i18n/messages'
 import type { DueStatus } from '../types'
 
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
 
-const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-const WEEKDAY_SHORT = ['日', '一', '二', '三', '四', '五', '六']
-const WEEKDAYS_LONG = [
-  '星期日',
-  '星期一',
-  '星期二',
-  '星期三',
-  '星期四',
-  '星期五',
-  '星期六',
-]
+export type DueBucket = 'overdue' | 'today' | 'tomorrow' | 'later' | 'none'
 
-function pad(value: number) {
-  return String(value).padStart(2, '0')
+const formatterCache = new Map<string, Intl.DateTimeFormat>()
+
+function dtf(locale: Locale, options: Intl.DateTimeFormatOptions) {
+  const tag = locale === 'zh' ? 'zh-CN' : 'en-US'
+  const key = `${tag}|${JSON.stringify(options)}`
+  let formatter = formatterCache.get(key)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(tag, options)
+    formatterCache.set(key, formatter)
+  }
+  return formatter
 }
 
 function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
 }
 
-export function formatHeaderDate(date = new Date()) {
-  return {
-    date: `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())}`,
-    weekdayShort: WEEKDAY_SHORT[date.getDay()],
+function addDays(date: Date, days: number) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
+}
+
+export function formatHeaderDate(date = new Date(), locale: Locale = 'en') {
+  if (locale === 'zh') {
+    const monthDay = dtf('zh', {
+      month: 'long',
+      day: 'numeric',
+    }).format(date)
+    const weekday = dtf('zh', { weekday: 'short' }).format(date)
+    return `${monthDay} ${weekday}`
   }
+
+  return dtf('en', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(date)
 }
 
-function formatTime(timestamp: number) {
-  const date = new Date(timestamp)
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`
+export function getActiveDueBucket(
+  dueAt: number | null,
+  hasTime: boolean,
+  now = Date.now(),
+): DueBucket {
+  if (dueAt === null) return 'none'
+
+  const dueDay = startOfDay(new Date(dueAt))
+  const today = startOfDay(new Date(now))
+  const tomorrow = startOfDay(addDays(new Date(now), 1))
+
+  if (hasTime && dueAt < now) return 'overdue'
+  if (dueDay < today) return 'overdue'
+  if (dueDay === today) return 'today'
+  if (dueDay === tomorrow) return 'tomorrow'
+  return 'later'
 }
 
-function dayLabel(timestamp: number, now: number) {
+function formatTime(timestamp: number, locale: Locale) {
+  return dtf(locale, {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: locale === 'en',
+  }).format(new Date(timestamp))
+}
+
+function dayLabel(timestamp: number, now: number, locale: Locale) {
   const date = new Date(timestamp)
   const today = new Date(now)
   const dayDelta = Math.round((startOfDay(date) - startOfDay(today)) / DAY)
+  const m = getMessages(locale)
 
-  if (dayDelta === 0) return '今天'
-  if (dayDelta === 1) return '明天'
-  if (dayDelta === -1) return '昨天'
-  if (dayDelta === 2) return '后天'
+  if (dayDelta === 0) return m.date.today
+  if (dayDelta === 1) return m.date.tomorrow
+  if (dayDelta === -1) return m.date.yesterday
+  if (dayDelta === 2) return m.date.dayAfterTomorrow
 
   if (date.getFullYear() === today.getFullYear()) {
-    return `${date.getMonth() + 1}月${date.getDate()}日 ${WEEKDAYS[date.getDay()]}`
+    if (locale === 'zh') {
+      const monthDay = dtf('zh', {
+        month: 'long',
+        day: 'numeric',
+      }).format(date)
+      const weekday = dtf('zh', { weekday: 'short' }).format(date)
+      return `${monthDay} ${weekday}`
+    }
+
+    const monthDay = dtf('en', {
+      month: 'short',
+      day: 'numeric',
+    }).format(date)
+    const weekday = dtf('en', { weekday: 'short' }).format(date)
+    return `${monthDay}, ${weekday}`
   }
 
-  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+  if (locale === 'zh') {
+    return dtf('zh', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date)
+  }
+
+  return dtf('en', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(date)
 }
 
 export function formatDueDate(
   timestamp: number,
   hasTime: boolean,
   now = Date.now(),
+  locale: Locale = 'en',
 ) {
-  const label = dayLabel(timestamp, now)
-  return hasTime ? `${label} ${formatTime(timestamp)}` : `${label} · 全天`
+  const label = dayLabel(timestamp, now, locale)
+  if (!hasTime) return label
+  return `${label} ${formatTime(timestamp, locale)}`
 }
 
-export function formatDeadlineLong(timestamp: number, hasTime: boolean) {
+export function formatDeadlineLong(
+  timestamp: number,
+  hasTime: boolean,
+  locale: Locale = 'en',
+) {
   const date = new Date(timestamp)
-  const dateText = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${WEEKDAYS_LONG[date.getDay()]}`
-  return hasTime
-    ? `${dateText} ${formatTime(timestamp)}`
-    : `${dateText}（全天，当天 23:59 截止）`
+  const dateText = dtf(locale, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(date)
+  const m = getMessages(locale)
+
+  if (!hasTime) {
+    return dateText
+  }
+
+  return m.date.deadlineTimed(dateText, formatTime(timestamp, locale))
 }
 
 export function getDueStatus(
@@ -91,37 +168,42 @@ export function getDueStatus(
   return 'normal'
 }
 
-function durationText(ms: number) {
-  if (ms < MINUTE) return '不到 1 分钟'
-  if (ms < HOUR) return `${Math.max(1, Math.ceil(ms / MINUTE))} 分钟`
-  if (ms < DAY) return `${Math.max(1, Math.floor(ms / HOUR))} 小时`
-  if (ms < 30 * DAY) return `${Math.max(1, Math.floor(ms / DAY))} 天`
-  if (ms < 365 * DAY) return `${Math.max(1, Math.floor(ms / (30 * DAY)))} 个月`
-  return `${Math.max(1, Math.floor(ms / (365 * DAY)))} 年`
+function durationText(ms: number, locale: Locale) {
+  const units = getMessages(locale).units
+
+  if (ms < MINUTE) return units.lessThanMinute
+  if (ms < HOUR) return units.minutes(Math.max(1, Math.ceil(ms / MINUTE)))
+  if (ms < DAY) return units.hours(Math.max(1, Math.floor(ms / HOUR)))
+  if (ms < 30 * DAY) return units.days(Math.max(1, Math.floor(ms / DAY)))
+  if (ms < 365 * DAY) {
+    return units.months(Math.max(1, Math.floor(ms / (30 * DAY))))
+  }
+  return units.years(Math.max(1, Math.floor(ms / (365 * DAY))))
 }
 
 export function formatCountdown(
   timestamp: number,
   hasTime: boolean,
   now = Date.now(),
+  locale: Locale = 'en',
 ) {
+  const m = getMessages(locale)
+
   if (hasTime) {
     if (timestamp <= now) {
-      return `已超时 ${durationText(now - timestamp)}`
+      return m.date.overdueDuration(durationText(now - timestamp, locale))
     }
-    return `还有 ${durationText(timestamp - now)}`
+    return m.date.inDuration(durationText(timestamp - now, locale))
   }
 
   const dueDay = startOfDay(new Date(timestamp))
   const today = startOfDay(new Date(now))
   const dayDelta = Math.round((dueDay - today) / DAY)
 
-  if (dayDelta < 0) {
-    return `已超时 ${Math.abs(dayDelta)} 天`
-  }
-  if (dayDelta === 0) return '今天截止'
-  if (dayDelta === 1) return '明天截止'
-  return `还有 ${dayDelta} 天`
+  if (dayDelta < 0) return m.date.overdueDays(Math.abs(dayDelta))
+  if (dayDelta === 0) return m.date.dueToday
+  if (dayDelta === 1) return m.date.dueTomorrow
+  return m.date.inDays(dayDelta)
 }
 
 export function dateStringToEndOfDay(value: string) {
@@ -165,5 +247,21 @@ export function fromDateTimeLocal(value: string) {
 export function timestampToDateInput(timestamp: number | null) {
   if (timestamp === null) return ''
   const date = new Date(timestamp)
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+export function toDateInputValue(date = new Date()) {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+export function toTimeInputValue(timestamp: number | null) {
+  if (timestamp === null) return '09:00'
+  const date = new Date(timestamp)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(
+    date.getMinutes(),
+  ).padStart(2, '0')}`
 }
