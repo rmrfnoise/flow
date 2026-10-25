@@ -135,7 +135,7 @@ export default function SettingsView({
                 type="button"
                 aria-pressed={active}
                 onClick={() => onAppearanceModeChange(mode)}
-                className={`flex h-10 items-center justify-center gap-1.5 rounded-[8px] text-[11px] font-medium transition-colors ${
+                className={`flex h-10 items-center justify-center gap-1.5 rounded-[8px] text-[13px] font-medium transition-colors ${
                   active
                     ? 'bg-[var(--segment-active)] text-[var(--text)]'
                     : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -177,7 +177,7 @@ export default function SettingsView({
                 }`}
               >
                 <span className="text-[13px] text-[var(--text)]">
-                  {code === 'en' ? 'English' : '简体中文'}
+                  {code === 'en' ? 'English' : 'Simplified Chinese'}
                 </span>
                 {active && (
                   <Check
@@ -212,25 +212,25 @@ export default function SettingsView({
           <button
             type="button"
             onClick={handleExport}
-            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[13px] text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
+            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[12px] text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
           >
-            <Download size={15} strokeWidth={1.9} className="text-[var(--text-3)]" />
+            <Download size={14} strokeWidth={1.9} className="text-[var(--text-3)]" />
             {m.settings.exportBackup}
           </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[13px] text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
+            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[12px] text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
           >
-            <Upload size={15} strokeWidth={1.9} className="text-[var(--text-3)]" />
+            <Upload size={14} strokeWidth={1.9} className="text-[var(--text-3)]" />
             {m.settings.importBackup}
           </button>
           <button
             type="button"
             onClick={() => setClearOpen(true)}
-            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[13px] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)]"
+            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[12px] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)]"
           >
-            <Trash2 size={15} strokeWidth={1.9} />
+            <Trash2 size={14} strokeWidth={1.9} />
             {m.settings.clearData}
           </button>
         </div>
