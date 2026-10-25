@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
 import {
   Check,
   ChevronRight,
@@ -34,45 +33,6 @@ export default function HabitsView({
   onAdd,
 }: HabitsViewProps) {
   const { locale, m } = useI18n()
-  const [celebration, setCelebration] = useState<{
-    habitId: string
-    emoji: string
-    animation: string
-    key: number
-  } | null>(null)
-  const celebrationTimer = useRef<number | null>(null)
-
-  useEffect(
-    () => () => {
-      if (celebrationTimer.current !== null) {
-        window.clearTimeout(celebrationTimer.current)
-      }
-    },
-    [],
-  )
-
-  function markToday(habit: Habit, checked: boolean) {
-    if (checked) {
-      onToggleToday(habit)
-      return
-    }
-
-    const icon = getHabitIconOption(habit.checkInIcon)
-    const key = Date.now()
-    setCelebration({
-      habitId: habit.id,
-      emoji: icon.emoji,
-      animation: icon.animation,
-      key,
-    })
-    if (celebrationTimer.current !== null) {
-      window.clearTimeout(celebrationTimer.current)
-    }
-    celebrationTimer.current = window.setTimeout(() => {
-      setCelebration((current) => (current?.key === key ? null : current))
-    }, 900)
-    onToggleToday(habit)
-  }
 
   if (habits.length === 0) {
     return (
@@ -137,19 +97,6 @@ export default function HabitsView({
               }}
               className="relative flex cursor-pointer items-start gap-3 bg-[var(--surface)] px-4 py-3.5 transition-colors hover:bg-[var(--surface-sunken)]"
             >
-              {celebration?.habitId === habit.id && (
-                <span
-                  aria-hidden="true"
-                  className="habit-celebration pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2"
-                >
-                  <span
-                    key={celebration.key}
-                    className={`habit-anim-${celebration.animation} block text-[20px] leading-none`}
-                  >
-                    {celebration.emoji}
-                  </span>
-                </span>
-              )}
               <button
                 type="button"
                 disabled={!canToggle}
@@ -165,9 +112,7 @@ export default function HabitsView({
                 }
                 onClick={(event) => {
                   event.stopPropagation()
-                  if (canToggle) {
-                    markToday(habit, state === 'checked')
-                  }
+                  if (canToggle) onToggleToday(habit)
                 }}
                 className={`mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full border-[1.5px] transition-all duration-150 ${
                   state === 'checked'

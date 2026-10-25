@@ -52,8 +52,10 @@ export default function HabitSheet({
   const [checkInIcon, setCheckInIcon] = useState<HabitIcon>(
     initialHabit?.checkInIcon ?? DEFAULT_HABIT_ICON,
   )
-  const [iconNonce, setIconNonce] = useState(0)
   const [error, setError] = useState('')
+  const selectedIcon =
+    HABIT_ICON_OPTIONS.find((option) => option.id === checkInIcon) ??
+    HABIT_ICON_OPTIONS[0]
 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const trapRef = useFocusTrap<HTMLElement>()
@@ -260,13 +262,18 @@ export default function HabitSheet({
           )}
 
           <div className="mt-6">
-            <span className="block text-[12px] font-medium text-[var(--text-2)]">
-              {m.habits.checkInIcon}
-            </span>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-[12px] font-medium text-[var(--text-2)]">
+                {m.habits.checkInIcon}
+              </span>
+              <span className="truncate text-[11px] text-[var(--text-3)]">
+                {selectedIcon.emoji} {m.habits.icons[selectedIcon.id]}
+              </span>
+            </div>
             <p className="mt-0.5 text-[11.5px] leading-relaxed text-[var(--text-3)]">
               {m.habits.checkInIconHint}
             </p>
-            <div className="mt-2 grid grid-cols-5 gap-1.5">
+            <div className="mt-2 grid grid-cols-6 gap-1.5">
               {HABIT_ICON_OPTIONS.map((option) => {
                 const active = checkInIcon === option.id
                 return (
@@ -275,23 +282,14 @@ export default function HabitSheet({
                     type="button"
                     aria-label={m.habits.icons[option.id]}
                     aria-pressed={active}
-                    onClick={() => {
-                      setCheckInIcon(option.id)
-                      setIconNonce((current) => current + 1)
-                    }}
-                    className={`relative grid h-11 place-items-center rounded-[10px] border transition-all active:scale-[0.94] ${
+                    onClick={() => setCheckInIcon(option.id)}
+                    className={`grid h-10 place-items-center rounded-[9px] border transition-colors ${
                       active
                         ? 'border-[var(--accent)] bg-[var(--accent-soft)]'
                         : 'border-[var(--line)] bg-[var(--surface-sunken)] hover:border-[var(--line-strong)]'
                     }`}
                   >
-                    <span
-                      key={active ? `${option.id}-${iconNonce}` : option.id}
-                      aria-hidden="true"
-                      className={`text-[21px] leading-none ${
-                        active ? `habit-anim-${option.animation}` : ''
-                      }`}
-                    >
+                    <span aria-hidden="true" className="text-[20px] leading-none">
                       {option.emoji}
                     </span>
                   </button>

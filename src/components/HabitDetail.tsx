@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -7,7 +7,6 @@ import {
 import HabitMonthGrid from './HabitMonthGrid'
 import HabitWeekGrid from './HabitWeekGrid'
 import { useI18n } from '../i18n/I18nProvider'
-import { getHabitIconOption } from '../lib/habitIcons'
 import {
   addDaysKey,
   countChecked,
@@ -18,7 +17,6 @@ import {
   formatMonthDay,
   formatMonthLabel,
   formatWeekRange,
-  getHabitDayState,
   shiftMonthKey,
   startOfMonthKey,
   startOfWeekKey,
@@ -48,38 +46,6 @@ export default function HabitDetail({
     startOfWeekKey(todayKey),
   )
   const [monthKey, setMonthKey] = useState(() => todayKey.slice(0, 7))
-  const [celebration, setCelebration] = useState<{
-    key: number
-    emoji: string
-    animation: string
-  } | null>(null)
-  const celebrationTimer = useRef<number | null>(null)
-  const icon = getHabitIconOption(habit.checkInIcon)
-
-  useEffect(
-    () => () => {
-      if (celebrationTimer.current !== null) {
-        window.clearTimeout(celebrationTimer.current)
-      }
-    },
-    [],
-  )
-
-  function toggleDate(dateKey: string) {
-    const wasChecked = dates.includes(dateKey)
-    const state = getHabitDayState(habit, dateKey, wasChecked, todayKey)
-    onToggle(dateKey)
-    if (state !== 'available') return
-
-    const key = Date.now()
-    setCelebration({ key, emoji: icon.emoji, animation: icon.animation })
-    if (celebrationTimer.current !== null) {
-      window.clearTimeout(celebrationTimer.current)
-    }
-    celebrationTimer.current = window.setTimeout(() => {
-      setCelebration((current) => (current?.key === key ? null : current))
-    }, 900)
-  }
 
   const todayWeekStart = startOfWeekKey(todayKey)
   const todayWeekEnd = endOfWeekKey(todayKey)
@@ -154,20 +120,7 @@ export default function HabitDetail({
   }
 
   return (
-    <div className="relative mt-5 flex flex-col">
-      {celebration && (
-        <span
-          aria-hidden="true"
-          className="habit-celebration pointer-events-none absolute right-5 top-2 z-10"
-        >
-          <span
-            key={celebration.key}
-            className={`habit-anim-${celebration.animation} block text-[26px] leading-none`}
-          >
-            {celebration.emoji}
-          </span>
-        </span>
-      )}
+    <div className="mt-5 flex flex-col">
       <div className="grid grid-cols-3 divide-x divide-[var(--line)] rounded-[16px] border border-[var(--line)] bg-[var(--surface)] py-3 shadow-[var(--shadow-card)]">
         <div className="px-2 text-center">
           <p className="text-[18px] font-semibold tabular-nums text-[var(--text)]">
@@ -261,7 +214,7 @@ export default function HabitDetail({
               dates={dates}
               todayKey={todayKey}
               weekStart={weekStart}
-              onToggle={toggleDate}
+              onToggle={onToggle}
             />
           ) : (
             <HabitMonthGrid
@@ -269,7 +222,7 @@ export default function HabitDetail({
               dates={dates}
               todayKey={todayKey}
               monthKey={monthKey}
-              onToggle={toggleDate}
+              onToggle={onToggle}
             />
           )}
         </div>
