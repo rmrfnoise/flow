@@ -1,6 +1,8 @@
 import {
+  BALANCE_STORAGE_KEY,
   EXPENSES_STORAGE_KEY,
   CUSTOM_CATEGORIES_STORAGE_KEY,
+  isBalanceState,
   isCustomCategoryArray,
   isExpenseArray,
 } from './expenses'
@@ -14,7 +16,7 @@ import { TODOS_STORAGE_KEY, isTodoArray } from './todos'
 import { LOCALE_STORAGE_KEY } from '../i18n/messages'
 import { APPEARANCE_STORAGE_KEY } from '../hooks/useAppearance'
 
-export const BACKUP_VERSION = 2
+export const BACKUP_VERSION = 3
 export const BACKUP_MAX_BYTES = 5 * 1024 * 1024
 
 const DATA_KEYS = [
@@ -23,6 +25,7 @@ const DATA_KEYS = [
   HABIT_CHECKINS_STORAGE_KEY,
   EXPENSES_STORAGE_KEY,
   CUSTOM_CATEGORIES_STORAGE_KEY,
+  BALANCE_STORAGE_KEY,
 ] as const
 
 const ALL_KEYS = [
@@ -195,6 +198,11 @@ export function parseBackup(text: string): BackupParseResult {
     return { ok: false, reason: 'invalid' }
   }
   if (categories) summary.categories = categories.length
+
+  const balance = decode(BALANCE_STORAGE_KEY)
+  if (balance !== undefined && !isBalanceState(balance)) {
+    return { ok: false, reason: 'invalid' }
+  }
 
   if (
     data[LOCALE_STORAGE_KEY] !== undefined &&

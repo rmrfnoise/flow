@@ -8,6 +8,7 @@ import { getCategoryIcon } from '../lib/categoryIcons'
 import {
   formatAmountInput,
   getCategoryView,
+  getEntryType,
   parseAmountInput,
   type CustomExpenseCategory,
   type Expense,
@@ -17,6 +18,7 @@ import CategoryPicker from './CategoryPicker'
 import DuePicker from './DuePicker'
 
 export interface ExpenseSaveInput {
+  type: 'expense' | 'income'
   categoryId: string
   content: string
   amountCents: number
@@ -30,7 +32,10 @@ interface ExpenseSheetProps {
   todayKey: string
   onClose: () => void
   onSave: (input: ExpenseSaveInput) => void
-  onAddCustom: (name: string) => string | null
+  onAddCustom: (
+    name: string,
+    type: 'expense' | 'income',
+  ) => string | null
   onRequestDeleteCategory: (category: CustomExpenseCategory) => void
 }
 
@@ -52,6 +57,13 @@ export default function ExpenseSheet({
   onRequestDeleteCategory,
 }: ExpenseSheetProps) {
   const { locale, m } = useI18n()
+  const [type, setType] = useState<'expense' | 'income'>(
+    initialExpense
+      ? getEntryType(initialExpense) === 'income'
+        ? 'income'
+        : 'expense'
+      : 'expense',
+  )
   const [amount, setAmount] = useState(
     initialExpense ? formatAmountInput(initialExpense.amountCents) : '',
   )
@@ -78,6 +90,18 @@ export default function ExpenseSheet({
   useBodyScrollLock()
   const keyboardInset = useKeyboardInset()
 
+  function selectType(next: 'expense' | 'income') {
+    setType(next)
+    if (selectedCategory && selectedCategory.type !== next) {
+      setCategoryId('')
+    }
+    setErrors((current) => ({
+      ...current,
+      category: undefined,
+      content: undefined,
+    }))
+  }
+
   function selectDate(nextDate: string) {
     setDate(nextDate)
     setErrors((current) => ({ ...current, date: undefined }))
@@ -89,7 +113,7 @@ export default function ExpenseSheet({
     const trimmedContent = content.trim()
 
     if (amountCents === null) nextErrors.amount = m.money.errors.amount
-    if (!selectedCategory) {
+    if (!selectedCategory || selectedCategory.type !== type) {
       nextErrors.category = m.money.errors.category
     }
     if (!trimmedContent) nextErrors.content = m.money.errors.content
@@ -101,12 +125,21 @@ export default function ExpenseSheet({
     }
 
     onSave({
+      type,
       categoryId,
       content: trimmedContent,
       amountCents,
       date,
     })
   }
+
+  const sheetTitle = initialExpense
+    ? type === 'income'
+      ? m.money.editIncome
+      : m.money.editExpense
+    : type === 'income'
+      ? m.money.newIncome
+      : m.money.newExpense
 
   return (
     <div
@@ -124,9 +157,7 @@ export default function ExpenseSheet({
         ref={trapRef}
         role="dialog"
         aria-modal="true"
-        aria-label={
-          initialExpense ? m.money.editExpense : m.money.newExpense
-        }
+        aria-label={sheetTitle}
         className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
@@ -134,11 +165,9 @@ export default function ExpenseSheet({
       >
         <div className="flex items-start justify-between px-5 pb-2 pt-3">
           <div>
-            <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--line-strong)] sm:hidden" />
+            <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--line-strong)]" />
             <h2 className="type-title font-semibold text-[var(--text)]">
-              {initialExpense
-                ? m.money.editExpense
-                : m.money.newExpense}
+              {sheetTitle}
             </h2>
           </div>
           <button
@@ -148,6 +177,33 @@ export default function ExpenseSheet({
             className="-mr-2 grid h-8 w-8 place-items-center rounded-full text-[var(--text-3)] transition-colors hover:bg-[var(--surface-sunken)] hover:text-[var(--text)]"
           >
             <X size={18} strokeWidth={1.9} />
+          </button>
+        </div>
+
+        <div className="mx-5 mb-1 grid grid-cols-2 gap-1 rounded-[10px] bg-[var(--surface-sunken)] p-1">
+          <button
+            type="button"
+            aria-pressed={type === 'expense'}
+            onClick={() => selectType('expense')}
+            className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+              type === 'expense'
+                ? 'bg-[var(--segment-active)] text-[var(--text)]'
+                : 'text-[var(--text-2)] hover:text-[var(--text)]'
+            }`}
+          >
+            {m.money.expenseType}
+          </button>
+          <button
+            type="button"
+            aria-pressed={type === 'income'}
+            onClick={() => selectType('income')}
+            className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+              type === 'income'
+                ? 'bg-[var(--segment-active)] text-[var(--text)]'
+                : 'text-[var(--text-2)] hover:text-[var(--text)]'
+            }`}
+          >
+            {m.money.income}
           </button>
         </div>
 
@@ -250,7 +306,11 @@ export default function ExpenseSheet({
                 content: undefined,
               }))
             }}
-            placeholder={m.money.contentPlaceholder}
+            placeholder={
+              type === 'income'
+                ? m.money.incomeNotePlaceholder
+                : m.money.expenseNotePlaceholder
+            }
             aria-invalid={Boolean(errors.content)}
             className={`mt-1.5 h-11 w-full rounded-[10px] border bg-[var(--surface-sunken)] px-3.5 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] ${
               errors.content
@@ -327,12 +387,17 @@ export default function ExpenseSheet({
             onClick={handleSave}
             className="mt-6 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
-            {initialExpense ? m.money.save : m.money.add}
+            {initialExpense
+              ? m.money.save
+              : type === 'income'
+                ? m.money.addIncomeAction
+                : m.money.add}
           </button>
         </div>
 
         {categoryOpen && (
           <CategoryPicker
+            type={type}
             customCategories={customCategories}
             recentCategoryIds={recentCategoryIds}
             selectedId={categoryId}
@@ -343,7 +408,7 @@ export default function ExpenseSheet({
                 category: undefined,
               }))
             }}
-            onAddCustom={onAddCustom}
+            onAddCustom={(name) => onAddCustom(name, type)}
             onRequestDelete={onRequestDeleteCategory}
             onClose={() => setCategoryOpen(false)}
           />

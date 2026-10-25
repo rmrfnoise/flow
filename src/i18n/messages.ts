@@ -221,6 +221,8 @@ export interface Messages {
     viewLabel: string
     records: string
     addExpense: string
+    addIncome: string
+    addEntry: string
     emptyTitle: string
     emptyBody: string
     addFirst: string
@@ -228,7 +230,24 @@ export interface Messages {
     todayLabel: string
     yesterdayLabel: string
     expenseCount: (count: number) => string
+    entryCount: (count: number) => string
     total: string
+    income: string
+    expenses: string
+    expenseType: string
+    net: string
+    netHint: string
+    balance: string
+    balanceHint: string
+    balanceOff: string
+    balanceOffHint: string
+    balanceNotSet: string
+    balanceNotSetHint: string
+    balanceSince: (date: string) => string
+    setBalance: string
+    calibrate: string
+    trackBalance: string
+    balanceActualHint: string
     entries: string
     dailyAverage: string
     trend: string
@@ -244,6 +263,10 @@ export interface Messages {
     next: string
     newExpense: string
     editExpense: string
+    newIncome: string
+    editIncome: string
+    incomeNotePlaceholder: string
+    expenseNotePlaceholder: string
     amount: string
     category: string
     chooseCategory: string
@@ -252,9 +275,14 @@ export interface Messages {
     date: string
     save: string
     add: string
+    addIncomeAction: string
     uncategorized: string
+    balanceAdjustment: string
+    balanceAdjustmentCategory: string
     toastDeleted: string
     toastCategoryDeleted: string
+    toastBalanceSet: string
+    toastBalanceAdjusted: string
     close: string
     closeBackdrop: string
     errors: {
@@ -263,6 +291,19 @@ export interface Messages {
       content: string
       date: string
     }
+    balanceSetupTitle: string
+    balanceSetupHint: string
+    balanceSetupNote: string
+    balanceCalibrateTitle: string
+    balanceCalibrateHint: string
+    balanceCalibrateNote: string
+    balanceCurrent: string
+    balanceActual: string
+    balanceInputPlaceholder: string
+    balanceInvalid: string
+    balanceSave: string
+    balanceAdjust: string
+    balanceAlreadyMatches: string
     categoriesTitle: string
     searchPlaceholder: string
     noResults: string
@@ -286,6 +327,7 @@ export interface Messages {
       | 'entertainment'
       | 'health'
       | 'social'
+      | 'income'
       | 'other'
       | 'custom',
       string
@@ -331,7 +373,7 @@ const en: Messages = {
     habitsTitle: 'flow · Habits',
     moneyTitle: 'flow · Money',
     description:
-      'A quiet, local-first home for tasks, habits, and spending. Organize with #tags, build routines, and track expenses — stored only on your device.',
+      'A quiet, local-first home for tasks, habits, and money. Organize with #tags, build routines, and track income, spending, and actual balance — stored only on your device.',
   },
   nav: {
     label: 'Main',
@@ -441,7 +483,7 @@ const en: Messages = {
       `${tasks} ${tasks === 1 ? 'task' : 'tasks'} · ${habits} ${
         habits === 1 ? 'habit' : 'habits'
       } · ${expenses} ${
-        expenses === 1 ? 'expense' : 'expenses'
+        expenses === 1 ? 'entry' : 'entries'
       }`,
     backup: 'Backup',
     backupHint: 'Download a copy, or restore one on another device.',
@@ -459,11 +501,11 @@ const en: Messages = {
     clearData: 'Erase all data',
     clearTitle: 'Erase all data?',
     clearDescription: (tasks, habits, expenses) =>
-      `This removes ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, and ${expenses} ${expenses === 1 ? 'expense' : 'expenses'}. This cannot be undone.`,
+      `This removes ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, and ${expenses} ${expenses === 1 ? 'entry' : 'entries'}. This cannot be undone.`,
     clearConfirm: 'Erase',
     importTitle: 'Restore this backup?',
     importDescription: (tasks, habits, expenses, categories) =>
-      `This replaces current data with ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, ${expenses} ${expenses === 1 ? 'expense' : 'expenses'}, and ${categories} custom ${categories === 1 ? 'category' : 'categories'}.`,
+      `This replaces current data with ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, ${expenses} ${expenses === 1 ? 'entry' : 'entries'}, and ${categories} custom ${categories === 1 ? 'category' : 'categories'}.`,
     importConfirm: 'Restore',
     importInvalid: 'This is not a valid flow backup.',
     importUnsupported: 'This backup was created by a newer version of flow.',
@@ -620,25 +662,47 @@ const en: Messages = {
   },
   money: {
     title: 'Money',
-    subtitle: 'A simple record of what you spend.',
+    subtitle: 'Income, spending, and what you actually have.',
     viewLabel: 'Money view',
     records: 'Records',
     addExpense: 'Add expense',
-    emptyTitle: 'No expenses yet',
-    emptyBody: 'Record what you spend — the reports will add up.',
-    addFirst: 'Add your first expense',
-    noExpensesPeriod: 'No spending this period',
+    addIncome: 'Add income',
+    addEntry: 'Add entry',
+    emptyTitle: 'No entries yet',
+    emptyBody: 'Record income and spending — the reports will add up.',
+    addFirst: 'Add your first entry',
+    noExpensesPeriod: 'No entries this period',
     todayLabel: 'Today',
     yesterdayLabel: 'Yesterday',
     expenseCount: (count) =>
       `${count} ${count === 1 ? 'expense' : 'expenses'}`,
+    entryCount: (count) =>
+      `${count} ${count === 1 ? 'entry' : 'entries'}`,
     total: 'Total',
+    income: 'Income',
+    expenses: 'Expenses',
+    expenseType: 'Expense',
+    net: 'Net',
+    netHint: 'Income minus expenses',
+    balance: 'Balance',
+    balanceHint: 'What you actually have',
+    balanceOff: 'Off',
+    balanceOffHint:
+      'Income, spending, and net stay available. No balance is shown.',
+    balanceNotSet: 'Not set',
+    balanceNotSetHint:
+      'Set how much you actually have to start tracking.',
+    balanceSince: (date) => `Tracking since ${date}`,
+    setBalance: 'Set balance',
+    calibrate: 'Calibrate',
+    trackBalance: 'Track actual balance',
+    balanceActualHint: 'Actual money, not income minus spending.',
     entries: 'Entries',
     dailyAverage: 'Daily average',
-    trend: 'Trend',
+    trend: 'Spending trend',
     trendHint: 'Tap a bar to see the amount',
     weekBucket: (index) => `W${index}`,
-    byCategory: 'By category',
+    byCategory: 'Spending by category',
     otherCategories: 'Other categories',
     week: 'Weekly',
     month: 'Monthly',
@@ -648,6 +712,10 @@ const en: Messages = {
     next: 'Next',
     newExpense: 'New expense',
     editExpense: 'Edit expense',
+    newIncome: 'New income',
+    editIncome: 'Edit income',
+    incomeNotePlaceholder: 'Where did it come from?',
+    expenseNotePlaceholder: 'What was this for?',
     amount: 'Amount',
     category: 'Category',
     chooseCategory: 'Choose a category',
@@ -656,18 +724,38 @@ const en: Messages = {
     date: 'Date',
     save: 'Save changes',
     add: 'Add expense',
+    addIncomeAction: 'Add income',
     uncategorized: 'Uncategorized',
-    toastDeleted: 'Expense deleted',
+    balanceAdjustment: 'Balance adjustment',
+    balanceAdjustmentCategory: 'Manual adjustment',
+    toastDeleted: 'Entry deleted',
     toastCategoryDeleted: 'Category deleted',
+    toastBalanceSet: 'Balance tracking started',
+    toastBalanceAdjusted: 'Balance adjusted',
     close: 'Close',
-    closeBackdrop: 'Close expense sheet',
+    closeBackdrop: 'Close money sheet',
     errors: {
       amount: 'Enter a valid amount.',
       category: 'Choose a category.',
       content: 'Add a note.',
       date: 'Pick a valid date.',
     },
-    categoriesTitle: 'Category',
+    balanceSetupTitle: 'Set current balance',
+    balanceSetupHint: 'How much do you actually have right now?',
+    balanceSetupNote:
+      'Tracking starts from this moment. Earlier entries stay in your history and are not recalculated.',
+    balanceCalibrateTitle: 'Calibrate balance',
+    balanceCalibrateHint: 'Enter what you actually have now.',
+    balanceCalibrateNote:
+      "We'll add a balance adjustment. Existing entries are not changed.",
+    balanceCurrent: 'Current balance',
+    balanceActual: 'Actual balance',
+    balanceInputPlaceholder: '0.00',
+    balanceInvalid: 'Enter a valid amount.',
+    balanceSave: 'Set balance',
+    balanceAdjust: 'Save adjustment',
+    balanceAlreadyMatches: 'Balance already matches',
+    categoriesTitle: 'Categories',
     searchPlaceholder: 'Search categories',
     noResults: 'No categories found',
     recent: 'Recent',
@@ -680,7 +768,7 @@ const en: Messages = {
     deleteCategoryUnused: (name) => `“${name}” will be removed.`,
     deleteCategoryUsed: (name, count) =>
       `“${name}” will be removed, and ${count} ${
-        count === 1 ? 'expense' : 'expenses'
+        count === 1 ? 'entry' : 'entries'
       } will move to Misc.`,
     groups: {
       food: 'Food',
@@ -693,6 +781,7 @@ const en: Messages = {
       entertainment: 'Entertainment',
       health: 'Health',
       social: 'Social',
+      income: 'Income',
       other: 'Other',
       custom: 'Custom',
     },
@@ -739,7 +828,7 @@ const zh: Messages = {
     habitsTitle: 'flow · 习惯',
     moneyTitle: 'flow · 记账',
     description:
-      '一个安静、本地优先的待办、习惯与记账工具：用 #标签 整理待办，按天养成习惯，记录每一笔支出，数据只留在本机。',
+      '一个安静、本地优先的待办、习惯与记账工具：用 #标签 整理待办，按天养成习惯，记录收入、支出和实际余额，数据只留在本机。',
   },
   nav: {
     label: '主导航',
@@ -844,7 +933,7 @@ const zh: Messages = {
     data: '数据',
     dataLocal: '数据只保存在本机',
     dataSummary: (tasks, habits, expenses) =>
-      `${tasks} 条待办 · ${habits} 个习惯 · ${expenses} 笔支出`,
+      `${tasks} 条待办 · ${habits} 个习惯 · ${expenses} 笔流水`,
     backup: '备份',
     backupHint: '导出 JSON 备份，或从另一台设备恢复。',
     backupReady: '备份已生成',
@@ -861,11 +950,11 @@ const zh: Messages = {
     clearData: '清空所有数据',
     clearTitle: '清空所有数据？',
     clearDescription: (tasks, habits, expenses) =>
-      `这会移除 ${tasks} 条待办、${habits} 个习惯和 ${expenses} 笔支出，且无法恢复。`,
+      `这会移除 ${tasks} 条待办、${habits} 个习惯和 ${expenses} 笔流水，且无法恢复。`,
     clearConfirm: '清空',
     importTitle: '恢复这个备份？',
     importDescription: (tasks, habits, expenses, categories) =>
-      `这会用 ${tasks} 条待办、${habits} 个习惯、${expenses} 笔支出和 ${categories} 个自定义分类替换当前数据。`,
+      `这会用 ${tasks} 条待办、${habits} 个习惯、${expenses} 笔流水和 ${categories} 个自定义分类替换当前数据。`,
     importConfirm: '恢复',
     importInvalid: '这不是有效的 flow 备份文件。',
     importUnsupported: '这个备份来自更新版本的 flow。',
@@ -1020,24 +1109,43 @@ const zh: Messages = {
   },
   money: {
     title: '记账',
-    subtitle: '把每一笔花销，记得简单一点。',
+    subtitle: '收入、支出，还有手里实际有多少钱。',
     viewLabel: '记账视图',
     records: '流水',
-    addExpense: '记一笔',
-    emptyTitle: '还没有支出',
-    emptyBody: '记下每一笔，周报月报会自动汇总。',
+    addExpense: '记一笔支出',
+    addIncome: '记一笔收入',
+    addEntry: '记一笔',
+    emptyTitle: '还没有流水',
+    emptyBody: '记下收入和支出，周报月报会自动汇总。',
     addFirst: '记第一笔',
-    noExpensesPeriod: '这个周期还没有支出',
+    noExpensesPeriod: '这个周期还没有流水',
     todayLabel: '今天',
     yesterdayLabel: '昨天',
-    expenseCount: (count) => `${count} 笔`,
+    expenseCount: (count) => `${count} 笔支出`,
+    entryCount: (count) => `${count} 笔`,
     total: '总计',
+    income: '收入',
+    expenses: '支出',
+    expenseType: '支出',
+    net: '结余',
+    netHint: '收入减支出',
+    balance: '余额',
+    balanceHint: '手里实际有多少钱',
+    balanceOff: '未开启',
+    balanceOffHint: '只统计收入、支出和结余，不显示余额。',
+    balanceNotSet: '未设置',
+    balanceNotSetHint: '输入现在实际有多少钱，才开始计算余额。',
+    balanceSince: (date) => `从 ${date} 开始计算`,
+    setBalance: '设置余额',
+    calibrate: '校准余额',
+    trackBalance: '记录实际余额',
+    balanceActualHint: '手里的实际金额，不是收入减支出。',
     entries: '笔数',
     dailyAverage: '日均',
-    trend: '趋势',
+    trend: '支出趋势',
     trendHint: '点击柱状图查看金额',
     weekBucket: (index) => `第${index}周`,
-    byCategory: '分类占比',
+    byCategory: '支出分类占比',
     otherCategories: '其他分类',
     week: '周报',
     month: '月报',
@@ -1045,8 +1153,12 @@ const zh: Messages = {
     thisMonth: '本月',
     previous: '上一个',
     next: '下一个',
-    newExpense: '记一笔',
+    newExpense: '记一笔支出',
     editExpense: '编辑支出',
+    newIncome: '记一笔收入',
+    editIncome: '编辑收入',
+    incomeNotePlaceholder: '这笔钱从哪里来？',
+    expenseNotePlaceholder: '花在什么地方？',
     amount: '金额',
     category: '分类',
     chooseCategory: '选择分类',
@@ -1054,10 +1166,15 @@ const zh: Messages = {
     contentPlaceholder: '花在什么地方？',
     date: '日期',
     save: '保存修改',
-    add: '记一笔',
+    add: '记一笔支出',
+    addIncomeAction: '记一笔收入',
     uncategorized: '未分类',
-    toastDeleted: '已删除这笔支出',
+    balanceAdjustment: '余额调整',
+    balanceAdjustmentCategory: '手动校准',
+    toastDeleted: '已删除这笔流水',
     toastCategoryDeleted: '已删除分类',
+    toastBalanceSet: '已开始记录余额',
+    toastBalanceAdjusted: '已校准余额',
     close: '关闭',
     closeBackdrop: '关闭记账面板',
     errors: {
@@ -1066,6 +1183,20 @@ const zh: Messages = {
       content: '写点内容。',
       date: '选一个有效日期。',
     },
+    balanceSetupTitle: '设置当前余额',
+    balanceSetupHint: '现在实际有多少钱？',
+    balanceSetupNote:
+      '从这一刻开始计算。之前的流水只保留在记录里，不参与余额计算，也不会被重算。',
+    balanceCalibrateTitle: '校准余额',
+    balanceCalibrateHint: '输入现在实际有多少钱。',
+    balanceCalibrateNote: '系统会补一笔余额调整，不会修改已有流水。',
+    balanceCurrent: '当前余额',
+    balanceActual: '实际余额',
+    balanceInputPlaceholder: '0.00',
+    balanceInvalid: '请输入有效金额。',
+    balanceSave: '设置余额',
+    balanceAdjust: '保存调整',
+    balanceAlreadyMatches: '余额已经一致',
     categoriesTitle: '分类',
     searchPlaceholder: '搜索分类',
     noResults: '没有找到分类',
@@ -1078,7 +1209,7 @@ const zh: Messages = {
     deleteCategoryTitle: '删除这个分类？',
     deleteCategoryUnused: (name) => `“${name}”会被删除。`,
     deleteCategoryUsed: (name, count) =>
-      `“${name}”会被删除，${count} 笔支出会移到“杂项”。`,
+      `“${name}”会被删除，${count} 笔流水会移到“杂项”。`,
     groups: {
       food: '餐饮',
       transport: '出行',
@@ -1090,6 +1221,7 @@ const zh: Messages = {
       entertainment: '娱乐',
       health: '健康',
       social: '人情',
+      income: '收入',
       other: '其他',
       custom: '自定义',
     },

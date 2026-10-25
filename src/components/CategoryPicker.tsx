@@ -15,6 +15,7 @@ import {
 } from '../lib/expenses'
 
 interface CategoryPickerProps {
+  type: 'expense' | 'income'
   customCategories: CustomExpenseCategory[]
   recentCategoryIds: string[]
   selectedId: string
@@ -25,6 +26,7 @@ interface CategoryPickerProps {
 }
 
 export default function CategoryPicker({
+  type,
   customCategories,
   recentCategoryIds,
   selectedId,
@@ -42,8 +44,8 @@ export default function CategoryPicker({
   const keyboardInset = useKeyboardInset()
 
   const categories = useMemo(
-    () => getCategoryViews(customCategories, locale),
-    [customCategories, locale],
+    () => getCategoryViews(customCategories, locale, type),
+    [customCategories, locale, type],
   )
 
   const filtered = useMemo(() => {

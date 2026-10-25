@@ -1,9 +1,12 @@
 import {
   Activity,
   AppWindow,
+  Award,
+  Banknote,
   BookOpen,
   Car,
   CarTaxiFront,
+  CircleDollarSign,
   ClipboardCheck,
   Cloud,
   Coffee,
@@ -19,11 +22,14 @@ import {
   HandCoins,
   HeartPulse,
   House,
+  Laptop,
   Plane,
   PawPrint,
   Pill,
   Receipt,
+  RotateCcw,
   Sandwich,
+  Scale,
   Server,
   Shapes,
   Shirt,
@@ -36,6 +42,7 @@ import {
   Stethoscope,
   Tag,
   TrainFront,
+  TrendingUp,
   Utensils,
   UtensilsCrossed,
   Webhook,
@@ -97,6 +104,16 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'other.misc': Shapes,
   'other.fees': Receipt,
   'other.pets': PawPrint,
+
+  'income.salary': Banknote,
+  'income.bonus': Award,
+  'income.freelance': Laptop,
+  'income.investment': TrendingUp,
+  'income.gift': Gift,
+  'income.refund': RotateCcw,
+  'income.other': CircleDollarSign,
+
+  'balance.adjustment': Scale,
 }
 
 const GROUP_ICONS: Record<ExpenseCategoryGroup, LucideIcon> = {
@@ -110,6 +127,7 @@ const GROUP_ICONS: Record<ExpenseCategoryGroup, LucideIcon> = {
   entertainment: Film,
   health: HeartPulse,
   social: Gift,
+  income: Banknote,
   other: Shapes,
   custom: Tag,
 }

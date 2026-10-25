@@ -7,7 +7,12 @@ import {
 import { Trash2 } from 'lucide-react'
 import { useI18n } from '../i18n/I18nProvider'
 import { getCategoryIcon } from '../lib/categoryIcons'
-import { formatMoney, type Expense } from '../lib/expenses'
+import {
+  BALANCE_ADJUSTMENT_CATEGORY_ID,
+  formatSignedMoney,
+  getEntryType,
+  type Expense,
+} from '../lib/expenses'
 
 const DELETE_WIDTH = 84
 
@@ -29,7 +34,20 @@ export default function ExpenseRow({
   onDelete,
 }: ExpenseRowProps) {
   const { locale, m } = useI18n()
-  const CategoryIcon = getCategoryIcon(expense.categoryId)
+  const entryType = getEntryType(expense)
+  const isAdjustment = entryType === 'adjustment'
+  const CategoryIcon = getCategoryIcon(
+    isAdjustment
+      ? BALANCE_ADJUSTMENT_CATEGORY_ID
+      : expense.categoryId,
+  )
+  const signedCents =
+    entryType === 'expense'
+      ? -expense.amountCents
+      : expense.amountCents
+  const displayContent = isAdjustment
+    ? m.money.balanceAdjustment
+    : expense.content
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
 
@@ -59,6 +77,7 @@ export default function ExpenseRow({
   }
 
   function handlePointerDown(event: PointerEvent<HTMLElement>) {
+    if (isAdjustment) return
     if (event.pointerType === 'mouse' && event.button !== 0) return
     suppressClickRef.current = false
     const target = event.target as HTMLElement
@@ -134,6 +153,7 @@ export default function ExpenseRow({
   }
 
   function handleClick() {
+    if (isAdjustment) return
     if (suppressClickRef.current) {
       suppressClickRef.current = false
       return
@@ -142,6 +162,7 @@ export default function ExpenseRow({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (isAdjustment) return
     if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault()
       onDelete(expense)
@@ -157,13 +178,13 @@ export default function ExpenseRow({
     <li className="relative overflow-hidden border-b border-[var(--line)] last:border-b-0">
       <div
         className={`absolute inset-y-0 right-0 flex w-[84px] items-stretch justify-end bg-[var(--danger)] ${
-          offset === 0 ? 'invisible' : ''
+          isAdjustment || offset === 0 ? 'invisible' : ''
         }`}
-        aria-hidden={offset === 0}
+        aria-hidden={isAdjustment || offset === 0}
       >
         <button
           type="button"
-          tabIndex={offset === 0 ? -1 : 0}
+          tabIndex={isAdjustment || offset === 0 ? -1 : 0}
           onClick={() => onDelete(expense)}
           aria-label={`${m.row.delete}: ${expense.content}`}
           className="flex w-full flex-col items-center justify-center gap-1 text-[var(--on-danger)] transition-opacity active:opacity-80"
@@ -175,8 +196,12 @@ export default function ExpenseRow({
 
       <article
         ref={elementRef}
-        tabIndex={0}
-        aria-label={`${m.money.editExpense}: ${expense.content}`}
+        tabIndex={isAdjustment ? -1 : 0}
+          aria-label={
+          isAdjustment
+            ? `${m.money.balanceAdjustment}: ${displayContent}`
+            : `${m.money.editExpense}: ${expense.content}`
+        }
         onClick={handleClick}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -191,23 +216,39 @@ export default function ExpenseRow({
             : 'width 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           touchAction: 'pan-y',
         }}
-        className={`relative flex cursor-pointer select-none items-center gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
-          dragging ? 'bg-[var(--surface-sunken)]' : ''
-        }`}
+        className={`relative flex select-none items-center gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors ${
+          isAdjustment
+            ? 'cursor-default'
+            : 'cursor-pointer hover:bg-[var(--surface-sunken)]'
+        } ${dragging ? 'bg-[var(--surface-sunken)]' : ''}`}
       >
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[var(--surface-sunken)] text-[var(--text-2)]">
+        <span
+          className={`grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[var(--surface-sunken)] ${
+            entryType === 'income'
+              ? 'text-[var(--accent)]'
+              : 'text-[var(--text-2)]'
+          }`}
+        >
           <CategoryIcon size={16} strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15.5px] leading-[1.4] text-[var(--text)]">
-            {expense.content}
+            {displayContent}
           </p>
           <p className="mt-0.5 truncate text-[11.5px] text-[var(--text-3)]">
             {categoryName}
           </p>
         </div>
-        <span className="shrink-0 text-[15px] font-semibold tabular-nums text-[var(--text)]">
-          {formatMoney(expense.amountCents, locale)}
+        <span
+          className={`shrink-0 text-[15px] font-semibold tabular-nums ${
+            entryType === 'income'
+              ? 'text-[var(--accent)]'
+              : entryType === 'adjustment'
+                ? 'text-[var(--text-2)]'
+                : 'text-[var(--text)]'
+          }`}
+        >
+          {formatSignedMoney(signedCents, locale)}
         </span>
       </article>
     </li>

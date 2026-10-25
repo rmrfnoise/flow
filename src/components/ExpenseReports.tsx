@@ -15,6 +15,7 @@ import {
   buildExpenseReport,
   formatExpensePeriod,
   formatMoney,
+  formatSignedMoney,
   type CustomExpenseCategory,
   type Expense,
 } from '../lib/expenses'
@@ -220,12 +221,30 @@ export default function ExpenseReports({
         <>
           <section className="mt-3 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
             <p className="text-[10.5px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
-              {m.money.total}
+              {m.money.net}
             </p>
             <p className="mt-1.5 text-[32px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)]">
-              {formatMoney(report.totalCents, locale)}
+              {formatSignedMoney(report.netCents, locale)}
             </p>
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[var(--line)] pt-4">
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[11px] text-[var(--text-3)]">
+                  {m.money.income}
+                </p>
+                <p className="mt-0.5 text-[15px] font-medium tabular-nums text-[var(--accent)]">
+                  {formatMoney(report.incomeCents, locale)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[var(--text-3)]">
+                  {m.money.expenses}
+                </p>
+                <p className="mt-0.5 text-[15px] font-medium tabular-nums text-[var(--text)]">
+                  {formatMoney(report.totalCents, locale)}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[var(--line)] pt-3">
               <div>
                 <p className="text-[11px] text-[var(--text-3)]">
                   {m.money.entries}

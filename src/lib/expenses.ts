@@ -20,9 +20,11 @@ export type ExpenseCategoryGroup =
   | 'entertainment'
   | 'health'
   | 'social'
+  | 'income'
   | 'other'
   | 'custom'
 
+export type EntryType = 'expense' | 'income' | 'adjustment'
 export type PresetCategoryGroup = Exclude<ExpenseCategoryGroup, 'custom'>
 
 export interface PresetCategory {
@@ -30,6 +32,7 @@ export interface PresetCategory {
   group: PresetCategoryGroup
   en: string
   zh: string
+  type?: 'expense' | 'income'
 }
 
 export interface ExpenseCategoryView {
@@ -37,10 +40,12 @@ export interface ExpenseCategoryView {
   group: ExpenseCategoryGroup
   name: string
   builtin: boolean
+  type: 'expense' | 'income'
 }
 
 export interface Expense {
   id: string
+  type?: EntryType
   categoryId: string
   content: string
   amountCents: number
@@ -49,16 +54,25 @@ export interface Expense {
   updatedAt: number
 }
 
+export interface BalanceState {
+  enabled: boolean
+  startCents: number | null
+  startAt: number | null
+}
+
 export interface CustomExpenseCategory {
   id: string
   name: string
   createdAt: number
+  type?: 'expense' | 'income'
 }
 
 export interface ExpenseDayGroup {
   date: string
   expenses: Expense[]
-  totalCents: number
+  incomeCents: number
+  expenseCents: number
+  netCents: number
 }
 
 export interface ExpenseCategoryTotal {
@@ -71,7 +85,11 @@ export interface ExpenseCategoryTotal {
 
 export interface ExpenseReport {
   totalCents: number
+  incomeCents: number
+  netCents: number
   count: number
+  incomeCount: number
+  expenseCount: number
   averageCents: number
   days: number
   daily: Array<{ date: string; totalCents: number }>
@@ -81,8 +99,17 @@ export interface ExpenseReport {
 export const EXPENSES_STORAGE_KEY = 'flow.expenses.v1'
 export const CUSTOM_CATEGORIES_STORAGE_KEY =
   'flow.customExpenseCategories.v1'
+export const BALANCE_STORAGE_KEY = 'flow.balance.v1'
 export const MAX_AMOUNT_CENTS = 999_999_999
 export const MISC_CATEGORY_ID = 'other.misc'
+export const INCOME_MISC_CATEGORY_ID = 'income.other'
+export const BALANCE_ADJUSTMENT_CATEGORY_ID = 'balance.adjustment'
+
+export const DEFAULT_BALANCE_STATE: BalanceState = {
+  enabled: false,
+  startCents: null,
+  startAt: null,
+}
 
 export const CATEGORY_GROUP_ORDER: ExpenseCategoryGroup[] = [
   'custom',
@@ -96,6 +123,7 @@ export const CATEGORY_GROUP_ORDER: ExpenseCategoryGroup[] = [
   'entertainment',
   'health',
   'social',
+  'income',
   'other',
 ]
 
@@ -181,6 +209,57 @@ export const PRESET_CATEGORIES: PresetCategory[] = [
   { id: 'other.fees', group: 'other', en: 'Fees', zh: '手续费' },
   { id: 'other.pets', group: 'other', en: 'Pets', zh: '宠物' },
   { id: 'other.donations', group: 'other', en: 'Donations', zh: '捐赠' },
+
+  // Income
+  {
+    id: 'income.salary',
+    group: 'income',
+    type: 'income',
+    en: 'Salary',
+    zh: '工资',
+  },
+  {
+    id: 'income.bonus',
+    group: 'income',
+    type: 'income',
+    en: 'Bonus',
+    zh: '奖金',
+  },
+  {
+    id: 'income.freelance',
+    group: 'income',
+    type: 'income',
+    en: 'Freelance',
+    zh: '自由职业',
+  },
+  {
+    id: 'income.investment',
+    group: 'income',
+    type: 'income',
+    en: 'Investments',
+    zh: '投资收益',
+  },
+  {
+    id: 'income.gift',
+    group: 'income',
+    type: 'income',
+    en: 'Gift',
+    zh: '礼金',
+  },
+  {
+    id: 'income.refund',
+    group: 'income',
+    type: 'income',
+    en: 'Refund',
+    zh: '退款',
+  },
+  {
+    id: 'income.other',
+    group: 'income',
+    type: 'income',
+    en: 'Other income',
+    zh: '其他收入',
+  },
 ]
 
 // Keep old category ids in PRESET_CATEGORIES for existing records, but only
@@ -232,22 +311,30 @@ const PICKER_CATEGORY_IDS = new Set([
 export function getCategoryViews(
   customCategories: CustomExpenseCategory[],
   locale: Locale,
+  type: 'expense' | 'income' = 'expense',
 ): ExpenseCategoryView[] {
   return [
-    ...PRESET_CATEGORIES.filter((category) =>
-      PICKER_CATEGORY_IDS.has(category.id),
-    ).map((category) => ({
+    ...PRESET_CATEGORIES.filter((category) => {
+      if ((category.type ?? 'expense') !== type) return false
+      return (
+        type === 'income' || PICKER_CATEGORY_IDS.has(category.id)
+      )
+    }).map((category) => ({
       id: category.id,
       group: category.group as ExpenseCategoryGroup,
       name: locale === 'zh' ? category.zh : category.en,
       builtin: true,
+      type,
     })),
-    ...customCategories.map((category) => ({
-      id: category.id,
-      group: 'custom' as const,
-      name: category.name,
-      builtin: false,
-    })),
+    ...customCategories
+      .filter((category) => (category.type ?? 'expense') === type)
+      .map((category) => ({
+        id: category.id,
+        group: 'custom' as const,
+        name: category.name,
+        builtin: false,
+        type,
+      })),
   ]
 }
 
@@ -263,6 +350,7 @@ export function getCategoryView(
       group: preset.group,
       name: locale === 'zh' ? preset.zh : preset.en,
       builtin: true,
+      type: preset.type ?? 'expense',
     }
   }
   const custom = customCategories.find((item) => item.id === id)
@@ -272,6 +360,7 @@ export function getCategoryView(
       group: 'custom',
       name: custom.name,
       builtin: false,
+      type: custom.type ?? 'expense',
     }
   }
   return null
@@ -328,7 +417,79 @@ const MONEY_FORMATTERS: Record<Locale, Intl.NumberFormat> = {
 }
 
 export function formatMoney(cents: number, locale: Locale) {
-  return `¥\u00A0${MONEY_FORMATTERS[locale].format(cents / 100)}`
+  const formatted = MONEY_FORMATTERS[locale].format(
+    Math.abs(cents) / 100,
+  )
+  return cents < 0 ? `-¥\u00A0${formatted}` : `¥\u00A0${formatted}`
+}
+
+export function formatSignedMoney(cents: number, locale: Locale) {
+  const amount = formatMoney(Math.abs(cents), locale)
+  if (cents > 0) return `+${amount}`
+  if (cents < 0) return `-${amount}`
+  return amount
+}
+
+export function parseSignedAmountInput(value: string): number | null {
+  const trimmed = value.trim().replace(/,/g, '')
+  if (!/^-?\d{1,7}(\.\d{0,2})?$/u.test(trimmed)) return null
+  const negative = trimmed.startsWith('-')
+  const unsigned = negative ? trimmed.slice(1) : trimmed
+  const [whole, fraction = ''] = unsigned.split('.')
+  const cents =
+    Number(whole) * 100 + Number(`${fraction}00`.slice(0, 2))
+  const signed = negative ? -cents : cents
+  if (
+    !Number.isInteger(cents) ||
+    Math.abs(signed) > MAX_AMOUNT_CENTS
+  ) {
+    return null
+  }
+  return signed
+}
+
+export function getEntryType(expense: Expense): EntryType {
+  return expense.type ?? 'expense'
+}
+
+export function getEntrySignedCents(expense: Expense) {
+  const type = getEntryType(expense)
+  if (type === 'expense') return -expense.amountCents
+  return expense.amountCents
+}
+
+export function getBalanceCents(
+  expenses: Expense[],
+  balance: BalanceState,
+): number | null {
+  if (
+    !balance.enabled ||
+    balance.startCents === null ||
+    balance.startAt === null
+  ) {
+    return null
+  }
+
+  let total = balance.startCents
+  for (const expense of expenses) {
+    if (expense.createdAt <= balance.startAt) continue
+    total += getEntrySignedCents(expense)
+  }
+  return total
+}
+
+export function isBalanceState(value: unknown): value is BalanceState {
+  if (!isRecord(value)) return false
+  return (
+    typeof value.enabled === 'boolean' &&
+    (value.startCents === null ||
+      (typeof value.startCents === 'number' &&
+        Number.isInteger(value.startCents) &&
+        Math.abs(value.startCents) <= MAX_AMOUNT_CENTS)) &&
+    (value.startAt === null ||
+      (typeof value.startAt === 'number' &&
+        Number.isFinite(value.startAt)))
+  )
 }
 
 export function getMonthRange(monthKey: string) {
@@ -353,6 +514,26 @@ export function sumCents(expenses: Expense[]) {
   )
 }
 
+export function sumExpenseCents(expenses: Expense[]) {
+  return expenses.reduce(
+    (total, expense) =>
+      getEntryType(expense) === 'expense'
+        ? total + expense.amountCents
+        : total,
+    0,
+  )
+}
+
+export function sumIncomeCents(expenses: Expense[]) {
+  return expenses.reduce(
+    (total, expense) =>
+      getEntryType(expense) === 'income'
+        ? total + expense.amountCents
+        : total,
+    0,
+  )
+}
+
 export function sortExpensesDesc(expenses: Expense[]) {
   return [...expenses].sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? 1 : -1
@@ -370,11 +551,17 @@ export function groupExpensesByDay(expenses: Expense[]): ExpenseDayGroup[] {
 
   return [...map.entries()]
     .sort(([a], [b]) => (a < b ? 1 : -1))
-    .map(([date, items]) => ({
-      date,
-      expenses: items,
-      totalCents: sumCents(items),
-    }))
+    .map(([date, items]) => {
+      const incomeCents = sumIncomeCents(items)
+      const expenseCents = sumExpenseCents(items)
+      return {
+        date,
+        expenses: items,
+        incomeCents,
+        expenseCents,
+        netCents: incomeCents - expenseCents,
+      }
+    })
 }
 
 export function countExpensesForCategory(
@@ -406,8 +593,15 @@ export function buildExpenseReport({
   otherLabel: string
 }): ExpenseReport {
   const items = expensesInRange(expenses, fromKey, toKey)
-  const totalCents = sumCents(items)
-  const count = items.length
+  const expenseItems = items.filter(
+    (expense) => getEntryType(expense) === 'expense',
+  )
+  const incomeItems = items.filter(
+    (expense) => getEntryType(expense) === 'income',
+  )
+  const totalCents = sumExpenseCents(expenseItems)
+  const incomeCents = sumIncomeCents(incomeItems)
+  const count = expenseItems.length + incomeItems.length
   const fullDays = Math.max(1, daysBetween(fromKey, toKey) + 1)
   const elapsedDays =
     fromKey > todayKey
@@ -417,14 +611,14 @@ export function buildExpenseReport({
 
   const daily = Array.from({ length: fullDays }, (_, index) => {
     const date = addDaysKey(fromKey, index)
-    const total = items
+    const total = expenseItems
       .filter((expense) => expense.date === date)
       .reduce((sum, expense) => sum + expense.amountCents, 0)
     return { date, totalCents: total }
   })
 
   const totals = new Map<string, number>()
-  for (const expense of items) {
+  for (const expense of expenseItems) {
     totals.set(
       expense.categoryId,
       (totals.get(expense.categoryId) ?? 0) + expense.amountCents,
@@ -471,7 +665,11 @@ export function buildExpenseReport({
 
   return {
     totalCents,
+    incomeCents,
+    netCents: incomeCents - totalCents,
     count,
+    incomeCount: incomeItems.length,
+    expenseCount: expenseItems.length,
     averageCents: days > 0 ? Math.round(totalCents / days) : 0,
     days,
     daily,
@@ -521,6 +719,22 @@ export function isExpenseArray(value: unknown): value is Expense[] {
     Array.isArray(value) &&
     value.every((item) => {
       if (!isRecord(item)) return false
+      const type =
+        item.type === undefined ? 'expense' : item.type
+      if (
+        type !== 'expense' &&
+        type !== 'income' &&
+        type !== 'adjustment'
+      ) {
+        return false
+      }
+      const amountIsValid =
+        typeof item.amountCents === 'number' &&
+        Number.isInteger(item.amountCents) &&
+        Math.abs(item.amountCents) <= MAX_AMOUNT_CENTS &&
+        (type === 'adjustment'
+          ? item.amountCents !== 0
+          : item.amountCents > 0)
       return (
         typeof item.id === 'string' &&
         item.id.trim().length > 0 &&
@@ -529,10 +743,7 @@ export function isExpenseArray(value: unknown): value is Expense[] {
         typeof item.content === 'string' &&
         item.content.trim().length > 0 &&
         item.content.trim().length <= 80 &&
-        typeof item.amountCents === 'number' &&
-        Number.isInteger(item.amountCents) &&
-        item.amountCents > 0 &&
-        item.amountCents <= MAX_AMOUNT_CENTS &&
+        amountIsValid &&
         typeof item.date === 'string' &&
         isValidExpenseDate(item.date) &&
         isTimestamp(item.createdAt) &&
@@ -555,6 +766,9 @@ export function isCustomCategoryArray(
         typeof item.name === 'string' &&
         item.name.trim().length > 0 &&
         item.name.trim().length <= 20 &&
+        (item.type === undefined ||
+          item.type === 'expense' ||
+          item.type === 'income') &&
         isTimestamp(item.createdAt)
       )
     })

@@ -20,6 +20,9 @@ import {
 import { App as CapacitorApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import AddTodoSheet from './components/AddTodoSheet'
+import BalanceSheet, {
+  type BalanceSheetMode,
+} from './components/BalanceSheet'
 import ConfirmDialog from './components/ConfirmDialog'
 import EmptyState from './components/EmptyState'
 import ExpenseSheet, {
@@ -41,13 +44,21 @@ import {
   type DueBucket,
 } from './lib/date'
 import {
+  BALANCE_ADJUSTMENT_CATEGORY_ID,
+  BALANCE_STORAGE_KEY,
   CUSTOM_CATEGORIES_STORAGE_KEY,
+  DEFAULT_BALANCE_STATE,
   EXPENSES_STORAGE_KEY,
+  INCOME_MISC_CATEGORY_ID,
   MISC_CATEGORY_ID,
   countExpensesForCategory,
+  getBalanceCents,
+  getEntryType,
+  isBalanceState,
   isCategoryNameTaken,
   isCustomCategoryArray,
   isExpenseArray,
+  type BalanceState,
   type CustomExpenseCategory,
   type Expense,
 } from './lib/expenses'
@@ -235,6 +246,11 @@ export default function App() {
   const [customCategories, setCustomCategories] = usePersistentState<
     CustomExpenseCategory[]
   >(CUSTOM_CATEGORIES_STORAGE_KEY, [], isCustomCategoryArray)
+  const [balance, setBalance] = usePersistentState<BalanceState>(
+    BALANCE_STORAGE_KEY,
+    DEFAULT_BALANCE_STATE,
+    isBalanceState,
+  )
 
   const { mode: appearanceMode, setMode: setAppearanceMode } =
     useAppearance()
@@ -252,6 +268,8 @@ export default function App() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(
     null,
   )
+  const [balanceSheetMode, setBalanceSheetMode] =
+    useState<BalanceSheetMode | null>(null)
   const [categoryToDelete, setCategoryToDelete] =
     useState<CustomExpenseCategory | null>(null)
   const [toast, setToast] = useState<ToastState | null>(null)
@@ -277,6 +295,10 @@ export default function App() {
     }
     return ids
   }, [expenses])
+  const balanceCents = useMemo(
+    () => getBalanceCents(expenses, balance),
+    [balance, expenses],
+  )
   const activeHabit =
     route.name === 'habit'
       ? habits.find((habit) => habit.id === route.id) ?? null
@@ -787,6 +809,7 @@ export default function App() {
   }
 
   function openExpenseSheet(expense?: Expense) {
+    if (expense && getEntryType(expense) === 'adjustment') return
     setEditingExpense(expense ?? null)
     setExpenseSheetOpen(true)
   }
@@ -822,6 +845,60 @@ export default function App() {
     closeExpenseSheet()
   }
 
+  function handleToggleBalance() {
+    if (balance.enabled) {
+      setBalance((current) => ({ ...current, enabled: false }))
+      return
+    }
+    if (balance.startCents === null || balance.startAt === null) {
+      setBalanceSheetMode('setup')
+      return
+    }
+    setBalance((current) => ({ ...current, enabled: true }))
+  }
+
+  function handleSetBalance(cents: number) {
+    const timestamp = Date.now()
+    setBalance({
+      enabled: true,
+      startCents: cents,
+      startAt: timestamp,
+    })
+    setNow(timestamp)
+    setBalanceSheetMode(null)
+    showToast({ message: m.money.toastBalanceSet }, 2800)
+  }
+
+  function handleCalibrateBalance(cents: number) {
+    if (balanceCents === null) {
+      setBalanceSheetMode('setup')
+      return
+    }
+
+    const difference = cents - balanceCents
+    if (difference === 0) {
+      setBalanceSheetMode(null)
+      showToast({ message: m.money.balanceAlreadyMatches }, 2600)
+      return
+    }
+
+    const timestamp = Date.now()
+    const adjustment: Expense = {
+      id: makeId('adjustment'),
+      type: 'adjustment',
+      categoryId: BALANCE_ADJUSTMENT_CATEGORY_ID,
+      content: m.money.balanceAdjustment,
+      amountCents: difference,
+      date: todayKey,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+    setExpenses((current) => [adjustment, ...current])
+    setNow(timestamp)
+    setBalanceSheetMode(null)
+    showToast({ message: m.money.toastBalanceAdjusted }, 2800)
+  }
+
   function deleteExpense(expense: Expense) {
     setExpenses((current) =>
       current.filter((item) => item.id !== expense.id),
@@ -844,7 +921,10 @@ export default function App() {
     )
   }
 
-  function handleAddCustomCategory(name: string) {
+  function handleAddCustomCategory(
+    name: string,
+    type: 'expense' | 'income',
+  ) {
     const trimmed = name.trim()
     if (
       !trimmed ||
@@ -856,6 +936,7 @@ export default function App() {
     const category: CustomExpenseCategory = {
       id: makeId('category'),
       name: trimmed,
+      type,
       createdAt: Date.now(),
     }
     setCustomCategories((current) => [...current, category])
@@ -875,12 +956,16 @@ export default function App() {
       current.filter((category) => category.id !== categoryId),
     )
     if (count > 0) {
+      const fallbackId =
+        categoryToDelete.type === 'income'
+          ? INCOME_MISC_CATEGORY_ID
+          : MISC_CATEGORY_ID
       setExpenses((current) =>
         current.map((expense) =>
           expense.categoryId === categoryId
             ? {
                 ...expense,
-                categoryId: MISC_CATEGORY_ID,
+                categoryId: fallbackId,
                 updatedAt: Date.now(),
               }
             : expense,
@@ -1154,10 +1239,15 @@ export default function App() {
               customCategories={customCategories}
               todayKey={todayKey}
               tab={route.tab}
+              balanceEnabled={balance.enabled}
+              balanceCents={balanceCents}
               onTabChange={navigateMoney}
               onAdd={() => openExpenseSheet()}
               onEdit={openExpenseSheet}
               onDelete={deleteExpense}
+              onToggleBalance={handleToggleBalance}
+              onSetBalance={() => setBalanceSheetMode('setup')}
+              onCalibrateBalance={() => setBalanceSheetMode('calibrate')}
             />
           </main>
         )}
@@ -1249,6 +1339,19 @@ export default function App() {
           onSave={handleSaveExpense}
           onAddCustom={handleAddCustomCategory}
           onRequestDeleteCategory={requestDeleteCategory}
+        />
+      )}
+
+      {balanceSheetMode && (
+        <BalanceSheet
+          mode={balanceSheetMode}
+          currentCents={balanceCents}
+          onClose={() => setBalanceSheetMode(null)}
+          onConfirm={
+            balanceSheetMode === 'setup'
+              ? handleSetBalance
+              : handleCalibrateBalance
+          }
         />
       )}
 
