@@ -518,7 +518,7 @@ const en: Messages = {
     about: 'About',
     aboutText:
       'Less noise, more clarity. Tasks, habits, and money stay on this device.',
-    version: 'Version 2.0.0',
+    version: 'Version 2.1.0',
   },
   habits: {
     title: 'Habits',
@@ -971,7 +971,7 @@ const zh: Messages = {
     importError: '无法读取这个文件。',
     about: '关于',
     aboutText: '少一点打扰，多一分清楚。待办、习惯与收支，只保存在这台设备上。',
-    version: '版本 2.0.0',
+    version: '版本 2.1.0',
   },
   habits: {
     title: '习惯',

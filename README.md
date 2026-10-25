@@ -4,7 +4,7 @@
 
 待办支持自动 `#标签` 和按时间分组；习惯支持每天/每周固定日打卡、补卡、周视图和月视图；记账支持收入/支出、分类、流水、周报月报和可选的实际余额。没有账号、没有后端，数据只保存在当前设备。
 
-> 当前版本：**2.0.0**
+> 当前版本：**2.1.0**
 
 [下载 Android APK](https://github.com/rmrfnoise/flow/releases/latest)
 
@@ -121,7 +121,7 @@ src/
 3. `npm run build`
 4. 本地检查 `npm run preview`
 5. Android：`npm run android:sync`，由 CI 使用 release 签名构建 APK
-6. 提交后打 tag：`v2.0.0`
+6. 提交后打 tag：`v2.1.0`
 7. 已安装的 PWA 关闭重开一两次，等待 service worker 更新
 
 Android APK 使用 release 签名，需要配置 `ANDROID_KEYSTORE_FILE`、`ANDROID_KEYSTORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。安装时需要允许“安装未知来源应用”。

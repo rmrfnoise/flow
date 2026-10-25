@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'flow',
         short_name: 'flow',
         description:
-          'A quiet, local-first home for tasks, habits, and spending — stored only on your device.',
+          'A quiet, local-first home for tasks, habits, and money — stored only on your device.',
         lang: 'en',
         start_url: '/',
         scope: '/',
