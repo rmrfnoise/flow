@@ -153,6 +153,7 @@ export interface Messages {
     about: string
     aboutText: string
     version: string
+    typeface: string
   }
   habits: {
     title: string
@@ -474,6 +475,7 @@ const en: Messages = {
     aboutText:
       'A quiet, local-first home for tasks, habits, and spending. No account, no cloud, no noise.',
     version: 'Version 2.0.0',
+    typeface: 'Typeface: MiSans',
   },
   habits: {
     title: 'Habits',
@@ -885,6 +887,7 @@ const zh: Messages = {
     about: '关于',
     aboutText: '一个安静、本地优先的待办、习惯与记账工具。无账号、无云端、无打扰。',
     version: '版本 2.0.0',
+    typeface: '字体：MiSans',
   },
   habits: {
     title: '习惯',

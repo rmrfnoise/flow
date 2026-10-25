@@ -272,6 +272,9 @@ export default function SettingsView({
           <p className="mt-2 text-[11.5px] text-[var(--text-3)]">
             {m.settings.version}
           </p>
+          <p className="mt-1 text-[11px] text-[var(--text-3)]">
+            {m.settings.typeface}
+          </p>
         </div>
       </section>
 

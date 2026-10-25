@@ -1,0 +1,7 @@
+﻿MiSans
+Copyright Xiaomi.
+
+This app uses the MiSans typeface under the MiSans font license:
+https://hyperos.mi.com/font/
+
+Font files are served locally from /fonts/misans.
