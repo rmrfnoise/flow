@@ -9,20 +9,26 @@ import {
   parseSignedAmountInput,
 } from '../lib/expenses'
 
-export type BalanceSheetMode = 'setup' | 'calibrate'
+export type BalanceSheetMode = 'setup' | 'calibrate' | 'resume'
 
 interface BalanceSheetProps {
   mode: BalanceSheetMode
   currentCents: number | null
+  lastTrackedCents?: number | null
+  offEntryCount?: number
   onClose: () => void
   onConfirm: (cents: number) => void
+  onContinue?: () => void
 }
 
 export default function BalanceSheet({
   mode,
   currentCents,
+  lastTrackedCents = null,
+  offEntryCount = 0,
   onClose,
   onConfirm,
+  onContinue,
 }: BalanceSheetProps) {
   const { locale, m } = useI18n()
   const [value, setValue] = useState('')
@@ -43,15 +49,21 @@ export default function BalanceSheet({
   const title =
     mode === 'setup'
       ? m.money.balanceSetupTitle
-      : m.money.balanceCalibrateTitle
+      : mode === 'calibrate'
+        ? m.money.balanceCalibrateTitle
+        : m.money.balanceWasOff
   const hint =
     mode === 'setup'
       ? m.money.balanceSetupHint
-      : m.money.balanceCalibrateHint
+      : mode === 'calibrate'
+        ? m.money.balanceCalibrateHint
+        : m.money.balanceResumeHint
   const note =
     mode === 'setup'
       ? m.money.balanceSetupNote
-      : m.money.balanceCalibrateNote
+      : mode === 'calibrate'
+        ? m.money.balanceCalibrateNote
+        : m.money.balanceResumeNote
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -123,6 +135,17 @@ export default function BalanceSheet({
             </div>
           )}
 
+          {mode === 'resume' && lastTrackedCents !== null && (
+            <div className="mb-4 flex items-center justify-between rounded-[10px] bg-[var(--surface-sunken)] px-3.5 py-3">
+              <span className="text-[13px] text-[var(--text-2)]">
+                {m.money.balanceLastTracked}
+              </span>
+              <span className="text-[15px] font-medium tabular-nums text-[var(--text)]">
+                {formatMoney(lastTrackedCents, locale)}
+              </span>
+            </div>
+          )}
+
           <label
             htmlFor="balance-amount"
             className="block text-[13px] font-medium text-[var(--text-2)]"
@@ -164,7 +187,7 @@ export default function BalanceSheet({
               aria-invalid={Boolean(error)}
               aria-describedby={error ? 'balance-amount-error' : undefined}
               autoComplete="off"
-              autoFocus
+              autoFocus={mode !== 'resume'}
               className="min-w-0 flex-1 bg-transparent text-[34px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
             />
           </div>
@@ -184,15 +207,31 @@ export default function BalanceSheet({
           <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-3)]">
             {note}
           </p>
+          {mode === 'resume' && offEntryCount > 0 && (
+            <p className="mt-1 text-[11px] text-[var(--text-3)]">
+              {m.money.balanceOffEntries(offEntryCount)}
+            </p>
+          )}
 
           <button
             type="submit"
             className="mt-5 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[15px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
-            {mode === 'setup'
-              ? m.money.balanceSave
-              : m.money.balanceAdjust}
+            {mode === 'calibrate'
+              ? m.money.balanceAdjust
+              : mode === 'resume'
+                ? m.money.balanceSetActual
+                : m.money.balanceSave}
           </button>
+          {mode === 'resume' && onContinue && (
+            <button
+              type="button"
+              onClick={onContinue}
+              className="mt-2 flex h-11 w-full items-center justify-center rounded-[10px] border border-[var(--line)] bg-[var(--surface)] text-[13px] font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
+            >
+              {m.money.continueTracking}
+            </button>
+          )}
         </form>
       </section>
     </div>

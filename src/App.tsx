@@ -52,6 +52,7 @@ import {
   INCOME_MISC_CATEGORY_ID,
   MISC_CATEGORY_ID,
   countExpensesForCategory,
+  getBalanceAt,
   getBalanceCents,
   getEntryType,
   isBalanceState,
@@ -291,6 +292,21 @@ export default function App() {
     () => getBalanceCents(expenses, balance),
     [balance, expenses],
   )
+  const lastTrackedCents = useMemo(
+    () =>
+      getBalanceAt(
+        expenses,
+        balance,
+        balance.pausedAt ?? Date.now(),
+      ),
+    [balance, expenses],
+  )
+  const offEntryCount = useMemo(() => {
+    if (!balance.pausedAt) return 0
+    return expenses.filter(
+      (expense) => expense.createdAt > balance.pausedAt!,
+    ).length
+  }, [balance.pausedAt, expenses])
   const activeHabit =
     route.name === 'habit'
       ? habits.find((habit) => habit.id === route.id) ?? null
@@ -839,14 +855,18 @@ export default function App() {
 
   function handleToggleBalance() {
     if (balance.enabled) {
-      setBalance((current) => ({ ...current, enabled: false }))
+      setBalance((current) => ({
+        ...current,
+        enabled: false,
+        pausedAt: Date.now(),
+      }))
       return
     }
     if (balance.startCents === null || balance.startAt === null) {
       setBalanceSheetMode('setup')
       return
     }
-    setBalance((current) => ({ ...current, enabled: true }))
+    setBalanceSheetMode('resume')
   }
 
   function handleSetBalance(cents: number) {
@@ -855,10 +875,23 @@ export default function App() {
       enabled: true,
       startCents: cents,
       startAt: timestamp,
+      pausedAt: null,
     })
     setNow(timestamp)
     setBalanceSheetMode(null)
     showToast({ message: m.money.toastBalanceSet }, 2800)
+  }
+
+  function handleContinueBalance() {
+    const timestamp = Date.now()
+    setBalance((current) => ({
+      ...current,
+      enabled: true,
+      pausedAt: null,
+    }))
+    setNow(timestamp)
+    setBalanceSheetMode(null)
+    showToast({ message: m.money.toastBalanceResumed }, 2800)
   }
 
   function handleCalibrateBalance(cents: number) {
@@ -1337,11 +1370,18 @@ export default function App() {
         <BalanceSheet
           mode={balanceSheetMode}
           currentCents={balanceCents}
+          lastTrackedCents={lastTrackedCents}
+          offEntryCount={offEntryCount}
           onClose={() => setBalanceSheetMode(null)}
           onConfirm={
-            balanceSheetMode === 'setup'
-              ? handleSetBalance
-              : handleCalibrateBalance
+            balanceSheetMode === 'calibrate'
+              ? handleCalibrateBalance
+              : handleSetBalance
+          }
+          onContinue={
+            balanceSheetMode === 'resume'
+              ? handleContinueBalance
+              : undefined
           }
         />
       )}

@@ -241,6 +241,12 @@ export interface Messages {
     balanceHint: string
     balanceOff: string
     balanceOffHint: string
+    balanceWasOff: string
+    balanceLastTracked: string
+    balanceOffEntries: (count: number) => string
+    balanceResumeHint: string
+    balanceResumeNote: string
+    continueTracking: string
     balanceNotSet: string
     balanceNotSetHint: string
     balanceSince: (date: string) => string
@@ -283,6 +289,7 @@ export interface Messages {
     toastCategoryDeleted: string
     toastBalanceSet: string
     toastBalanceAdjusted: string
+    toastBalanceResumed: string
     close: string
     closeBackdrop: string
     errors: {
@@ -302,6 +309,7 @@ export interface Messages {
     balanceInputPlaceholder: string
     balanceInvalid: string
     balanceSave: string
+    balanceSetActual: string
     balanceAdjust: string
     balanceAlreadyMatches: string
     categoriesTitle: string
@@ -689,6 +697,15 @@ const en: Messages = {
     balanceOff: 'Off',
     balanceOffHint:
       'Income, spending, and net stay available. No balance is shown.',
+    balanceWasOff: 'Balance was off',
+    balanceLastTracked: 'Last tracked',
+    balanceOffEntries: (count) =>
+      `${count} ${count === 1 ? 'entry' : 'entries'} recorded while off`,
+    balanceResumeHint:
+      'Set what you actually have now, or continue with the previous tracking.',
+    balanceResumeNote:
+      'Set actual starts a new baseline from now. Continue restores the previous baseline and includes entries recorded while off.',
+    continueTracking: 'Continue tracking',
     balanceNotSet: 'Not set',
     balanceNotSetHint:
       'Set how much you actually have to start tracking.',
@@ -732,6 +749,7 @@ const en: Messages = {
     toastCategoryDeleted: 'Category deleted',
     toastBalanceSet: 'Balance tracking started',
     toastBalanceAdjusted: 'Balance adjusted',
+    toastBalanceResumed: 'Balance tracking resumed',
     close: 'Close',
     closeBackdrop: 'Close money sheet',
     errors: {
@@ -753,6 +771,7 @@ const en: Messages = {
     balanceInputPlaceholder: '0.00',
     balanceInvalid: 'Enter a valid amount.',
     balanceSave: 'Set balance',
+    balanceSetActual: 'Set actual balance',
     balanceAdjust: 'Save adjustment',
     balanceAlreadyMatches: 'Balance already matches',
     categoriesTitle: 'Categories',
@@ -1133,6 +1152,13 @@ const zh: Messages = {
     balanceHint: '手里实际有多少钱',
     balanceOff: '未开启',
     balanceOffHint: '只统计收入、支出和结余，不显示余额。',
+    balanceWasOff: '余额已关闭',
+    balanceLastTracked: '上次记录',
+    balanceOffEntries: (count) => `关闭期间记录了 ${count} 笔`,
+    balanceResumeHint: '输入现在实际有多少钱，或继续上次的记录。',
+    balanceResumeNote:
+      '“重新设定”会从当下建立新起点；“继续上次”会恢复原起点，并把关闭期间的流水一起算入。',
+    continueTracking: '继续上次记录',
     balanceNotSet: '未设置',
     balanceNotSetHint: '输入现在实际有多少钱，才开始计算余额。',
     balanceSince: (date) => `从 ${date} 开始计算`,
@@ -1175,6 +1201,7 @@ const zh: Messages = {
     toastCategoryDeleted: '已删除分类',
     toastBalanceSet: '已开始记录余额',
     toastBalanceAdjusted: '已校准余额',
+    toastBalanceResumed: '已继续记录余额',
     close: '关闭',
     closeBackdrop: '关闭记账面板',
     errors: {
@@ -1195,6 +1222,7 @@ const zh: Messages = {
     balanceInputPlaceholder: '0.00',
     balanceInvalid: '请输入有效金额。',
     balanceSave: '设置余额',
+    balanceSetActual: '重新设定余额',
     balanceAdjust: '保存调整',
     balanceAlreadyMatches: '余额已经一致',
     categoriesTitle: '分类',
