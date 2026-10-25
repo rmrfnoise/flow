@@ -51,7 +51,7 @@
 - React 19 + TypeScript 7
 - Vite 8 + Tailwind CSS 4
 - `vite-plugin-pwa` / Workbox
-- MiSans VF（© Xiaomi，按 MiSans 字体许可使用，文件与 NOTICE 见 `public/fonts/misans/`）
+- IBM Plex Sans SC（© IBM，SIL OFL 1.1，文件与 NOTICE 见 `public/fonts/ibm-plex-sans-sc/`）
 - Capacitor Android
 
 ## 本地数据
@@ -125,7 +125,7 @@ Android APK 使用 release 签名，需要配置 `ANDROID_KEYSTORE_FILE`、`ANDR
 
 ## 设计
 
-界面使用 MiSans VF、中性灰阶和一个品牌绿。文案默认英文，支持和中文互切，日期、金额和分类名称会跟随语言变化。主题和语言集中在设置页。记账页使用单层 `Records / Weekly / Monthly` 标签，避免叠加选择器；金额与货币符号、卡片和列表留出呼吸感，标签滑块、报表柱状图和底部导航带轻量动效。各模块保持独立数据，删除或修改一个模块不会影响另外两个。
+界面使用 IBM Plex Sans SC、中性灰阶和一个品牌绿。文案默认英文，支持和中文互切，日期、金额和分类名称会跟随语言变化。主题和语言集中在设置页。记账页使用单层 `Records / Weekly / Monthly` 标签，避免叠加选择器；金额与货币符号、卡片和列表留出呼吸感，标签滑块、报表柱状图和底部导航带轻量动效。各模块保持独立数据，删除或修改一个模块不会影响另外两个。
 
 ## 已知边界
 
