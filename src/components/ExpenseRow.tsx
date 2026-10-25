@@ -77,7 +77,6 @@ export default function ExpenseRow({
   }
 
   function handlePointerDown(event: PointerEvent<HTMLElement>) {
-    if (isAdjustment) return
     if (event.pointerType === 'mouse' && event.button !== 0) return
     suppressClickRef.current = false
     const target = event.target as HTMLElement
@@ -162,12 +161,12 @@ export default function ExpenseRow({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
-    if (isAdjustment) return
     if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault()
       onDelete(expense)
       return
     }
+    if (isAdjustment) return
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
       onEdit(expense)
@@ -178,15 +177,15 @@ export default function ExpenseRow({
     <li className="relative overflow-hidden border-b border-[var(--line)] last:border-b-0">
       <div
         className={`absolute inset-y-0 right-0 flex w-[84px] items-stretch justify-end bg-[var(--danger)] ${
-          isAdjustment || offset === 0 ? 'invisible' : ''
+          offset === 0 ? 'invisible' : ''
         }`}
-        aria-hidden={isAdjustment || offset === 0}
+        aria-hidden={offset === 0}
       >
         <button
           type="button"
-          tabIndex={isAdjustment || offset === 0 ? -1 : 0}
+          tabIndex={offset === 0 ? -1 : 0}
           onClick={() => onDelete(expense)}
-          aria-label={`${m.row.delete}: ${expense.content}`}
+          aria-label={`${m.row.delete}: ${displayContent}`}
           className="flex w-full flex-col items-center justify-center gap-1 text-[var(--on-danger)] transition-opacity active:opacity-80"
         >
           <Trash2 size={17} strokeWidth={1.9} />
@@ -196,8 +195,8 @@ export default function ExpenseRow({
 
       <article
         ref={elementRef}
-        tabIndex={isAdjustment ? -1 : 0}
-          aria-label={
+        tabIndex={0}
+        aria-label={
           isAdjustment
             ? `${m.money.balanceAdjustment}: ${displayContent}`
             : `${m.money.editExpense}: ${expense.content}`
