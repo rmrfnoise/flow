@@ -187,7 +187,6 @@ export interface Messages {
     checkInIcon: string
     checkInIconHint: string
     icons: Record<string, string>
-    iconGroups: Record<string, string>
     errorName: string
     errorWeekdays: string
     scheduleEditHint: string
@@ -460,11 +459,11 @@ const en: Messages = {
     clearData: 'Erase all data',
     clearTitle: 'Erase all data?',
     clearDescription: (tasks, habits, expenses) =>
-      `This removes ${tasks} tasks, ${habits} habits, and ${expenses} expenses. This cannot be undone.`,
-    clearConfirm: 'Erase everything',
+      `This removes ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, and ${expenses} ${expenses === 1 ? 'expense' : 'expenses'}. This cannot be undone.`,
+    clearConfirm: 'Erase',
     importTitle: 'Restore this backup?',
     importDescription: (tasks, habits, expenses, categories) =>
-      `This replaces current data with ${tasks} tasks, ${habits} habits, ${expenses} expenses, and ${categories} custom categories.`,
+      `This replaces current data with ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, ${expenses} ${expenses === 1 ? 'expense' : 'expenses'}, and ${categories} custom ${categories === 1 ? 'category' : 'categories'}.`,
     importConfirm: 'Restore',
     importInvalid: 'This is not a valid flow backup.',
     importUnsupported: 'This backup was created by a newer version of flow.',
@@ -588,16 +587,6 @@ const en: Messages = {
       wifi: 'Wi-Fi',
       battery: 'Energy',
       monitor: 'Screen',
-    },
-    iconGroups: {
-      body: 'Body',
-      mind: 'Mind',
-      create: 'Create',
-      life: 'Life',
-      social: 'Social',
-      nature: 'Nature',
-      goals: 'Goals',
-      tech: 'Tech',
     },
     errorName: 'Give the habit a name.',
     errorWeekdays: 'Pick at least one day.',
@@ -873,7 +862,7 @@ const zh: Messages = {
     clearTitle: '清空所有数据？',
     clearDescription: (tasks, habits, expenses) =>
       `这会移除 ${tasks} 条待办、${habits} 个习惯和 ${expenses} 笔支出，且无法恢复。`,
-    clearConfirm: '全部清空',
+    clearConfirm: '清空',
     importTitle: '恢复这个备份？',
     importDescription: (tasks, habits, expenses, categories) =>
       `这会用 ${tasks} 条待办、${habits} 个习惯、${expenses} 笔支出和 ${categories} 个自定义分类替换当前数据。`,
@@ -999,16 +988,6 @@ const zh: Messages = {
       wifi: '网络',
       battery: '电量',
       monitor: '屏幕',
-    },
-    iconGroups: {
-      body: '身体',
-      mind: '心智',
-      create: '创作',
-      life: '生活',
-      social: '社交',
-      nature: '自然',
-      goals: '目标',
-      tech: '科技',
     },
     errorName: '给习惯起个名字。',
     errorWeekdays: '至少选一天。',

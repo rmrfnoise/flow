@@ -144,8 +144,8 @@ export default function MoneyView({
               onAdd={onAdd}
             />
           ) : (
-            <>
-              <section className="mt-4 overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)]">
+            <div className="mt-4 lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start lg:gap-6">
+              <section className="overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] lg:sticky lg:top-6">
                 <div className="flex items-center justify-center gap-2 px-4 pt-3">
                   <button
                     type="button"
@@ -201,14 +201,16 @@ export default function MoneyView({
               </section>
 
               {groups.length === 0 ? (
-                <RecordsEmpty
-                  title={m.money.noExpensesPeriod}
-                  body={m.money.emptyBody}
-                  action={m.money.addExpense}
-                  onAdd={onAdd}
-                />
+                <div>
+                  <RecordsEmpty
+                    title={m.money.noExpensesPeriod}
+                    body={m.money.emptyBody}
+                    action={m.money.addExpense}
+                    onAdd={onAdd}
+                  />
+                </div>
               ) : (
-                <div className="mt-5 flex flex-col gap-5">
+                <div className="mt-4 flex flex-col gap-5 lg:mt-0">
                   {groups.map((group, index) => (
                     <section
                       key={group.date}
@@ -259,7 +261,7 @@ export default function MoneyView({
                   ))}
                 </div>
               )}
-            </>
+            </div>
           )
         ) : (
           <ExpenseReports

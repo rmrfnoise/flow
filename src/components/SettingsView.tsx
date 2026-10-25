@@ -117,9 +117,9 @@ export default function SettingsView({
   }
 
   return (
-    <div className="flex max-w-[560px] flex-col gap-6 pb-6">
+    <div className="flex max-w-[560px] flex-col gap-6 pb-6 lg:grid lg:max-w-[760px] lg:grid-cols-2 lg:items-start lg:gap-x-8 lg:gap-y-7">
       <section>
-        <h2 className="px-1 text-[13px] font-semibold text-[var(--text-2)]">
+        <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.appearance}
         </h2>
         <p className="mt-1 px-1 text-[11.5px] leading-relaxed text-[var(--text-3)]">
@@ -156,14 +156,14 @@ export default function SettingsView({
       </section>
 
       <section>
-        <h2 className="px-1 text-[13px] font-semibold text-[var(--text-2)]">
+        <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.language}
         </h2>
         <p className="mt-1 px-1 text-[11.5px] leading-relaxed text-[var(--text-3)]">
           {m.settings.languageHint}
         </p>
 
-        <div className="mt-2 overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
+        <div className="mt-2 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
           {LANGUAGE_OPTIONS.map((code, index) => {
             const active = locale === code
             return (
@@ -193,10 +193,10 @@ export default function SettingsView({
       </section>
 
       <section>
-        <h2 className="px-1 text-[13px] font-semibold text-[var(--text-2)]">
+        <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.data}
         </h2>
-        <div className="mt-2 overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
+        <div className="mt-2 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
           <div className="px-4 py-3">
             <p className="text-[13px] text-[var(--text)]">
               {m.settings.dataLocal}
@@ -259,10 +259,10 @@ export default function SettingsView({
       </section>
 
       <section>
-        <h2 className="px-1 text-[13px] font-semibold text-[var(--text-2)]">
+        <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.about}
         </h2>
-        <div className="mt-2 rounded-[14px] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5">
+        <div className="mt-2 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5">
           <BrandMark />
           <p className="mt-2 text-[12.5px] leading-relaxed text-[var(--text-2)]">
             {m.settings.aboutText}

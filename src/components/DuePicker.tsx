@@ -205,7 +205,7 @@ export default function DuePicker({
           <div>
             <h2
               id="due-picker-title"
-              className="text-[18px] font-semibold text-[var(--text)]"
+              className="type-title font-semibold text-[var(--text)]"
             >
               {mode === 'datetime'
                 ? m.picker.titleDateTime

@@ -65,7 +65,7 @@ export default function ConfirmDialog({
 
         <h2
           id="confirm-dialog-title"
-          className="mt-3 text-[18px] font-semibold text-[var(--text)]"
+          className="type-title mt-3 font-semibold text-[var(--text)]"
         >
           {title}
         </h2>
@@ -81,14 +81,14 @@ export default function ConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onClose}
-            className="h-11 rounded-[10px] bg-[var(--surface-sunken)] text-[14px] font-medium text-[var(--text)] transition-colors hover:brightness-95"
+            className="h-11 min-w-0 rounded-[10px] bg-[var(--surface-sunken)] px-3 text-[13px] font-medium text-[var(--text)] transition-colors hover:brightness-95"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="h-11 rounded-[10px] bg-[var(--danger)] text-[14px] font-semibold text-[var(--on-danger)] transition-opacity active:opacity-85"
+            className="h-11 min-w-0 rounded-[10px] bg-[var(--danger)] px-3 text-[13px] font-medium text-[var(--on-danger)] transition-opacity hover:opacity-90"
           >
             {confirmLabel}
           </button>

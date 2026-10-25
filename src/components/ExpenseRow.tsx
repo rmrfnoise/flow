@@ -6,6 +6,7 @@ import {
 } from 'react'
 import { Trash2 } from 'lucide-react'
 import { useI18n } from '../i18n/I18nProvider'
+import { getCategoryIcon } from '../lib/categoryIcons'
 import { formatMoney, type Expense } from '../lib/expenses'
 
 const DELETE_WIDTH = 84
@@ -28,6 +29,7 @@ export default function ExpenseRow({
   onDelete,
 }: ExpenseRowProps) {
   const { locale, m } = useI18n()
+  const CategoryIcon = getCategoryIcon(expense.categoryId)
   const [offset, setOffset] = useState(0)
   const [dragging, setDragging] = useState(false)
 
@@ -193,6 +195,9 @@ export default function ExpenseRow({
           dragging ? 'bg-[var(--surface-sunken)]' : ''
         }`}
       >
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[var(--surface-sunken)] text-[var(--text-2)]">
+          <CategoryIcon size={16} strokeWidth={1.8} />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15.5px] leading-[1.4] text-[var(--text)]">
             {expense.content}

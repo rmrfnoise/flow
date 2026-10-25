@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Check, Plus, Search, Trash2, X } from 'lucide-react'
+import { getCategoryIcon } from '../lib/categoryIcons'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { useI18n } from '../i18n/I18nProvider'
@@ -151,7 +152,7 @@ export default function CategoryPicker({
         role="dialog"
         aria-modal="true"
         aria-label={m.money.categoriesTitle}
-        className="fade-enter relative flex max-h-[90dvh] w-full max-w-[520px] flex-col rounded-t-[20px] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[18px] sm:pb-0"
+        className="fade-enter relative flex max-h-[90dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:pb-0"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -159,7 +160,7 @@ export default function CategoryPicker({
         <div className="flex items-start justify-between px-5 pb-2 pt-3">
           <div>
             <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--line-strong)] sm:hidden" />
-            <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]">
+            <h2 className="type-title font-semibold text-[var(--text)]">
               {m.money.categoriesTitle}
             </h2>
           </div>
@@ -268,6 +269,10 @@ export default function CategoryPicker({
                     const custom = customCategories.find(
                       (item) => item.id === category.id,
                     )
+                    const CategoryIcon = getCategoryIcon(
+                      category.id,
+                      category.group,
+                    )
                     return (
                       <div
                         key={category.id}
@@ -288,6 +293,9 @@ export default function CategoryPicker({
                               : 'text-[var(--text)] hover:bg-[var(--surface-sunken)]'
                           }`}
                         >
+                          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[7px] bg-[var(--surface-sunken)] text-[var(--text-2)]">
+                            <CategoryIcon size={15} strokeWidth={1.8} />
+                          </span>
                           <span className="min-w-0 flex-1 truncate">
                             {category.name}
                           </span>

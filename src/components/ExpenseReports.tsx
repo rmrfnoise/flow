@@ -18,6 +18,7 @@ import {
   type CustomExpenseCategory,
   type Expense,
 } from '../lib/expenses'
+import { getCategoryIcon } from '../lib/categoryIcons'
 
 type ReportPeriod = 'week' | 'month'
 
@@ -245,7 +246,7 @@ export default function ExpenseReports({
           </section>
 
           <section className="mt-4 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
-            <h2 className="text-[13.5px] font-semibold text-[var(--text)]">
+            <h2 className="type-section font-semibold text-[var(--text)]">
               {m.money.trend}
             </h2>
             <div className="mt-5 flex h-[76px] items-end gap-2">
@@ -326,15 +327,25 @@ export default function ExpenseReports({
           </section>
 
           <section className="mt-4 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
-            <h2 className="text-[13.5px] font-semibold text-[var(--text)]">
+            <h2 className="type-section font-semibold text-[var(--text)]">
               {m.money.byCategory}
             </h2>
             <div className="mt-4 flex flex-col gap-3.5">
-              {report.categories.map((category, index) => (
+              {report.categories.map((category, index) => {
+                const CategoryIcon = getCategoryIcon(
+                  category.id,
+                  category.group,
+                )
+                return (
                 <div key={category.id}>
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="min-w-0 truncate text-[13px] text-[var(--text-2)]">
-                      {category.name}
+                    <span className="flex min-w-0 items-center gap-1.5 text-[13px] text-[var(--text-2)]">
+                      <CategoryIcon
+                        size={14}
+                        strokeWidth={1.8}
+                        className="shrink-0 text-[var(--text-3)]"
+                      />
+                      <span className="truncate">{category.name}</span>
                     </span>
                     <span className="shrink-0 text-[12.5px] tabular-nums text-[var(--text)]">
                       {formatMoney(category.totalCents, locale)}
@@ -360,7 +371,8 @@ export default function ExpenseReports({
                     />
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </section>
         </>

@@ -236,7 +236,7 @@ export default function AddTodoSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="todo-sheet-title"
-        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[20px] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[18px] sm:shadow-[var(--shadow-dialog)]"
+        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:shadow-[var(--shadow-dialog)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -251,7 +251,7 @@ export default function AddTodoSheet({
         <div className="flex items-center justify-between px-5 pb-1 pt-3">
           <h2
             id="todo-sheet-title"
-            className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]"
+            className="type-title font-semibold text-[var(--text)]"
           >
             {isEditing ? m.sheet.editTask : m.sheet.newTask}
           </h2>

@@ -64,7 +64,7 @@ export default function HabitsView({
   }
 
   return (
-    <ul className="mt-1 overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
+    <ul className="mt-1 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
       {habits.map((habit) => {
         const dates = getHabitDates(checkins, habit.id)
         const checkedToday = dates.includes(todayKey)

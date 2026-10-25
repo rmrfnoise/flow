@@ -84,7 +84,7 @@ export default function BackupExportDialog({
           <div className="min-w-0">
             <h2
               id="backup-export-title"
-              className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]"
+              className="type-title font-semibold text-[var(--text)]"
             >
               {m.settings.backupReady}
             </h2>

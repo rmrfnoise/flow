@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { CalendarDays, ChevronRight, Tag, X } from 'lucide-react'
+import { CalendarDays, ChevronRight, X } from 'lucide-react'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { useI18n } from '../i18n/I18nProvider'
+import { getCategoryIcon } from '../lib/categoryIcons'
 import {
   formatAmountInput,
   getCategoryView,
@@ -68,6 +69,10 @@ export default function ExpenseSheet({
     customCategories,
     locale,
   )
+  const SelectedCategoryIcon = getCategoryIcon(
+    selectedCategory?.id,
+    selectedCategory?.group,
+  )
   const yesterdayKey = addDaysKey(todayKey, -1)
   const trapRef = useFocusTrap<HTMLDivElement>()
   useBodyScrollLock()
@@ -122,7 +127,7 @@ export default function ExpenseSheet({
         aria-label={
           initialExpense ? m.money.editExpense : m.money.newExpense
         }
-        className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[20px] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[18px] sm:shadow-[var(--shadow-dialog)]"
+        className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:shadow-[var(--shadow-dialog)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -130,7 +135,7 @@ export default function ExpenseSheet({
         <div className="flex items-start justify-between px-5 pb-2 pt-3">
           <div>
             <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--line-strong)] sm:hidden" />
-            <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]">
+            <h2 className="type-title font-semibold text-[var(--text)]">
               {initialExpense
                 ? m.money.editExpense
                 : m.money.newExpense}
@@ -201,9 +206,9 @@ export default function ExpenseSheet({
                 : 'border-[var(--line)]'
             }`}
           >
-            <Tag
+            <SelectedCategoryIcon
               size={16}
-              strokeWidth={1.9}
+              strokeWidth={1.8}
               className="shrink-0 text-[var(--text-3)]"
             />
             <span

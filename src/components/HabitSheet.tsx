@@ -12,10 +12,8 @@ import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { useI18n } from '../i18n/I18nProvider'
 import {
   DEFAULT_HABIT_ICON,
-  HABIT_ICON_GROUPS,
-  getHabitIconGroupId,
+  HABIT_ICON_OPTIONS,
   getHabitIconOption,
-  type HabitIconGroupId,
 } from '../lib/habitIcons'
 import {
   getWeekdayLabels,
@@ -55,15 +53,9 @@ export default function HabitSheet({
   const [checkInIcon, setCheckInIcon] = useState<HabitIcon>(
     initialHabit?.checkInIcon ?? DEFAULT_HABIT_ICON,
   )
-  const [iconGroup, setIconGroup] = useState<HabitIconGroupId>(() =>
-    getHabitIconGroupId(initialHabit?.checkInIcon ?? DEFAULT_HABIT_ICON),
-  )
   const [error, setError] = useState('')
   const selectedIcon = getHabitIconOption(checkInIcon)
   const SelectedIcon = selectedIcon.Icon
-  const activeIconGroup =
-    HABIT_ICON_GROUPS.find((group) => group.id === iconGroup) ??
-    HABIT_ICON_GROUPS[0]
 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const trapRef = useFocusTrap<HTMLElement>()
@@ -148,7 +140,7 @@ export default function HabitSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="habit-sheet-title"
-        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[20px] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[18px] sm:shadow-[var(--shadow-dialog)]"
+        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:shadow-[var(--shadow-dialog)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -163,7 +155,7 @@ export default function HabitSheet({
         <div className="flex items-center justify-between px-5 pb-1 pt-3">
           <h2
             id="habit-sheet-title"
-            className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]"
+            className="type-title font-semibold text-[var(--text)]"
           >
             {initialHabit ? m.habits.editHabit : m.habits.newHabit}
           </h2>
@@ -282,37 +274,8 @@ export default function HabitSheet({
             <p className="mt-0.5 text-[11.5px] leading-relaxed text-[var(--text-3)]">
               {m.habits.checkInIconHint}
             </p>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {HABIT_ICON_GROUPS.map((group) => {
-                const active = group.id === iconGroup
-                return (
-                  <button
-                    key={group.id}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => {
-                      setIconGroup(group.id)
-                      if (
-                        !group.icons.some(
-                          (option) => option.id === checkInIcon,
-                        )
-                      ) {
-                        setCheckInIcon(group.icons[0].id)
-                      }
-                    }}
-                    className={`h-7 rounded-full px-2.5 text-[11px] font-medium transition-colors ${
-                      active
-                        ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
-                        : 'bg-[var(--surface-sunken)] text-[var(--text-2)] hover:text-[var(--text)]'
-                    }`}
-                  >
-                    {m.habits.iconGroups[group.id]}
-                  </button>
-                )
-              })}
-            </div>
-            <div className="mt-2 grid grid-cols-5 gap-1.5">
-              {activeIconGroup.icons.map((option) => {
+            <div className="mt-2 grid grid-cols-8 gap-1">
+              {HABIT_ICON_OPTIONS.map((option) => {
                 const active = checkInIcon === option.id
                 const OptionIcon = option.Icon
                 return (
@@ -322,13 +285,13 @@ export default function HabitSheet({
                     aria-label={m.habits.icons[option.id]}
                     aria-pressed={active}
                     onClick={() => setCheckInIcon(option.id)}
-                    className={`grid h-10 place-items-center rounded-[8px] border transition-colors ${
+                    className={`grid h-9 place-items-center rounded-[8px] border transition-colors ${
                       active
                         ? 'border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent)]'
                         : 'border-[var(--line)] bg-[var(--surface-sunken)] text-[var(--text-2)] hover:border-[var(--line-strong)] hover:text-[var(--text)]'
                     }`}
                   >
-                    <OptionIcon size={20} strokeWidth={1.8} />
+                    <OptionIcon size={18} strokeWidth={1.8} />
                   </button>
                 )
               })}

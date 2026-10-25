@@ -183,12 +183,60 @@ export const PRESET_CATEGORIES: PresetCategory[] = [
   { id: 'other.donations', group: 'other', en: 'Donations', zh: '捐赠' },
 ]
 
+// Keep old category ids in PRESET_CATEGORIES for existing records, but only
+// surface the common ones in the picker.
+const PICKER_CATEGORY_IDS = new Set([
+  'food.lunch',
+  'food.dinner',
+  'food.breakfast',
+  'food.takeout',
+  'food.coffee',
+  'food.groceries',
+  'food.dining_out',
+  'transport.transit',
+  'transport.taxi',
+  'transport.fuel',
+  'transport.parking',
+  'housing.rent',
+  'housing.utilities',
+  'housing.internet',
+  'housing.home_goods',
+  'clothing.clothes',
+  'clothing.shoes',
+  'clothing.beauty',
+  'communication.mobile',
+  'communication.memberships',
+  'development.api',
+  'development.server',
+  'development.software',
+  'development.cloud',
+  'learning.course',
+  'learning.books',
+  'learning.exam',
+  'entertainment.movies',
+  'entertainment.games',
+  'entertainment.travel',
+  'entertainment.sports',
+  'health.medical',
+  'health.pharmacy',
+  'health.checkup',
+  'health.fitness',
+  'social.red_packet',
+  'social.gifts',
+  'social.treating',
+  'other.misc',
+  'other.fees',
+  'other.pets',
+])
+
 export function getCategoryViews(
   customCategories: CustomExpenseCategory[],
   locale: Locale,
 ): ExpenseCategoryView[] {
   return [
-    ...PRESET_CATEGORIES.map((category) => ({
+    ...PRESET_CATEGORIES.filter((category) =>
+      PICKER_CATEGORY_IDS.has(category.id),
+    ).map((category) => ({
       id: category.id,
       group: category.group as ExpenseCategoryGroup,
       name: locale === 'zh' ? category.zh : category.en,

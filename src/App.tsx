@@ -17,6 +17,8 @@ import {
   Trash2,
   Wallet,
 } from 'lucide-react'
+import { App as CapacitorApp } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import AddTodoSheet from './components/AddTodoSheet'
 import BrandMark from './components/BrandMark'
 import ConfirmDialog from './components/ConfirmDialog'
@@ -208,9 +210,10 @@ function BottomNavItem({
   return (
     <button
       type="button"
+      aria-label={label}
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
-      className={`relative flex h-14 flex-col items-center justify-center gap-1 text-[10.5px] font-medium transition-colors ${
+      className={`relative grid h-12 place-items-center transition-colors ${
         active ? 'text-[var(--accent)]' : 'text-[var(--text-3)]'
       }`}
     >
@@ -229,7 +232,6 @@ function BottomNavItem({
       >
         {icon}
       </span>
-      {label}
     </button>
   )
 }
@@ -247,7 +249,7 @@ function TaskGroup({
     <section className="mt-5 first:mt-1">
       <div className="mb-1.5 flex items-baseline justify-between px-1">
         <h2
-          className={`text-[13px] font-medium ${
+          className={`type-section font-medium ${
             danger ? 'text-[var(--danger)]' : 'text-[var(--text-2)]'
           }`}
         >
@@ -257,7 +259,7 @@ function TaskGroup({
           {todos.length}
         </span>
       </div>
-      <ul className="overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
+      <ul className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
         {todos.map((todo) => (
           <TodoRow
             key={todo.id}
@@ -362,6 +364,31 @@ export default function App() {
     }
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return
+    let disposed = false
+    let handle: { remove: () => void } | undefined
+
+    void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      if (canGoBack) {
+        window.history.back()
+      } else {
+        void CapacitorApp.exitApp()
+      }
+    }).then((listener) => {
+      if (disposed) {
+        void listener.remove()
+      } else {
+        handle = listener
+      }
+    })
+
+    return () => {
+      disposed = true
+      void handle?.remove()
+    }
   }, [])
 
   useEffect(() => {
@@ -951,7 +978,7 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[1040px] flex-col px-5 sm:px-6 lg:flex-row lg:gap-12 lg:px-8">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[1120px] flex-col px-5 sm:px-6 lg:flex-row lg:gap-12 lg:px-8">
       <aside className="hidden lg:flex lg:w-[220px] lg:shrink-0 lg:flex-col lg:pt-10">
         <div className="flex h-10 items-center">
           <BrandMark />
@@ -1025,7 +1052,7 @@ export default function App() {
         )}
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col lg:max-w-[780px]">
         <header className="pt-[max(1.25rem,env(safe-area-inset-top))] sm:pt-10">
           {route.name === 'habit' && activeHabit ? (
             <>
@@ -1068,7 +1095,7 @@ export default function App() {
           ) : (
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <h1 className="text-[28px] font-semibold leading-[1.12] tracking-[-0.025em] text-[var(--text)] sm:text-[32px]">
+                <h1 className="type-page font-semibold text-[var(--text)]">
                   {route.name === 'settings'
                     ? m.settings.title
                     : route.name === 'money'
@@ -1212,7 +1239,7 @@ export default function App() {
                   id="completed-list"
                   className={
                     completedOpen
-                      ? 'fade-enter mt-1 overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]'
+                      ? 'fade-enter mt-1 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]'
                       : 'hidden'
                   }
                 >
