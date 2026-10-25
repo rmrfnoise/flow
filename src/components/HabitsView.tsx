@@ -7,10 +7,12 @@ import {
 import { useI18n } from '../i18n/I18nProvider'
 import { getHabitIconOption } from '../lib/habitIcons'
 import {
+  addDaysKey,
   currentStreak,
   formatHabitSchedule,
   getHabitDates,
   getHabitDayState,
+  startOfWeekKey,
   type Habit,
   type HabitCheckins,
 } from '../lib/habits'
@@ -33,23 +35,27 @@ export default function HabitsView({
   onAdd,
 }: HabitsViewProps) {
   const { locale, m } = useI18n()
+  const weekStart = startOfWeekKey(todayKey)
+  const weekDays = Array.from({ length: 7 }, (_, index) =>
+    addDaysKey(weekStart, index),
+  )
 
   if (habits.length === 0) {
     return (
       <div className="fade-enter flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8 text-center">
-        <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
-          <Repeat size={24} strokeWidth={1.6} />
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+          <Repeat size={22} strokeWidth={1.6} />
         </div>
-        <h2 className="mt-4 text-[17px] font-semibold text-[var(--text)]">
+        <h2 className="mt-3 text-[16px] font-semibold text-[var(--text)]">
           {m.habits.emptyTitle}
         </h2>
-        <p className="mt-1.5 max-w-[250px] text-[14px] leading-relaxed text-[var(--text-2)]">
+        <p className="mt-1.5 max-w-[250px] text-[13.5px] leading-relaxed text-[var(--text-2)]">
           {m.habits.emptyBody}
         </p>
         <button
           type="button"
           onClick={onAdd}
-          className="mt-6 h-11 rounded-full bg-[var(--accent)] px-5 text-[14px] font-semibold text-[var(--on-accent)] transition-all active:scale-[0.98] hover:bg-[var(--accent-hover)]"
+          className="mt-5 h-10 rounded-[10px] bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
         >
           {m.habits.addFirst}
         </button>
@@ -58,7 +64,7 @@ export default function HabitsView({
   }
 
   return (
-    <ul className="mt-1 overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+    <ul className="mt-1 overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
       {habits.map((habit) => {
         const dates = getHabitDates(checkins, habit.id)
         const checkedToday = dates.includes(todayKey)
@@ -115,7 +121,7 @@ export default function HabitsView({
                   event.stopPropagation()
                   if (canToggle) onToggleToday(habit)
                 }}
-                className={`mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full border-[1.5px] transition-all duration-150 ${
+                className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border-[1.5px] transition-colors ${
                   state === 'checked'
                     ? 'border-transparent bg-[var(--accent)] text-[var(--on-accent)]'
                     : state === 'available'
@@ -133,7 +139,7 @@ export default function HabitsView({
               </button>
 
               <div className="min-w-0 flex-1">
-                <p className="flex min-w-0 items-center gap-1.5 text-[16px] leading-[1.45] text-[var(--text)]">
+                <p className="flex min-w-0 items-center gap-1.5 text-[15.5px] leading-[1.4] text-[var(--text)]">
                   <span
                     aria-hidden="true"
                     className="shrink-0 text-[var(--text-3)]"
@@ -142,7 +148,7 @@ export default function HabitsView({
                   </span>
                   <span className="truncate">{habit.name}</span>
                 </p>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[12.5px] leading-[1.4] text-[var(--text-3)]">
+                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11.5px] leading-[1.4] text-[var(--text-3)]">
                   <span>{schedule}</span>
                   {state === 'rest' ? (
                     <>
@@ -156,10 +162,46 @@ export default function HabitsView({
                     </>
                   ) : null}
                 </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-[9px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
+                    {m.habits.week}
+                  </span>
+                  <div
+                    aria-hidden="true"
+                    className="flex items-center gap-[3px]"
+                  >
+                    {weekDays.map((key) => {
+                      const done = dates.includes(key)
+                      const dayState = getHabitDayState(
+                        habit,
+                        key,
+                        done,
+                        todayKey,
+                      )
+                      const dotClass = done
+                        ? 'bg-[var(--accent)]'
+                        : dayState === 'rest'
+                          ? 'bg-[var(--surface-sunken)] ring-1 ring-inset ring-[var(--line)]'
+                          : dayState === 'available'
+                            ? 'bg-[var(--line-strong)]'
+                            : 'bg-[var(--line)]'
+                      return (
+                        <span
+                          key={key}
+                          className={`h-[5px] w-[5px] rounded-full ${dotClass} ${
+                            key === todayKey
+                              ? 'ring-2 ring-[var(--accent-soft)]'
+                              : ''
+                          }`}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
 
               <ChevronRight
-                size={15}
+                size={14}
                 strokeWidth={1.9}
                 className="mt-1 shrink-0 text-[var(--text-3)]"
               />

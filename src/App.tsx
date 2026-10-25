@@ -1038,7 +1038,7 @@ export default function App() {
                 >
                   <ChevronLeft size={20} strokeWidth={2} />
                 </button>
-                <h1 className="flex min-w-0 flex-1 items-center gap-2 text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text)] sm:text-[30px]">
+                <h1 className="flex min-w-0 flex-1 items-center gap-2 text-[24px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text)] sm:text-[28px]">
                   {ActiveHabitIcon && (
                     <ActiveHabitIcon
                       size={22}
@@ -1067,7 +1067,7 @@ export default function App() {
             </>
           ) : (
             <>
-              <h1 className="text-[32px] font-semibold leading-[1.12] tracking-[-0.028em] text-[var(--text)] sm:text-[36px]">
+              <h1 className="text-[28px] font-semibold leading-[1.12] tracking-[-0.025em] text-[var(--text)] sm:text-[32px]">
                 {route.name === 'settings'
                   ? m.settings.title
                   : route.name === 'money'
@@ -1076,7 +1076,7 @@ export default function App() {
                       ? m.habits.title
                       : m.app.title}
               </h1>
-              <p className="mt-2 text-[13.5px] text-[var(--text-2)]">
+              <p className="mt-2 text-[13px] text-[var(--text-2)]">
                 {route.name === 'settings' ? (
                   m.settings.subtitle
                 ) : route.name === 'money' ? (
