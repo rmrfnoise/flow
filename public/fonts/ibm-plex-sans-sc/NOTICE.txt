@@ -1,7 +1,0 @@
-﻿IBM Plex Sans SC
-Copyright IBM Corp.
-
-Licensed under the SIL Open Font License, Version 1.1.
-See LICENSE.txt in this directory.
-
-https://github.com/IBM/plex
