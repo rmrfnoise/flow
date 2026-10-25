@@ -1260,6 +1260,14 @@ export default function App() {
               taskCount={todos.length}
               habitCount={habits.length}
               expenseCount={expenses.length}
+              hasAnyData={
+                todos.length > 0 ||
+                habits.length > 0 ||
+                expenses.length > 0 ||
+                customCategories.length > 0 ||
+                balance.enabled ||
+                balance.startCents !== null
+              }
             />
           </main>
         )}

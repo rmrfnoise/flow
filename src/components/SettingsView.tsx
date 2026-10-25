@@ -31,6 +31,7 @@ interface SettingsViewProps {
   taskCount: number
   habitCount: number
   expenseCount: number
+  hasAnyData: boolean
 }
 
 const APPEARANCE_OPTIONS: AppearanceMode[] = ['system', 'light', 'dark']
@@ -42,6 +43,7 @@ export default function SettingsView({
   taskCount,
   habitCount,
   expenseCount,
+  hasAnyData,
 }: SettingsViewProps) {
   const { locale, setLocale, m } = useI18n()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -228,7 +230,8 @@ export default function SettingsView({
           <button
             type="button"
             onClick={() => setClearOpen(true)}
-            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[12px] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)]"
+            disabled={!hasAnyData}
+            className="flex h-11 w-full items-center gap-2.5 border-t border-[var(--line)] px-4 text-left text-[12px] text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)] disabled:cursor-not-allowed disabled:text-[var(--text-3)] disabled:opacity-45 disabled:hover:bg-transparent"
           >
             <Trash2 size={14} strokeWidth={1.9} />
             {m.settings.clearData}
