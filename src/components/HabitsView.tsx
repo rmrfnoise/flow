@@ -75,6 +75,7 @@ export default function HabitsView({
           m.habits.everyDay,
         )
         const icon = getHabitIconOption(habit.checkInIcon)
+        const HabitIcon = icon.Icon
         const canToggle =
           state === 'checked' || state === 'available'
 
@@ -133,8 +134,11 @@ export default function HabitsView({
 
               <div className="min-w-0 flex-1">
                 <p className="flex min-w-0 items-center gap-1.5 text-[16px] leading-[1.45] text-[var(--text)]">
-                  <span aria-hidden="true" className="shrink-0 text-[13px]">
-                    {icon.emoji}
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-[var(--text-3)]"
+                  >
+                    <HabitIcon size={14} strokeWidth={1.9} />
                   </span>
                   <span className="truncate">{habit.name}</span>
                 </p>

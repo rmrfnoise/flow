@@ -344,6 +344,9 @@ export default function App() {
     route.name === 'habit'
       ? habits.find((habit) => habit.id === route.id) ?? null
       : null
+  const ActiveHabitIcon = activeHabit
+    ? getHabitIconOption(activeHabit.checkInIcon).Icon
+    : null
   const showHabitsList =
     route.name === 'habits' ||
     (route.name === 'habit' && activeHabit === null)
@@ -1036,9 +1039,13 @@ export default function App() {
                   <ChevronLeft size={20} strokeWidth={2} />
                 </button>
                 <h1 className="flex min-w-0 flex-1 items-center gap-2 text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text)] sm:text-[30px]">
-                  <span aria-hidden="true" className="shrink-0 text-[22px]">
-                    {getHabitIconOption(activeHabit.checkInIcon).emoji}
-                  </span>
+                  {ActiveHabitIcon && (
+                    <ActiveHabitIcon
+                      size={22}
+                      strokeWidth={1.8}
+                      className="shrink-0 text-[var(--accent)]"
+                    />
+                  )}
                   <span className="truncate">{activeHabit.name}</span>
                 </h1>
                 <button
