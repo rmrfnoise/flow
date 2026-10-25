@@ -17,7 +17,7 @@ export default function Toast({
   const { m } = useI18n()
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+140px)] z-40 px-5 lg:bottom-[88px]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+64px)] z-40 px-5">
       <div
         role="status"
         aria-live="polite"

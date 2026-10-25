@@ -152,7 +152,7 @@ export default function CategoryPicker({
         role="dialog"
         aria-modal="true"
         aria-label={m.money.categoriesTitle}
-        className="fade-enter relative flex max-h-[90dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:pb-0"
+        className="fade-enter relative flex max-h-[90dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}

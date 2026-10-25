@@ -20,7 +20,6 @@ import {
 import { App as CapacitorApp } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import AddTodoSheet from './components/AddTodoSheet'
-import BrandMark from './components/BrandMark'
 import ConfirmDialog from './components/ConfirmDialog'
 import EmptyState from './components/EmptyState'
 import ExpenseSheet, {
@@ -130,70 +129,6 @@ interface TaskGroupProps {
   onToggle: (id: string) => void
   onDelete: (todo: Todo) => void
   onEdit: (todo: Todo) => void
-}
-
-function SidebarFilter({
-  label,
-  count,
-  active,
-  onClick,
-}: {
-  label: string
-  count: number
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`flex h-9 items-center justify-between rounded-[8px] px-2.5 text-[13.5px] transition-colors ${
-        active
-          ? 'bg-[var(--surface)] font-medium text-[var(--text)] shadow-[var(--shadow-card)]'
-          : 'text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text)]'
-      }`}
-    >
-      <span className="truncate">{label}</span>
-      <span className="ml-2 font-mono text-[11.5px] tabular-nums text-[var(--text-3)]">
-        {count}
-      </span>
-    </button>
-  )
-}
-
-function NavItem({
-  icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: ReactNode
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      aria-current={active ? 'page' : undefined}
-      onClick={onClick}
-      className={`flex h-9 items-center gap-2.5 rounded-[8px] px-2.5 text-[13.5px] transition-colors ${
-        active
-          ? 'bg-[var(--surface)] font-medium text-[var(--text)] shadow-[var(--shadow-card)]'
-          : 'text-[var(--text-2)] hover:bg-[var(--surface)] hover:text-[var(--text)]'
-      }`}
-    >
-      <span
-        className={
-          active ? 'text-[var(--accent)]' : 'text-[var(--text-3)]'
-        }
-      >
-        {icon}
-      </span>
-      {label}
-    </button>
-  )
 }
 
 function BottomNavItem({
@@ -371,12 +306,8 @@ export default function App() {
     let disposed = false
     let handle: { remove: () => void } | undefined
 
-    void CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-      if (canGoBack) {
-        window.history.back()
-      } else {
-        void CapacitorApp.exitApp()
-      }
+    void CapacitorApp.addListener('backButton', () => {
+      void CapacitorApp.exitApp()
     }).then((listener) => {
       if (disposed) {
         void listener.remove()
@@ -439,17 +370,6 @@ export default function App() {
     }
   }, [allTags, filter])
 
-  const tagCounts = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const todo of todos) {
-      if (todo.completedAt !== null) continue
-      for (const tag of todo.tags) {
-        counts.set(tag, (counts.get(tag) ?? 0) + 1)
-      }
-    }
-    return counts
-  }, [todos])
-
   const visibleTodos = useMemo(
     () =>
       filter === null
@@ -497,10 +417,9 @@ export default function App() {
     return buckets
   }, [activeVisible, now])
 
-  const activeAllCount = todos.filter(
-    (todo) => todo.completedAt === null,
+  const completedAllCount = todos.filter(
+    (todo) => todo.completedAt !== null,
   ).length
-  const completedAllCount = todos.length - activeAllCount
   const totalCount = todos.length
   const dateInfo = formatHeaderDate(new Date(now), locale)
   const { planned: todayPlannedCount, done: todayDone } =
@@ -978,82 +897,9 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[1120px] flex-col px-5 sm:px-6 lg:flex-row lg:gap-12 lg:px-8">
-      <aside className="hidden lg:flex lg:w-[220px] lg:shrink-0 lg:flex-col lg:pt-10">
-        <div className="flex h-10 items-center">
-          <BrandMark />
-        </div>
-
-        <nav
-          className="mt-8 flex flex-col gap-0.5"
-          aria-label={m.nav.label}
-        >
-          <NavItem
-            icon={<ListTodo size={16} strokeWidth={1.9} />}
-            label={m.nav.tasks}
-            active={route.name === 'tasks'}
-            onClick={() => navigate('tasks')}
-          />
-          <NavItem
-            icon={<Repeat size={16} strokeWidth={1.9} />}
-            label={m.nav.habits}
-            active={
-              route.name === 'habits' || route.name === 'habit'
-            }
-            onClick={() => navigate('habits')}
-          />
-          <NavItem
-            icon={<Wallet size={16} strokeWidth={1.9} />}
-            label={m.nav.money}
-            active={route.name === 'money'}
-            onClick={() => navigate('money')}
-          />
-          <NavItem
-            icon={<SettingsIcon size={16} strokeWidth={1.9} />}
-            label={m.nav.settings}
-            active={route.name === 'settings'}
-            onClick={() => navigate('settings')}
-          />
-        </nav>
-
-        {route.name === 'tasks' && (
-          <div className="mt-6">
-            <p className="px-2.5 pb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
-              {m.filter.tags}
-            </p>
-            <div
-              className="flex flex-col gap-0.5"
-              role="group"
-              aria-label={m.filter.label}
-            >
-              <SidebarFilter
-                label={m.filter.all}
-                count={activeAllCount}
-                active={filter === null}
-                onClick={() => handleFilterSelect(null)}
-              />
-              {allTags.map((tag) => (
-                <SidebarFilter
-                  key={tag}
-                  label={`#${tag}`}
-                  count={tagCounts.get(tag) ?? 0}
-                  active={filter === tag}
-                  onClick={() => handleFilterSelect(tag)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {route.name === 'tasks' && (
-          <p className="mt-6 border-t border-[var(--line)] px-2.5 pt-4 text-[12px] text-[var(--text-3)]">
-            {m.app.completedCount(completedAllCount)}
-          </p>
-        )}
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col lg:max-w-[780px]">
-        <header className="pt-[max(1.25rem,env(safe-area-inset-top))] sm:pt-10">
+    <div className="mx-auto flex min-h-dvh w-full max-w-[560px] flex-col px-5 sm:px-6">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="pt-[max(1.25rem,env(safe-area-inset-top))]">
           {route.name === 'habit' && activeHabit ? (
             <>
               <div className="flex items-center gap-2">
@@ -1146,7 +992,7 @@ export default function App() {
         </header>
 
         {route.name === 'tasks' && allTags.length > 0 && (
-          <div className="relative sticky top-0 z-20 -mx-5 mt-5 bg-[var(--bg)] px-5 pb-1 pt-2 sm:-mx-6 sm:px-6 lg:hidden">
+          <div className="relative sticky top-0 z-20 -mx-5 mt-5 bg-[var(--bg)] px-5 pb-1 pt-2">
             <FilterBar
               tags={allTags}
               selected={filter}
@@ -1160,7 +1006,7 @@ export default function App() {
         )}
 
         {route.name === 'tasks' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-32">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             {visibleTotal === 0 ? (
           <EmptyState
             filtered={filter !== null}
@@ -1272,7 +1118,7 @@ export default function App() {
         )}
 
         {showHabitsList && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-32">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             <HabitsView
               habits={habits}
               checkins={habitCheckins}
@@ -1287,7 +1133,7 @@ export default function App() {
         )}
 
         {route.name === 'habit' && activeHabit && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-16">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             <HabitDetail
               key={activeHabit.id}
               habit={activeHabit}
@@ -1302,7 +1148,7 @@ export default function App() {
         )}
 
         {route.name === 'money' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-32">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             <MoneyView
               expenses={expenses}
               customCategories={customCategories}
@@ -1317,7 +1163,7 @@ export default function App() {
         )}
 
         {route.name === 'settings' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-6 lg:pb-16">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-6">
             <SettingsView
               appearanceMode={appearanceMode}
               onAppearanceModeChange={setAppearanceMode}
@@ -1330,7 +1176,7 @@ export default function App() {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)]"
         aria-label={m.nav.label}
       >
         <div className="mx-auto grid max-w-[500px] grid-cols-4">

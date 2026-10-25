@@ -221,7 +221,7 @@ export default function AddTodoSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center"
       style={{ bottom: keyboardInset }}
     >
       <button
@@ -236,7 +236,7 @@ export default function AddTodoSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="todo-sheet-title"
-        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:shadow-[var(--shadow-dialog)]"
+        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}

@@ -127,7 +127,7 @@ export default function ExpenseSheet({
         aria-label={
           initialExpense ? m.money.editExpense : m.money.newExpense
         }
-        className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:shadow-[var(--shadow-dialog)]"
+        className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}

@@ -117,7 +117,7 @@ export default function SettingsView({
   }
 
   return (
-    <div className="flex max-w-[560px] flex-col gap-6 pb-6 lg:grid lg:max-w-[760px] lg:grid-cols-2 lg:items-start lg:gap-x-8 lg:gap-y-7">
+    <div className="flex max-w-[560px] flex-col gap-6 pb-6">
       <section>
         <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.appearance}

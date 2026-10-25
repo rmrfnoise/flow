@@ -125,7 +125,7 @@ export default function HabitSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center"
       style={{ bottom: keyboardInset }}
     >
       <button
@@ -140,7 +140,7 @@ export default function HabitSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="habit-sheet-title"
-        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[var(--radius-panel)] sm:shadow-[var(--shadow-dialog)]"
+        className="sheet-enter relative z-10 flex max-h-[92dvh] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-[var(--surface)] shadow-[var(--shadow-sheet)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -274,7 +274,7 @@ export default function HabitSheet({
             <p className="mt-0.5 text-[11.5px] leading-relaxed text-[var(--text-3)]">
               {m.habits.checkInIconHint}
             </p>
-            <div className="mt-2 grid grid-cols-8 gap-1">
+            <div className="mt-2 grid max-h-[138px] grid-cols-8 gap-1 overflow-y-auto overscroll-contain pr-0.5">
               {HABIT_ICON_OPTIONS.map((option) => {
                 const active = checkInIcon === option.id
                 const OptionIcon = option.Icon
