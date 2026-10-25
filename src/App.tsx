@@ -244,8 +244,8 @@ function TaskGroup({
   onEdit,
 }: TaskGroupProps) {
   return (
-    <section className="mt-6 first:mt-2">
-      <div className="mb-2 flex items-baseline justify-between px-1">
+    <section className="mt-5 first:mt-1">
+      <div className="mb-1.5 flex items-baseline justify-between px-1">
         <h2
           className={`text-[13px] font-medium ${
             danger ? 'text-[var(--danger)]' : 'text-[var(--text-2)]'
@@ -257,7 +257,7 @@ function TaskGroup({
           {todos.length}
         </span>
       </div>
-      <ul className="overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+      <ul className="overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
         {todos.map((todo) => (
           <TodoRow
             key={todo.id}
@@ -1066,34 +1066,55 @@ export default function App() {
               </p>
             </>
           ) : (
-            <>
-              <h1 className="text-[28px] font-semibold leading-[1.12] tracking-[-0.025em] text-[var(--text)] sm:text-[32px]">
-                {route.name === 'settings'
-                  ? m.settings.title
-                  : route.name === 'money'
-                    ? m.money.title
-                    : showHabitsList
-                      ? m.habits.title
-                      : m.app.title}
-              </h1>
-              <p className="mt-2 text-[13px] text-[var(--text-2)]">
-                {route.name === 'settings' ? (
-                  m.settings.subtitle
-                ) : route.name === 'money' ? (
-                  m.money.subtitle
-                ) : showHabitsList ? (
-                  habitSubtitle
-                ) : (
-                  <>
-                    {dateInfo}
-                    <span className="mx-1.5 text-[var(--text-3)]">
-                      ·
-                    </span>
-                    {subtitle}
-                  </>
-                )}
-              </p>
-            </>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-[28px] font-semibold leading-[1.12] tracking-[-0.025em] text-[var(--text)] sm:text-[32px]">
+                  {route.name === 'settings'
+                    ? m.settings.title
+                    : route.name === 'money'
+                      ? m.money.title
+                      : showHabitsList
+                        ? m.habits.title
+                        : m.app.title}
+                </h1>
+                <p className="mt-2 text-[13px] text-[var(--text-2)]">
+                  {route.name === 'settings' ? (
+                    m.settings.subtitle
+                  ) : route.name === 'money' ? (
+                    m.money.subtitle
+                  ) : showHabitsList ? (
+                    habitSubtitle
+                  ) : (
+                    <>
+                      {dateInfo}
+                      <span className="mx-1.5 text-[var(--text-3)]">
+                        ·
+                      </span>
+                      {subtitle}
+                    </>
+                  )}
+                </p>
+              </div>
+              {((route.name === 'tasks' && visibleTotal > 0) ||
+                (showHabitsList && habits.length > 0)) && (
+                <button
+                  type="button"
+                  aria-label={
+                    showHabitsList
+                      ? m.habits.addHabit
+                      : m.app.addTask
+                  }
+                  onClick={
+                    showHabitsList
+                      ? () => openHabitSheet()
+                      : openAddSheet
+                  }
+                  className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+                >
+                  <Plus size={19} strokeWidth={2.1} />
+                </button>
+              )}
+            </div>
           )}
         </header>
 
@@ -1112,7 +1133,7 @@ export default function App() {
         )}
 
         {route.name === 'tasks' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+150px)] pt-1 lg:pb-32">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-32">
             {visibleTotal === 0 ? (
           <EmptyState
             filtered={filter !== null}
@@ -1163,23 +1184,23 @@ export default function App() {
             )}
 
             {completedVisible.length > 0 && (
-              <section className="mt-8">
+              <section className="mt-5">
                 <button
                   type="button"
                   onClick={() => setCompletedOpen((value) => !value)}
                   aria-expanded={completedOpen}
                   aria-controls="completed-list"
-                  className="flex w-full items-center justify-between rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5 shadow-[var(--shadow-card)] transition-colors hover:bg-[var(--surface-sunken)]"
+                  className="flex w-full items-center justify-between px-1 py-2.5 text-left"
                 >
-                  <span className="flex items-center gap-2 text-[14px] font-medium text-[var(--text-2)]">
-                    <CheckCheck size={16} strokeWidth={1.9} />
+                  <span className="flex items-center gap-2 text-[13px] font-medium text-[var(--text-2)]">
+                    <CheckCheck size={15} strokeWidth={1.9} />
                     {m.app.completed}
-                    <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-3)]">
+                    <span className="font-mono text-[11px] tabular-nums text-[var(--text-3)]">
                       {completedVisible.length}
                     </span>
                   </span>
                   <ChevronDown
-                    size={16}
+                    size={15}
                     strokeWidth={1.9}
                     className={`text-[var(--text-3)] transition-transform duration-200 ${
                       completedOpen ? 'rotate-180' : ''
@@ -1191,7 +1212,7 @@ export default function App() {
                   id="completed-list"
                   className={
                     completedOpen
-                      ? 'fade-enter mt-2 overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]'
+                      ? 'fade-enter mt-1 overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]'
                       : 'hidden'
                   }
                 >
@@ -1224,7 +1245,7 @@ export default function App() {
         )}
 
         {showHabitsList && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+150px)] pt-1 lg:pb-32">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-32">
             <HabitsView
               habits={habits}
               checkins={habitCheckins}
@@ -1254,7 +1275,7 @@ export default function App() {
         )}
 
         {route.name === 'money' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+150px)] pt-1 lg:pb-32">
+          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1 lg:pb-32">
             <MoneyView
               expenses={expenses}
               customCategories={customCategories}
@@ -1280,36 +1301,6 @@ export default function App() {
           </main>
         )}
       </div>
-
-      {((route.name === 'tasks' && visibleTotal > 0) ||
-        (showHabitsList && habits.length > 0)) && (
-        <div className="pointer-events-none fixed inset-0 z-30">
-          <div className="mx-auto flex h-full w-full max-w-[1040px] px-5 sm:px-6 lg:px-8">
-            <div
-              aria-hidden="true"
-              className="hidden lg:mr-12 lg:block lg:w-[220px] lg:shrink-0"
-            />
-            <div className="relative min-w-0 flex-1 lg:max-w-[720px]">
-              <button
-                type="button"
-                aria-label={
-                  showHabitsList
-                    ? m.habits.addHabit
-                    : m.app.addTask
-                }
-                onClick={
-                  showHabitsList
-                    ? () => openHabitSheet()
-                    : openAddSheet
-                }
-                className="pointer-events-auto absolute bottom-[calc(env(safe-area-inset-bottom)+72px)] right-0 grid h-14 w-14 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] shadow-[var(--shadow-fab)] transition-all active:scale-95 hover:bg-[var(--accent-hover)] lg:bottom-6"
-              >
-                <Plus size={24} strokeWidth={2.1} />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <nav
         className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)] lg:hidden"

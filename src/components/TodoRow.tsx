@@ -210,7 +210,7 @@ export default function TodoRow({
             : 'transform 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           touchAction: 'pan-y',
         }}
-        className={`relative flex cursor-pointer select-none items-start gap-3 bg-[var(--surface)] px-4 py-3.5 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
+        className={`relative flex cursor-pointer select-none items-start gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
           dragging ? 'bg-[var(--surface-sunken)]' : ''
         }`}
       >
@@ -224,7 +224,7 @@ export default function TodoRow({
             onToggle(todo.id)
           }}
           onPointerDown={(event) => event.stopPropagation()}
-          className={`relative mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full border-[1.5px] transition-all duration-150 after:absolute after:-inset-2 after:content-[''] active:scale-90 ${
+          className={`relative mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border-[1.5px] transition-colors after:absolute after:-inset-2 after:content-[''] ${
             completed
               ? 'border-transparent bg-[var(--accent)] text-[var(--on-accent)]'
               : 'border-[var(--checkbox-border)] text-transparent hover:border-[var(--accent)]'
@@ -239,7 +239,7 @@ export default function TodoRow({
 
         <div className="min-w-0 flex-1 pt-[1px]">
           <p
-            className={`break-words text-[16px] leading-[1.45] tracking-[-0.004em] sm:text-[17px] ${
+            className={`break-words text-[15.5px] leading-[1.45] tracking-[-0.004em] sm:text-[16.5px] ${
               completed
                 ? 'text-[var(--text-3)] line-through decoration-[var(--text-3)] decoration-[1.5px]'
                 : 'text-[var(--text)]'
@@ -249,7 +249,7 @@ export default function TodoRow({
           </p>
 
           {hasMeta && (
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px] leading-[1.4] sm:text-[13px]">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px] leading-[1.4] sm:text-[12px]">
               {todo.dueAt !== null && (
                 <span
                   title={`${formatDeadlineLong(todo.dueAt, todo.dueHasTime, locale)} · ${formatCountdown(todo.dueAt, todo.dueHasTime, now, locale)}`}

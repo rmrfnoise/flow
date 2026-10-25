@@ -32,7 +32,7 @@ export default function SegmentedTabs<T extends string>({
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-1 left-1 top-1 rounded-[9px] bg-[var(--segment-active)] shadow-[var(--shadow-card)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+        className="pointer-events-none absolute bottom-1 left-1 top-1 rounded-[9px] bg-[var(--segment-active)] transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
         style={{
           width: `calc((100% - 0.5rem) / ${options.length})`,
           transform: `translateX(${activeIndex * 100}%)`,

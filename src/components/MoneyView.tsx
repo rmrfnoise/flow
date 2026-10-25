@@ -50,11 +50,11 @@ function RecordsEmpty({
   onAdd: () => void
 }) {
   return (
-    <div className="fade-enter mt-5 flex flex-col items-center rounded-[18px] border border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center shadow-[var(--shadow-card)]">
-      <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+    <div className="fade-enter mt-5 flex flex-col items-center rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
+      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
         <ReceiptText size={22} strokeWidth={1.7} />
       </div>
-      <p className="mt-4 text-[15px] font-semibold text-[var(--text)]">
+      <p className="mt-3 text-[15px] font-semibold text-[var(--text)]">
         {title}
       </p>
       <p className="mt-1 max-w-[250px] text-[13px] leading-[1.6] text-[var(--text-2)]">
@@ -63,7 +63,7 @@ function RecordsEmpty({
       <button
         type="button"
         onClick={onAdd}
-        className="mt-5 inline-flex h-10 items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 text-[13px] font-semibold text-[var(--on-accent)] transition-all active:scale-[0.98] hover:bg-[var(--accent-hover)]"
+        className="mt-4 inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
       >
         <Plus size={15} strokeWidth={2.2} />
         {action}
@@ -121,7 +121,7 @@ export default function MoneyView({
           type="button"
           aria-label={m.money.addExpense}
           onClick={onAdd}
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] shadow-[var(--shadow-fab)] transition-all active:scale-95 hover:bg-[var(--accent-hover)] ${
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)] ${
             tab === 'records' && !hasAnyExpenses
               ? 'hidden'
               : ''
@@ -145,7 +145,7 @@ export default function MoneyView({
             />
           ) : (
             <>
-              <section className="mt-4 overflow-hidden rounded-[18px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+              <section className="mt-4 overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)]">
                 <div className="flex items-center justify-center gap-2 px-4 pt-3">
                   <button
                     type="button"
@@ -190,7 +190,7 @@ export default function MoneyView({
                     {m.money.total}
                   </p>
                   <div className="mt-1.5 flex items-end justify-between gap-3">
-                    <p className="min-w-0 truncate text-[34px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-[var(--text)]">
+                    <p className="min-w-0 truncate text-[32px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)]">
                       {formatMoney(totalCents, locale)}
                     </p>
                     <span className="mb-0.5 shrink-0 rounded-full bg-[var(--surface-sunken)] px-2 py-0.5 text-[11px] tabular-nums text-[var(--text-3)]">
@@ -236,7 +236,7 @@ export default function MoneyView({
                           {formatMoney(group.totalCents, locale)}
                         </span>
                       </div>
-                      <div className="overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
+                      <div className="overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
                         <ul>
                           {group.expenses.map((expense) => (
                             <ExpenseRow

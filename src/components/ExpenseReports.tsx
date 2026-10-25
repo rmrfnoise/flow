@@ -207,7 +207,7 @@ export default function ExpenseReports({
       </div>
 
       {report.count === 0 ? (
-        <div className="mt-4 flex flex-col items-center rounded-[18px] border border-[var(--line)] bg-[var(--surface)] px-6 py-14 text-center shadow-[var(--shadow-card)]">
+        <div className="mt-4 flex flex-col items-center rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
           <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
             <ReceiptText size={22} strokeWidth={1.7} />
           </div>
@@ -217,11 +217,11 @@ export default function ExpenseReports({
         </div>
       ) : (
         <>
-          <section className="mt-3 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]">
+          <section className="mt-3 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
             <p className="text-[10.5px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
               {m.money.total}
             </p>
-            <p className="mt-1.5 text-[34px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-[var(--text)]">
+            <p className="mt-1.5 text-[32px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)]">
               {formatMoney(report.totalCents, locale)}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3 border-t border-[var(--line)] pt-4">
@@ -244,7 +244,7 @@ export default function ExpenseReports({
             </div>
           </section>
 
-          <section className="mt-4 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]">
+          <section className="mt-4 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
             <h2 className="text-[13.5px] font-semibold text-[var(--text)]">
               {m.money.trend}
             </h2>
@@ -281,7 +281,7 @@ export default function ExpenseReports({
                         bucket.totalCents > 0
                           ? active
                             ? 'bg-[var(--accent)]'
-                            : 'bg-[var(--accent)] opacity-90'
+                            : 'bg-[var(--text-2)]'
                           : 'bg-[var(--surface-sunken)]'
                       }`}
                       style={{
@@ -325,7 +325,7 @@ export default function ExpenseReports({
             </div>
           </section>
 
-          <section className="mt-4 rounded-[18px] border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow-card)]">
+          <section className="mt-4 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
             <h2 className="text-[13.5px] font-semibold text-[var(--text)]">
               {m.money.byCategory}
             </h2>
@@ -345,7 +345,11 @@ export default function ExpenseReports({
                   </div>
                   <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--surface-sunken)]">
                     <div
-                      className="category-bar h-full rounded-full bg-[var(--accent)]"
+                      className={`category-bar h-full rounded-full ${
+                        index === 0
+                          ? 'bg-[var(--accent)]'
+                          : 'bg-[var(--text-3)]'
+                      }`}
                       style={{
                         width: `${Math.max(
                           2,

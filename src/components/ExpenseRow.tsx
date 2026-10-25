@@ -189,19 +189,19 @@ export default function ExpenseRow({
             : 'width 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           touchAction: 'pan-y',
         }}
-        className={`relative flex cursor-pointer select-none items-center gap-3 bg-[var(--surface)] px-4 py-3.5 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
+        className={`relative flex cursor-pointer select-none items-center gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
           dragging ? 'bg-[var(--surface-sunken)]' : ''
         }`}
       >
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[16px] leading-[1.4] text-[var(--text)]">
+          <p className="truncate text-[15.5px] leading-[1.4] text-[var(--text)]">
             {expense.content}
           </p>
-          <p className="mt-0.5 truncate text-[12.5px] text-[var(--text-3)]">
+          <p className="mt-0.5 truncate text-[11.5px] text-[var(--text-3)]">
             {categoryName}
           </p>
         </div>
-        <span className="shrink-0 text-[15.5px] font-semibold tabular-nums text-[var(--text)]">
+        <span className="shrink-0 text-[15px] font-semibold tabular-nums text-[var(--text)]">
           {formatMoney(expense.amountCents, locale)}
         </span>
       </article>
