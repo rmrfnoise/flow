@@ -58,7 +58,6 @@ export interface BalanceState {
   enabled: boolean
   startCents: number | null
   startAt: number | null
-  pausedAt?: number | null
 }
 
 export interface CustomExpenseCategory {
@@ -110,7 +109,6 @@ export const DEFAULT_BALANCE_STATE: BalanceState = {
   enabled: false,
   startCents: null,
   startAt: null,
-  pausedAt: null,
 }
 
 export const CATEGORY_GROUP_ORDER: ExpenseCategoryGroup[] = [
@@ -472,22 +470,9 @@ export function getBalanceCents(
     return null
   }
 
-  return getBalanceAt(expenses, balance, Date.now())
-}
-
-export function getBalanceAt(
-  expenses: Expense[],
-  balance: BalanceState,
-  at: number,
-): number | null {
-  if (balance.startCents === null || balance.startAt === null) {
-    return null
-  }
-
   let total = balance.startCents
   for (const expense of expenses) {
     if (expense.createdAt <= balance.startAt) continue
-    if (expense.createdAt > at) continue
     total += getEntrySignedCents(expense)
   }
   return total
@@ -503,11 +488,7 @@ export function isBalanceState(value: unknown): value is BalanceState {
         Math.abs(value.startCents) <= MAX_AMOUNT_CENTS)) &&
     (value.startAt === null ||
       (typeof value.startAt === 'number' &&
-        Number.isFinite(value.startAt))) &&
-    (value.pausedAt === undefined ||
-      value.pausedAt === null ||
-      (typeof value.pausedAt === 'number' &&
-        Number.isFinite(value.pausedAt)))
+        Number.isFinite(value.startAt)))
   )
 }
 

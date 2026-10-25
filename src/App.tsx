@@ -52,7 +52,6 @@ import {
   INCOME_MISC_CATEGORY_ID,
   MISC_CATEGORY_ID,
   countExpensesForCategory,
-  getBalanceAt,
   getBalanceCents,
   getEntryType,
   isBalanceState,
@@ -263,6 +262,7 @@ export default function App() {
   )
   const [balanceSheetMode, setBalanceSheetMode] =
     useState<BalanceSheetMode | null>(null)
+  const [balanceDisableOpen, setBalanceDisableOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] =
     useState<CustomExpenseCategory | null>(null)
   const [toast, setToast] = useState<ToastState | null>(null)
@@ -292,21 +292,6 @@ export default function App() {
     () => getBalanceCents(expenses, balance),
     [balance, expenses],
   )
-  const lastTrackedCents = useMemo(
-    () =>
-      getBalanceAt(
-        expenses,
-        balance,
-        balance.pausedAt ?? Date.now(),
-      ),
-    [balance, expenses],
-  )
-  const offEntryCount = useMemo(() => {
-    if (!balance.pausedAt) return 0
-    return expenses.filter(
-      (expense) => expense.createdAt > balance.pausedAt!,
-    ).length
-  }, [balance.pausedAt, expenses])
   const activeHabit =
     route.name === 'habit'
       ? habits.find((habit) => habit.id === route.id) ?? null
@@ -855,18 +840,22 @@ export default function App() {
 
   function handleToggleBalance() {
     if (balance.enabled) {
-      setBalance((current) => ({
-        ...current,
-        enabled: false,
-        pausedAt: Date.now(),
-      }))
+      setBalanceDisableOpen(true)
       return
     }
-    if (balance.startCents === null || balance.startAt === null) {
-      setBalanceSheetMode('setup')
-      return
-    }
-    setBalanceSheetMode('resume')
+    setBalanceSheetMode('setup')
+  }
+
+  function handleDisableBalance() {
+    setBalance(DEFAULT_BALANCE_STATE)
+    setExpenses((current) =>
+      current.filter(
+        (expense) => getEntryType(expense) !== 'adjustment',
+      ),
+    )
+    setBalanceDisableOpen(false)
+    setNow(Date.now())
+    showToast({ message: m.money.toastBalanceCleared }, 2800)
   }
 
   function handleSetBalance(cents: number) {
@@ -875,23 +864,10 @@ export default function App() {
       enabled: true,
       startCents: cents,
       startAt: timestamp,
-      pausedAt: null,
     })
     setNow(timestamp)
     setBalanceSheetMode(null)
     showToast({ message: m.money.toastBalanceSet }, 2800)
-  }
-
-  function handleContinueBalance() {
-    const timestamp = Date.now()
-    setBalance((current) => ({
-      ...current,
-      enabled: true,
-      pausedAt: null,
-    }))
-    setNow(timestamp)
-    setBalanceSheetMode(null)
-    showToast({ message: m.money.toastBalanceResumed }, 2800)
   }
 
   function handleCalibrateBalance(cents: number) {
@@ -1370,19 +1346,23 @@ export default function App() {
         <BalanceSheet
           mode={balanceSheetMode}
           currentCents={balanceCents}
-          lastTrackedCents={lastTrackedCents}
-          offEntryCount={offEntryCount}
           onClose={() => setBalanceSheetMode(null)}
           onConfirm={
             balanceSheetMode === 'calibrate'
               ? handleCalibrateBalance
               : handleSetBalance
           }
-          onContinue={
-            balanceSheetMode === 'resume'
-              ? handleContinueBalance
-              : undefined
-          }
+        />
+      )}
+
+      {balanceDisableOpen && (
+        <ConfirmDialog
+          title={m.money.balanceOffTitle}
+          description={m.money.balanceOffDescription}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.money.balanceOffConfirm}
+          onClose={() => setBalanceDisableOpen(false)}
+          onConfirm={handleDisableBalance}
         />
       )}
 
