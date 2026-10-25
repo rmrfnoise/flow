@@ -65,7 +65,7 @@ export default function ConfirmDialog({
 
         <h2
           id="confirm-dialog-title"
-          className="mt-3 text-[17px] font-semibold text-[var(--text)]"
+          className="mt-3 text-[18px] font-semibold text-[var(--text)]"
         >
           {title}
         </h2>

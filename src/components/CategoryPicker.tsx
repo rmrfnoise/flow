@@ -151,7 +151,7 @@ export default function CategoryPicker({
         role="dialog"
         aria-modal="true"
         aria-label={m.money.categoriesTitle}
-        className="fade-enter relative flex max-h-[90dvh] w-full max-w-[520px] flex-col rounded-t-[24px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[20px] sm:pb-0"
+        className="fade-enter relative flex max-h-[90dvh] w-full max-w-[520px] flex-col rounded-t-[20px] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[18px] sm:pb-0"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -159,7 +159,7 @@ export default function CategoryPicker({
         <div className="flex items-start justify-between px-5 pb-2 pt-3">
           <div>
             <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--line-strong)] sm:hidden" />
-            <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-[var(--text)]">
+            <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]">
               {m.money.categoriesTitle}
             </h2>
           </div>
@@ -167,7 +167,7 @@ export default function CategoryPicker({
             type="button"
             aria-label={m.money.close}
             onClick={onClose}
-            className="-mr-2 grid h-9 w-9 place-items-center rounded-full text-[var(--text-2)] transition-colors hover:bg-[var(--surface-sunken)]"
+            className="-mr-2 grid h-8 w-8 place-items-center rounded-full text-[var(--text-3)] transition-colors hover:bg-[var(--surface-sunken)] hover:text-[var(--text)]"
           >
             <X size={18} strokeWidth={1.9} />
           </button>
@@ -186,7 +186,7 @@ export default function CategoryPicker({
               onChange={(event) => setQuery(event.target.value)}
               placeholder={m.money.searchPlaceholder}
               aria-label={m.money.searchPlaceholder}
-              className="h-11 w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] pl-9 pr-3 text-[15px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+              className="h-11 w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] pl-9 pr-3 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
             />
           </div>
 
@@ -208,7 +208,7 @@ export default function CategoryPicker({
                 }}
                 placeholder={m.money.categoryNamePlaceholder}
                 aria-label={m.money.categoryNamePlaceholder}
-                className="h-10 w-full rounded-[8px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[15px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+                className="h-10 w-full rounded-[8px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
               />
               {error && (
                 <p

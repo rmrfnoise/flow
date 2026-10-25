@@ -122,7 +122,7 @@ export default function ExpenseSheet({
         aria-label={
           initialExpense ? m.money.editExpense : m.money.newExpense
         }
-        className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[24px] border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[20px]"
+        className="fade-enter relative flex max-h-[92dvh] w-full max-w-[520px] flex-col rounded-t-[20px] bg-[var(--surface)] shadow-[var(--shadow-sheet)] sm:rounded-[18px] sm:shadow-[var(--shadow-dialog)]"
         style={{
           maxHeight: keyboardInset > 0 ? '100%' : undefined,
         }}
@@ -130,7 +130,7 @@ export default function ExpenseSheet({
         <div className="flex items-start justify-between px-5 pb-2 pt-3">
           <div>
             <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-[var(--line-strong)] sm:hidden" />
-            <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-[var(--text)]">
+            <h2 className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]">
               {initialExpense
                 ? m.money.editExpense
                 : m.money.newExpense}
@@ -140,7 +140,7 @@ export default function ExpenseSheet({
             type="button"
             aria-label={m.money.close}
             onClick={onClose}
-            className="-mr-2 grid h-9 w-9 place-items-center rounded-full text-[var(--text-2)] transition-colors hover:bg-[var(--surface-sunken)]"
+            className="-mr-2 grid h-8 w-8 place-items-center rounded-full text-[var(--text-3)] transition-colors hover:bg-[var(--surface-sunken)] hover:text-[var(--text)]"
           >
             <X size={18} strokeWidth={1.9} />
           </button>
@@ -151,13 +151,13 @@ export default function ExpenseSheet({
             {m.money.amount}
           </label>
           <div
-            className={`mt-1.5 flex items-baseline gap-2.5 rounded-[14px] border bg-[var(--surface-sunken)] px-4 py-3.5 ${
+            className={`mt-1.5 flex items-baseline gap-2.5 rounded-[12px] border bg-[var(--surface-sunken)] px-4 py-3.5 ${
               errors.amount
                 ? 'border-[var(--danger)]'
-                : 'border-transparent focus-within:border-[var(--accent)]'
+                : 'border-[var(--line)] focus-within:border-[var(--accent)]'
             }`}
           >
-            <span className="text-[22px] font-medium text-[var(--text-3)]">
+            <span className="text-[20px] font-medium text-[var(--text-3)]">
               ¥
             </span>
             <input
@@ -180,7 +180,7 @@ export default function ExpenseSheet({
               placeholder="0.00"
               aria-label={m.money.amount}
               aria-invalid={Boolean(errors.amount)}
-              className="min-w-0 flex-1 bg-transparent text-[36px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
+              className="min-w-0 flex-1 bg-transparent text-[34px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
             />
           </div>
           {errors.amount && (
@@ -195,10 +195,10 @@ export default function ExpenseSheet({
           <button
             type="button"
             onClick={() => setCategoryOpen(true)}
-            className={`mt-1.5 flex h-12 w-full items-center gap-2 rounded-[12px] border bg-[var(--surface-sunken)] px-3.5 text-left transition-colors hover:border-[var(--line-strong)] ${
+            className={`mt-1.5 flex h-11 w-full items-center gap-2 rounded-[10px] border bg-[var(--surface-sunken)] px-3.5 text-left transition-colors hover:border-[var(--line-strong)] ${
               errors.category
                 ? 'border-[var(--danger)]'
-                : 'border-transparent'
+                : 'border-[var(--line)]'
             }`}
           >
             <Tag
@@ -207,7 +207,7 @@ export default function ExpenseSheet({
               className="shrink-0 text-[var(--text-3)]"
             />
             <span
-              className={`min-w-0 flex-1 truncate text-[15px] ${
+              className={`min-w-0 flex-1 truncate text-[14px] ${
                 selectedCategory
                   ? 'text-[var(--text)]'
                   : 'text-[var(--text-3)]'
@@ -247,10 +247,10 @@ export default function ExpenseSheet({
             }}
             placeholder={m.money.contentPlaceholder}
             aria-invalid={Boolean(errors.content)}
-            className={`mt-1.5 h-12 w-full rounded-[12px] border bg-[var(--surface-sunken)] px-3.5 text-[15px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] ${
+            className={`mt-1.5 h-11 w-full rounded-[10px] border bg-[var(--surface-sunken)] px-3.5 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] ${
               errors.content
                 ? 'border-[var(--danger)]'
-                : 'border-transparent focus:border-[var(--accent)]'
+                : 'border-[var(--line)] focus:border-[var(--accent)]'
             }`}
           />
           {errors.content && (
@@ -267,7 +267,7 @@ export default function ExpenseSheet({
               <button
                 type="button"
                 onClick={() => selectDate(todayKey)}
-                className={`h-7 rounded-full px-2.5 text-[10.5px] font-medium transition-colors ${
+                className={`h-7 rounded-full px-2.5 text-[11px] font-medium transition-colors ${
                   date === todayKey
                     ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
                     : 'text-[var(--text-3)] hover:text-[var(--text)]'
@@ -278,7 +278,7 @@ export default function ExpenseSheet({
               <button
                 type="button"
                 onClick={() => selectDate(yesterdayKey)}
-                className={`h-7 rounded-full px-2.5 text-[10.5px] font-medium transition-colors ${
+                className={`h-7 rounded-full px-2.5 text-[11px] font-medium transition-colors ${
                   date === yesterdayKey
                     ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
                     : 'text-[var(--text-3)] hover:text-[var(--text)]'
@@ -291,10 +291,10 @@ export default function ExpenseSheet({
           <button
             type="button"
             onClick={() => setDateOpen(true)}
-            className={`mt-1.5 flex h-12 w-full items-center gap-2 rounded-[12px] border bg-[var(--surface-sunken)] px-3.5 text-left transition-colors hover:border-[var(--line-strong)] ${
+            className={`mt-1.5 flex h-11 w-full items-center gap-2 rounded-[10px] border bg-[var(--surface-sunken)] px-3.5 text-left transition-colors hover:border-[var(--line-strong)] ${
               errors.date
                 ? 'border-[var(--danger)]'
-                : 'border-transparent'
+                : 'border-[var(--line)]'
             }`}
           >
             <CalendarDays
@@ -302,7 +302,7 @@ export default function ExpenseSheet({
               strokeWidth={1.9}
               className="shrink-0 text-[var(--text-3)]"
             />
-            <span className="min-w-0 flex-1 text-[15px] text-[var(--text)]">
+            <span className="min-w-0 flex-1 text-[14px] text-[var(--text)]">
               {formatMonthDay(date, locale)}
             </span>
             <ChevronRight
@@ -320,7 +320,7 @@ export default function ExpenseSheet({
           <button
             type="button"
             onClick={handleSave}
-            className="mt-6 flex h-12 w-full items-center justify-center rounded-[12px] bg-[var(--accent)] text-[15px] font-semibold text-[var(--on-accent)] transition-all active:scale-[0.99] hover:bg-[var(--accent-hover)]"
+            className="mt-6 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
             {initialExpense ? m.money.save : m.money.add}
           </button>
@@ -362,3 +362,4 @@ export default function ExpenseSheet({
     </div>
   )
 }
+

@@ -251,7 +251,7 @@ export default function AddTodoSheet({
         <div className="flex items-center justify-between px-5 pb-1 pt-3">
           <h2
             id="todo-sheet-title"
-            className="text-[20px] font-semibold tracking-[-0.015em] text-[var(--text)]"
+            className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]"
           >
             {isEditing ? m.sheet.editTask : m.sheet.newTask}
           </h2>
@@ -269,7 +269,7 @@ export default function AddTodoSheet({
           onSubmit={handleSubmit}
           className="hide-scrollbar flex-1 overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2"
         >
-          <div className="rounded-[12px] border border-[var(--line)] bg-[var(--surface-sunken)] px-3.5 py-3 transition-colors focus-within:border-[var(--accent)]">
+          <div className="rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] px-3.5 py-3 transition-colors focus-within:border-[var(--accent)]">
             <label htmlFor="todo-text" className="sr-only">
               {m.sheet.contentLabel}
             </label>
@@ -288,7 +288,7 @@ export default function AddTodoSheet({
                 if (error) setError('')
               }}
               onKeyDown={handleTextKeyDown}
-              className="block min-h-[84px] w-full resize-none bg-transparent text-[17px] leading-[1.5] text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
+              className="block min-h-[80px] w-full resize-none bg-transparent text-[16px] leading-[1.5] text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
             />
           </div>
 
@@ -316,7 +316,7 @@ export default function AddTodoSheet({
                       type="button"
                       aria-pressed={active}
                       onClick={() => toggleTag(tag)}
-                      className={`h-7 rounded-full px-2.5 text-[12px] font-medium transition-colors ${
+                      className={`h-7 rounded-full px-2.5 text-[11.5px] font-medium transition-colors ${
                         active
                           ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
                           : 'bg-[var(--surface-sunken)] text-[var(--text-2)] hover:text-[var(--text)]'
@@ -344,17 +344,17 @@ export default function AddTodoSheet({
             </p>
           )}
 
-          <div className="mt-6">
+          <div className="mt-5">
             <div className="flex items-baseline justify-between">
-              <span className="flex items-center gap-1.5 text-[14px] font-medium text-[var(--text)]">
+              <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-[var(--text-2)]">
                 <CalendarClock
-                  size={15}
+                  size={14}
                   strokeWidth={1.9}
                   className="text-[var(--text-3)]"
                 />
                 {m.sheet.due}
               </span>
-              <span className="text-[12px] text-[var(--text-3)]">
+              <span className="text-[11.5px] text-[var(--text-3)]">
                 {deadlineMode === 'none'
                   ? m.sheet.optional
                   : deadlineMode === 'date'
@@ -376,9 +376,9 @@ export default function AddTodoSheet({
                     type="button"
                     aria-pressed={active}
                     onClick={() => selectDeadlineMode(mode)}
-                    className={`h-8 rounded-[7px] text-[13px] font-medium transition-all ${
+                    className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
                       active
-                        ? 'bg-[var(--segment-active)] text-[var(--text)] shadow-[var(--shadow-card)]'
+                        ? 'bg-[var(--segment-active)] text-[var(--text)]'
                         : 'text-[var(--text-2)] hover:text-[var(--text)]'
                     }`}
                   >
@@ -393,7 +393,7 @@ export default function AddTodoSheet({
                 type="button"
                 onClick={() => setPickerOpen(true)}
                 aria-haspopup="dialog"
-                className="mt-2 flex h-11 w-full items-center gap-2 rounded-[10px] border border-[var(--line)] bg-[var(--surface)] px-3 text-left transition-colors hover:border-[var(--line-strong)]"
+                className="mt-2 flex h-11 w-full items-center gap-2 rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] px-3 text-left transition-colors hover:border-[var(--line-strong)]"
               >
                 <span className="min-w-0 flex-1 truncate text-[14px] text-[var(--text)]">
                   {dueLabel || m.sheet.due}
@@ -410,7 +410,7 @@ export default function AddTodoSheet({
           <button
             type="submit"
             disabled={!text.trim()}
-            className="mt-8 flex h-[50px] w-full items-center justify-center gap-2 rounded-[12px] bg-[var(--accent)] text-[15px] font-semibold text-[var(--on-accent)] transition-all active:scale-[0.99] hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-sunken)] disabled:text-[var(--text-3)] disabled:active:scale-100"
+            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-sunken)] disabled:text-[var(--text-3)]"
           >
             {!isEditing && <Plus size={17} strokeWidth={2.2} />}
             {isEditing ? m.sheet.save : m.sheet.add}

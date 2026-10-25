@@ -78,13 +78,13 @@ export default function BackupExportDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="backup-export-title"
-        className="dialog-enter relative z-10 max-h-[90dvh] w-full max-w-[380px] overflow-y-auto rounded-[20px] bg-[var(--surface)] p-5 shadow-[var(--shadow-dialog)]"
+        className="dialog-enter relative z-10 max-h-[90dvh] w-full max-w-[380px] overflow-y-auto rounded-[18px] bg-[var(--surface)] p-5 shadow-[var(--shadow-dialog)]"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2
               id="backup-export-title"
-              className="text-[20px] font-semibold tracking-[-0.015em] text-[var(--text)]"
+              className="text-[18px] font-semibold tracking-[-0.015em] text-[var(--text)]"
             >
               {m.settings.backupReady}
             </h2>
@@ -122,7 +122,7 @@ export default function BackupExportDialog({
           ref={downloadRef}
           type="button"
           onClick={handleDownload}
-          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-[12px] bg-[var(--accent)] text-[13.5px] font-semibold text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.99]"
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
         >
           <Download size={16} strokeWidth={2} />
           {m.settings.downloadFile}
@@ -130,7 +130,7 @@ export default function BackupExportDialog({
         <button
           type="button"
           onClick={() => void handleCopy()}
-          className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[12px] border border-[var(--line)] bg-[var(--surface)] text-[13px] font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
+          className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-[var(--line)] bg-[var(--surface)] text-[13px] font-medium text-[var(--text)] transition-colors hover:bg-[var(--surface-sunken)]"
         >
           {status === 'copied' ? (
             <Check size={16} strokeWidth={2.2} className="text-[var(--accent)]" />
