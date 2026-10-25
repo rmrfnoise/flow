@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import {
   Check,
   ChevronRight,
@@ -5,6 +6,7 @@ import {
   Repeat,
 } from 'lucide-react'
 import { useI18n } from '../i18n/I18nProvider'
+import { getHabitIconOption } from '../lib/habitIcons'
 import {
   currentStreak,
   formatHabitSchedule,
@@ -32,6 +34,45 @@ export default function HabitsView({
   onAdd,
 }: HabitsViewProps) {
   const { locale, m } = useI18n()
+  const [celebration, setCelebration] = useState<{
+    habitId: string
+    emoji: string
+    animation: string
+    key: number
+  } | null>(null)
+  const celebrationTimer = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (celebrationTimer.current !== null) {
+        window.clearTimeout(celebrationTimer.current)
+      }
+    },
+    [],
+  )
+
+  function markToday(habit: Habit, checked: boolean) {
+    if (checked) {
+      onToggleToday(habit)
+      return
+    }
+
+    const icon = getHabitIconOption(habit.checkInIcon)
+    const key = Date.now()
+    setCelebration({
+      habitId: habit.id,
+      emoji: icon.emoji,
+      animation: icon.animation,
+      key,
+    })
+    if (celebrationTimer.current !== null) {
+      window.clearTimeout(celebrationTimer.current)
+    }
+    celebrationTimer.current = window.setTimeout(() => {
+      setCelebration((current) => (current?.key === key ? null : current))
+    }, 900)
+    onToggleToday(habit)
+  }
 
   if (habits.length === 0) {
     return (
@@ -73,6 +114,7 @@ export default function HabitsView({
           locale,
           m.habits.everyDay,
         )
+        const icon = getHabitIconOption(habit.checkInIcon)
         const canToggle =
           state === 'checked' || state === 'available'
 
@@ -93,8 +135,21 @@ export default function HabitsView({
                   onOpen(habit.id)
                 }
               }}
-              className="flex cursor-pointer items-start gap-3 bg-[var(--surface)] px-4 py-3.5 transition-colors hover:bg-[var(--surface-sunken)]"
+              className="relative flex cursor-pointer items-start gap-3 bg-[var(--surface)] px-4 py-3.5 transition-colors hover:bg-[var(--surface-sunken)]"
             >
+              {celebration?.habitId === habit.id && (
+                <span
+                  aria-hidden="true"
+                  className="habit-celebration pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2"
+                >
+                  <span
+                    key={celebration.key}
+                    className={`habit-anim-${celebration.animation} block text-[20px] leading-none`}
+                  >
+                    {celebration.emoji}
+                  </span>
+                </span>
+              )}
               <button
                 type="button"
                 disabled={!canToggle}
@@ -110,7 +165,9 @@ export default function HabitsView({
                 }
                 onClick={(event) => {
                   event.stopPropagation()
-                  if (canToggle) onToggleToday(habit)
+                  if (canToggle) {
+                    markToday(habit, state === 'checked')
+                  }
                 }}
                 className={`mt-[1px] grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full border-[1.5px] transition-all duration-150 ${
                   state === 'checked'
@@ -130,8 +187,11 @@ export default function HabitsView({
               </button>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[16px] leading-[1.45] text-[var(--text)]">
-                  {habit.name}
+                <p className="flex min-w-0 items-center gap-1.5 text-[16px] leading-[1.45] text-[var(--text)]">
+                  <span aria-hidden="true" className="shrink-0 text-[13px]">
+                    {icon.emoji}
+                  </span>
+                  <span className="truncate">{habit.name}</span>
                 </p>
                 <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[12.5px] leading-[1.4] text-[var(--text-3)]">
                   <span>{schedule}</span>

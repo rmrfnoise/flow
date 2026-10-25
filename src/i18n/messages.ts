@@ -184,6 +184,9 @@ export interface Messages {
     daily: string
     weekly: string
     weekdays: string
+    checkInIcon: string
+    checkInIconHint: string
+    icons: Record<string, string>
     errorName: string
     errorWeekdays: string
     scheduleEditHint: string
@@ -501,6 +504,20 @@ const en: Messages = {
     daily: 'Every day',
     weekly: 'Specific days',
     weekdays: 'Days',
+    checkInIcon: 'Check-in icon',
+    checkInIconHint: 'A small animated icon appears when you check in.',
+    icons: {
+      spark: 'Spark',
+      fire: 'Fire',
+      star: 'Star',
+      heart: 'Heart',
+      bolt: 'Bolt',
+      plant: 'Grow',
+      sun: 'Sun',
+      moon: 'Moon',
+      drop: 'Water',
+      target: 'Focus',
+    },
     errorName: 'Give the habit a name.',
     errorWeekdays: 'Pick at least one day.',
     scheduleEditHint:
@@ -818,6 +835,20 @@ const zh: Messages = {
     daily: '每天',
     weekly: '每周',
     weekdays: '星期',
+    checkInIcon: '打卡图标',
+    checkInIconHint: '完成打卡时会播放一个小动效。',
+    icons: {
+      spark: '星光',
+      fire: '火焰',
+      star: '星星',
+      heart: '心意',
+      bolt: '闪电',
+      plant: '生长',
+      sun: '太阳',
+      moon: '月亮',
+      drop: '水滴',
+      target: '目标',
+    },
     errorName: '给习惯起个名字。',
     errorWeekdays: '至少选一天。',
     scheduleEditHint: '修改周期会重新计算历史计划日。',

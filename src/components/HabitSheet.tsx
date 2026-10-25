@@ -11,8 +11,13 @@ import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { useI18n } from '../i18n/I18nProvider'
 import {
+  DEFAULT_HABIT_ICON,
+  HABIT_ICON_OPTIONS,
+} from '../lib/habitIcons'
+import {
   getWeekdayLabels,
   type Habit,
+  type HabitIcon,
   type HabitSchedule,
   type Weekday,
 } from '../lib/habits'
@@ -20,7 +25,11 @@ import {
 interface HabitSheetProps {
   initialHabit?: Habit
   onClose: () => void
-  onSave: (input: { name: string; schedule: HabitSchedule }) => void
+  onSave: (input: {
+    name: string
+    schedule: HabitSchedule
+    checkInIcon: HabitIcon
+  }) => void
 }
 
 type Frequency = 'daily' | 'weekly'
@@ -40,6 +49,10 @@ export default function HabitSheet({
       ? initialHabit.schedule.weekdays
       : [],
   )
+  const [checkInIcon, setCheckInIcon] = useState<HabitIcon>(
+    initialHabit?.checkInIcon ?? DEFAULT_HABIT_ICON,
+  )
+  const [iconNonce, setIconNonce] = useState(0)
   const [error, setError] = useState('')
 
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -97,6 +110,7 @@ export default function HabitSheet({
               type: 'weekly',
               weekdays: [...weekdays].sort((a, b) => a - b),
             },
+      checkInIcon,
     })
   }
 
@@ -244,6 +258,47 @@ export default function HabitSheet({
               )}
             </div>
           )}
+
+          <div className="mt-6">
+            <span className="block text-[12px] font-medium text-[var(--text-2)]">
+              {m.habits.checkInIcon}
+            </span>
+            <p className="mt-0.5 text-[11.5px] leading-relaxed text-[var(--text-3)]">
+              {m.habits.checkInIconHint}
+            </p>
+            <div className="mt-2 grid grid-cols-5 gap-1.5">
+              {HABIT_ICON_OPTIONS.map((option) => {
+                const active = checkInIcon === option.id
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    aria-label={m.habits.icons[option.id]}
+                    aria-pressed={active}
+                    onClick={() => {
+                      setCheckInIcon(option.id)
+                      setIconNonce((current) => current + 1)
+                    }}
+                    className={`relative grid h-11 place-items-center rounded-[10px] border transition-all active:scale-[0.94] ${
+                      active
+                        ? 'border-[var(--accent)] bg-[var(--accent-soft)]'
+                        : 'border-[var(--line)] bg-[var(--surface-sunken)] hover:border-[var(--line-strong)]'
+                    }`}
+                  >
+                    <span
+                      key={active ? `${option.id}-${iconNonce}` : option.id}
+                      aria-hidden="true"
+                      className={`text-[21px] leading-none ${
+                        active ? `habit-anim-${option.animation}` : ''
+                      }`}
+                    >
+                      {option.emoji}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
           {initialHabit && (
             <p className="mt-4 text-[12px] leading-relaxed text-[var(--text-3)]">

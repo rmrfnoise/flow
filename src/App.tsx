@@ -63,9 +63,11 @@ import {
   toDateKey,
   type Habit,
   type HabitCheckins,
+  type HabitIcon,
   type HabitSchedule,
 } from './lib/habits'
 import { makeId, usePersistentState } from './lib/storage'
+import { getHabitIconOption } from './lib/habitIcons'
 import { TODOS_STORAGE_KEY, isTodoArray } from './lib/todos'
 import type { NewTodoInput, Todo } from './types'
 
@@ -685,6 +687,7 @@ export default function App() {
   function handleSaveHabit(input: {
     name: string
     schedule: HabitSchedule
+    checkInIcon: HabitIcon
   }) {
     const timestamp = Date.now()
 
@@ -696,6 +699,7 @@ export default function App() {
                 ...habit,
                 name: input.name,
                 schedule: input.schedule,
+                checkInIcon: input.checkInIcon,
                 updatedAt: timestamp,
               }
             : habit,
@@ -707,6 +711,7 @@ export default function App() {
         id: makeId('habit'),
         name: input.name,
         schedule: input.schedule,
+        checkInIcon: input.checkInIcon,
         startDate: todayKey,
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -1030,8 +1035,11 @@ export default function App() {
                 >
                   <ChevronLeft size={20} strokeWidth={2} />
                 </button>
-                <h1 className="min-w-0 flex-1 truncate text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text)] sm:text-[30px]">
-                  {activeHabit.name}
+                <h1 className="flex min-w-0 flex-1 items-center gap-2 text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[var(--text)] sm:text-[30px]">
+                  <span aria-hidden="true" className="shrink-0 text-[22px]">
+                    {getHabitIconOption(activeHabit.checkInIcon).emoji}
+                  </span>
+                  <span className="truncate">{activeHabit.name}</span>
                 </h1>
                 <button
                   type="button"

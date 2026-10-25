@@ -6,6 +6,28 @@ export type HabitSchedule =
   | { type: 'daily' }
   | { type: 'weekly'; weekdays: Weekday[] }
 
+export const HABIT_ICON_IDS = [
+  'spark',
+  'fire',
+  'star',
+  'heart',
+  'bolt',
+  'plant',
+  'sun',
+  'moon',
+  'drop',
+  'target',
+] as const
+
+export type HabitIcon = (typeof HABIT_ICON_IDS)[number]
+
+export function isHabitIcon(value: unknown): value is HabitIcon {
+  return (
+    typeof value === 'string' &&
+    (HABIT_ICON_IDS as readonly string[]).includes(value)
+  )
+}
+
 export interface Habit {
   id: string
   name: string
@@ -13,6 +35,7 @@ export interface Habit {
   startDate: string
   createdAt: number
   updatedAt: number
+  checkInIcon?: HabitIcon
 }
 
 export type HabitCheckins = Record<string, string[]>
@@ -327,7 +350,9 @@ export function isHabitArray(value: unknown): value is Habit[] {
         typeof item.startDate === 'string' &&
         isDateKey(item.startDate) &&
         isTimestamp(item.createdAt) &&
-        isTimestamp(item.updatedAt)
+        isTimestamp(item.updatedAt) &&
+        (item.checkInIcon === undefined ||
+          isHabitIcon(item.checkInIcon))
       )
     })
   )
