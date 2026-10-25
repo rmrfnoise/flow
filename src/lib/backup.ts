@@ -71,18 +71,52 @@ export function serializeBackup(backup: FlowBackup) {
   return JSON.stringify(backup, null, 2)
 }
 
-export function downloadBackup(backup: FlowBackup) {
-  const json = serializeBackup(backup)
-  const blob = new Blob([json], { type: 'application/json' })
+export function backupFileName() {
+  const date = new Date().toISOString().slice(0, 10)
+  return `flow-backup-${date}.json`
+}
+
+export function downloadTextFile(text: string, fileName: string) {
+  const blob = new Blob([text], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
-  const date = new Date().toISOString().slice(0, 10)
   anchor.href = url
-  anchor.download = `flow-backup-${date}.json`
+  anchor.download = fileName
   document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+export async function copyText(text: string) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch {
+    // Fall through to the selection-based copy path.
+  }
+
+  try {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    textarea.style.pointerEvents = 'none'
+    document.body.appendChild(textarea)
+    try {
+      textarea.focus()
+      textarea.select()
+      textarea.setSelectionRange(0, text.length)
+      return document.execCommand('copy')
+    } finally {
+      textarea.remove()
+    }
+  } catch {
+    return false
+  }
 }
 
 export function parseBackup(text: string): BackupParseResult {

@@ -9,16 +9,18 @@ import {
   Upload,
 } from 'lucide-react'
 import BrandMark from './BrandMark'
+import BackupExportDialog from './BackupExportDialog'
 import ConfirmDialog from './ConfirmDialog'
 import { useI18n } from '../i18n/I18nProvider'
 import type { Locale } from '../i18n/messages'
 import type { AppearanceMode } from '../hooks/useAppearance'
 import {
   applyBackup,
+  backupFileName,
   clearAllData,
   createBackup,
-  downloadBackup,
   parseBackup,
+  serializeBackup,
   type BackupSummary,
   type FlowBackup,
 } from '../lib/backup'
@@ -49,10 +51,18 @@ export default function SettingsView({
   } | null>(null)
   const [clearOpen, setClearOpen] = useState(false)
   const [dataError, setDataError] = useState('')
+  const [exportCandidate, setExportCandidate] = useState<{
+    json: string
+    fileName: string
+  } | null>(null)
 
   function handleExport() {
     try {
-      downloadBackup(createBackup())
+      const backup = createBackup()
+      setExportCandidate({
+        json: serializeBackup(backup),
+        fileName: backupFileName(),
+      })
       setDataError('')
     } catch {
       setDataError(m.settings.exportError)
@@ -264,6 +274,14 @@ export default function SettingsView({
           </p>
         </div>
       </section>
+
+      {exportCandidate && (
+        <BackupExportDialog
+          json={exportCandidate.json}
+          fileName={exportCandidate.fileName}
+          onClose={() => setExportCandidate(null)}
+        />
+      )}
 
       {importCandidate && (
         <ConfirmDialog

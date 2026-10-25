@@ -119,6 +119,15 @@ export interface Messages {
     ) => string
     backup: string
     backupHint: string
+    backupReady: string
+    backupReadyHint: string
+    downloadFile: string
+    copyJson: string
+    backupCopied: string
+    backupCopyFailed: string
+    backupDownloadStarted: string
+    backupDownloadError: string
+    showBackupText: string
     exportBackup: string
     importBackup: string
     clearData: string
@@ -433,6 +442,15 @@ const en: Messages = {
       }`,
     backup: 'Backup',
     backupHint: 'Download a copy, or restore one on another device.',
+    backupReady: 'Backup ready',
+    backupReadyHint: 'Download the JSON file, or copy it somewhere safe.',
+    downloadFile: 'Download file',
+    copyJson: 'Copy JSON',
+    backupCopied: 'Copied to clipboard.',
+    backupCopyFailed: 'Could not copy. Open the text below and copy manually.',
+    backupDownloadStarted: 'Download started. If nothing happened, use Copy JSON.',
+    backupDownloadError: 'Could not start the download.',
+    showBackupText: 'Show backup text',
     exportBackup: 'Export',
     importBackup: 'Import',
     clearData: 'Erase all data',
@@ -742,6 +760,15 @@ const zh: Messages = {
       `${tasks} 条待办 · ${habits} 个习惯 · ${expenses} 笔支出`,
     backup: '备份',
     backupHint: '导出 JSON 备份，或从另一台设备恢复。',
+    backupReady: '备份已生成',
+    backupReadyHint: '下载 JSON 文件，或复制到安全的地方。',
+    downloadFile: '下载文件',
+    copyJson: '复制 JSON',
+    backupCopied: '已复制到剪贴板。',
+    backupCopyFailed: '复制失败，请展开下方文本手动复制。',
+    backupDownloadStarted: '已开始下载；如果没有反应，请使用“复制 JSON”。',
+    backupDownloadError: '无法开始下载。',
+    showBackupText: '查看备份文本',
     exportBackup: '导出',
     importBackup: '导入',
     clearData: '清空所有数据',

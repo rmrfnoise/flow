@@ -11,6 +11,7 @@ dist-ssr
 .font-*
 .pip-*
 .preview-shots/
+.preview-profile/
 .dsh-acl-recovery/
 .release-keys/
 *.p12
