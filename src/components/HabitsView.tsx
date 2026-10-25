@@ -46,10 +46,10 @@ export default function HabitsView({
         <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
           <Repeat size={22} strokeWidth={1.6} />
         </div>
-        <h2 className="mt-3 text-[16px] font-semibold text-[var(--text)]">
+        <h2 className="mt-3 text-[15px] font-semibold text-[var(--text)]">
           {m.habits.emptyTitle}
         </h2>
-        <p className="mt-1.5 max-w-[250px] text-[13.5px] leading-relaxed text-[var(--text-2)]">
+        <p className="mt-1.5 max-w-[250px] text-[13px] leading-relaxed text-[var(--text-2)]">
           {m.habits.emptyBody}
         </p>
         <button
@@ -139,7 +139,7 @@ export default function HabitsView({
               </button>
 
               <div className="min-w-0 flex-1">
-                <p className="flex min-w-0 items-center gap-1.5 text-[15.5px] leading-[1.4] text-[var(--text)]">
+                <p className="flex min-w-0 items-center gap-1.5 text-[15px] leading-[1.4] text-[var(--text)]">
                   <span
                     aria-hidden="true"
                     className="shrink-0 text-[var(--text-3)]"
@@ -148,7 +148,7 @@ export default function HabitsView({
                   </span>
                   <span className="truncate">{habit.name}</span>
                 </p>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11.5px] leading-[1.4] text-[var(--text-3)]">
+                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-[1.4] text-[var(--text-3)]">
                   <span>{schedule}</span>
                   {state === 'rest' ? (
                     <>
@@ -163,7 +163,7 @@ export default function HabitsView({
                   ) : null}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
-                  <span className="text-[9px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
+                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
                     {m.habits.week}
                   </span>
                   <div

@@ -20,6 +20,7 @@ import {
   type Expense,
 } from '../lib/expenses'
 import { getCategoryIcon } from '../lib/categoryIcons'
+import BalanceRow from './BalanceRow'
 
 type ReportPeriod = 'week' | 'month'
 
@@ -28,6 +29,11 @@ interface ExpenseReportsProps {
   customCategories: CustomExpenseCategory[]
   todayKey: string
   period: ReportPeriod
+  balanceEnabled: boolean
+  balanceCents: number | null
+  onToggleBalance: () => void
+  onSetBalance: () => void
+  onCalibrateBalance: () => void
 }
 
 export default function ExpenseReports({
@@ -35,6 +41,11 @@ export default function ExpenseReports({
   customCategories,
   todayKey,
   period,
+  balanceEnabled,
+  balanceCents,
+  onToggleBalance,
+  onSetBalance,
+  onCalibrateBalance,
 }: ExpenseReportsProps) {
   const { locale, m } = useI18n()
   const [weekStart, setWeekStart] = useState(() =>
@@ -151,7 +162,7 @@ export default function ExpenseReports({
       buckets.push({
         key: `week-${index / 7}`,
         label: m.money.weekBucket(index / 7 + 1),
-        range: `${formatMonthDay(first.date, locale)} – ${formatMonthDay(
+        range: `${formatMonthDay(first.date, locale)} –?${formatMonthDay(
           last.date,
           locale,
         )}`,
@@ -186,7 +197,7 @@ export default function ExpenseReports({
         >
           <ChevronLeft size={16} strokeWidth={2} />
         </button>
-        <span className="min-w-[120px] max-w-[170px] truncate text-center text-[12.5px] font-medium text-[var(--text-2)]">
+        <span className="min-w-[120px] max-w-[170px] truncate text-center text-[13px] font-medium text-[var(--text-2)]">
           {rangeLabel}
         </span>
         {!isCurrentPeriod && (
@@ -209,18 +220,30 @@ export default function ExpenseReports({
       </div>
 
       {report.count === 0 ? (
-        <div className="mt-4 flex flex-col items-center rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
-          <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
-            <ReceiptText size={22} strokeWidth={1.7} />
+        <>
+          <div className="mt-4 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
+            <BalanceRow
+              enabled={balanceEnabled}
+              cents={balanceCents}
+              onToggle={onToggleBalance}
+              onSet={onSetBalance}
+              onCalibrate={onCalibrateBalance}
+              bordered={false}
+            />
           </div>
-          <p className="mt-4 text-[15px] font-semibold text-[var(--text)]">
-            {m.money.noExpensesPeriod}
-          </p>
-        </div>
+          <div className="mt-4 flex flex-col items-center rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
+            <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+              <ReceiptText size={22} strokeWidth={1.7} />
+            </div>
+            <p className="mt-4 text-[15px] font-semibold text-[var(--text)]">
+              {m.money.noExpensesPeriod}
+            </p>
+          </div>
+        </>
       ) : (
         <>
           <section className="mt-3 rounded-[16px] border border-[var(--line)] bg-[var(--surface)] p-4">
-            <p className="text-[10.5px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
+            <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
               {m.money.net}
             </p>
             <p className="mt-1.5 text-[32px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)]">
@@ -243,6 +266,15 @@ export default function ExpenseReports({
                   {formatMoney(report.totalCents, locale)}
                 </p>
               </div>
+            </div>
+            <div className="-mx-4 mt-4">
+              <BalanceRow
+                enabled={balanceEnabled}
+                cents={balanceCents}
+                onToggle={onToggleBalance}
+                onSet={onSetBalance}
+                onCalibrate={onCalibrateBalance}
+              />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[var(--line)] pt-3">
               <div>
@@ -317,7 +349,7 @@ export default function ExpenseReports({
               {trendBuckets.map((bucket) => (
                 <span
                   key={bucket.key}
-                  className={`min-w-0 flex-1 truncate text-center text-[10px] ${
+                  className={`min-w-0 flex-1 truncate text-center text-[11px] ${
                     bucket.key === activeKey
                       ? 'font-medium text-[var(--accent)]'
                       : 'text-[var(--text-3)]'
@@ -327,7 +359,7 @@ export default function ExpenseReports({
                 </span>
               ))}
             </div>
-            <div className="mt-3 flex h-8 items-center justify-between gap-3 rounded-[8px] bg-[var(--surface-sunken)] px-2.5 text-[11.5px]">
+            <div className="mt-3 flex h-8 items-center justify-between gap-3 rounded-[8px] bg-[var(--surface-sunken)] px-2.5 text-[11px]">
               {activeBucket ? (
                 <>
                   <span className="min-w-0 truncate text-[var(--text-2)]">
@@ -366,10 +398,10 @@ export default function ExpenseReports({
                       />
                       <span className="truncate">{category.name}</span>
                     </span>
-                    <span className="shrink-0 text-[12.5px] tabular-nums text-[var(--text)]">
+                    <span className="shrink-0 text-[13px] tabular-nums text-[var(--text)]">
                       {formatMoney(category.totalCents, locale)}
                     </span>
-                    <span className="w-9 shrink-0 text-right text-[11.5px] tabular-nums text-[var(--text-3)]">
+                    <span className="w-9 shrink-0 text-right text-[11px] tabular-nums text-[var(--text-3)]">
                       {category.percent}%
                     </span>
                   </div>

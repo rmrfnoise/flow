@@ -175,7 +175,7 @@ export default function HabitSheet({
         >
           <label
             htmlFor="habit-name"
-            className="block text-[12px] font-medium text-[var(--text-2)]"
+            className="block text-[13px] font-medium text-[var(--text-2)]"
           >
             {m.habits.nameLabel}
           </label>
@@ -192,11 +192,11 @@ export default function HabitSheet({
               if (error) setError('')
             }}
             onKeyDown={handleNameKeyDown}
-            className="mt-1.5 h-11 w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] px-3.5 text-[16px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+            className="mt-1.5 h-11 w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] px-3.5 text-[15px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
           />
 
           <div className="mt-5">
-            <span className="block text-[12px] font-medium text-[var(--text-2)]">
+            <span className="block text-[13px] font-medium text-[var(--text-2)]">
               {m.habits.frequency}
             </span>
             <div className="mt-1.5 grid grid-cols-2 gap-1 rounded-[10px] bg-[var(--surface-sunken)] p-1">
@@ -204,7 +204,7 @@ export default function HabitSheet({
                 type="button"
                 aria-pressed={frequency === 'daily'}
                 onClick={() => selectFrequency('daily')}
-                className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+                className={`h-9 rounded-[7px] text-[13px] font-medium transition-colors ${
                   frequency === 'daily'
                     ? 'bg-[var(--segment-active)] text-[var(--text)]'
                     : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -216,7 +216,7 @@ export default function HabitSheet({
                 type="button"
                 aria-pressed={frequency === 'weekly'}
                 onClick={() => selectFrequency('weekly')}
-                className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+                className={`h-9 rounded-[7px] text-[13px] font-medium transition-colors ${
                   frequency === 'weekly'
                     ? 'bg-[var(--segment-active)] text-[var(--text)]'
                     : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -229,7 +229,7 @@ export default function HabitSheet({
 
           {frequency === 'weekly' && (
             <div className="dialog-enter mt-5">
-              <span className="block text-[12px] font-medium text-[var(--text-2)]">
+              <span className="block text-[13px] font-medium text-[var(--text-2)]">
                 {m.habits.weekdays}
               </span>
               <div className="mt-1.5 grid grid-cols-7 gap-1">
@@ -254,7 +254,7 @@ export default function HabitSheet({
                 })}
               </div>
               {weekdays.length === 0 && !error && (
-                <p className="mt-1.5 text-[12px] text-[var(--text-3)]">
+                <p className="mt-1.5 text-[13px] text-[var(--text-3)]">
                   {m.habits.errorWeekdays}
                 </p>
               )}
@@ -263,7 +263,7 @@ export default function HabitSheet({
 
           <div className="mt-5">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[12px] font-medium text-[var(--text-2)]">
+              <span className="text-[13px] font-medium text-[var(--text-2)]">
                 {m.habits.checkInIcon}
               </span>
               <span className="flex items-center gap-1 truncate text-[11px] text-[var(--text-3)]">
@@ -271,7 +271,7 @@ export default function HabitSheet({
                 {m.habits.icons[selectedIcon.id]}
               </span>
             </div>
-            <p className="mt-0.5 text-[11.5px] leading-relaxed text-[var(--text-3)]">
+            <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--text-3)]">
               {m.habits.checkInIconHint}
             </p>
             <div className="mt-2 grid max-h-[138px] grid-cols-8 gap-1 overflow-y-auto overscroll-contain pr-0.5">
@@ -299,7 +299,7 @@ export default function HabitSheet({
           </div>
 
           {initialHabit && (
-            <p className="mt-4 text-[12px] leading-relaxed text-[var(--text-3)]">
+            <p className="mt-4 text-[13px] leading-relaxed text-[var(--text-3)]">
               {m.habits.scheduleEditHint}
             </p>
           )}
@@ -315,7 +315,7 @@ export default function HabitSheet({
 
           <button
             type="submit"
-            className="mt-6 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="mt-6 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[15px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
             {initialHabit ? m.habits.save : m.habits.create}
           </button>

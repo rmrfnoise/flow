@@ -159,21 +159,13 @@ function BottomNavItem({
       aria-label={label}
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
-      className={`relative grid h-12 place-items-center transition-colors ${
-        active ? 'text-[var(--accent)]' : 'text-[var(--text-3)]'
-      }`}
+      className="grid h-12 place-items-center"
     >
       <span
-        aria-hidden="true"
-        className={`absolute top-0 h-[2px] w-6 rounded-full bg-[var(--accent)] transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`grid h-8 w-12 place-items-center rounded-full transition-colors ${
           active
-            ? 'scale-x-100 opacity-100'
-            : 'scale-x-50 opacity-0'
-        }`}
-      />
-      <span
-        className={`transition-transform duration-200 ${
-          active ? '-translate-y-[1px]' : ''
+            ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
+            : 'text-[var(--text-3)]'
         }`}
       >
         {icon}
@@ -201,7 +193,7 @@ function TaskGroup({
         >
           {title}
         </h2>
-        <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-3)]">
+        <span className="font-mono text-[11px] tabular-nums text-[var(--text-3)]">
           {todos.length}
         </span>
       </div>
@@ -1035,23 +1027,22 @@ export default function App() {
                         ? m.habits.title
                         : m.app.title}
                 </h1>
-                <p className="mt-2 text-[13px] text-[var(--text-2)]">
-                  {route.name === 'settings' ? (
-                    m.settings.subtitle
-                  ) : route.name === 'money' ? (
-                    m.money.subtitle
-                  ) : showHabitsList ? (
-                    habitSubtitle
-                  ) : (
-                    <>
-                      {dateInfo}
-                      <span className="mx-1.5 text-[var(--text-3)]">
-                        ·
-                      </span>
-                      {subtitle}
-                    </>
+                {route.name !== 'settings' &&
+                  route.name !== 'money' && (
+                    <p className="mt-2 text-[13px] text-[var(--text-2)]">
+                      {showHabitsList ? (
+                        habitSubtitle
+                      ) : (
+                        <>
+                          {dateInfo}
+                          <span className="mx-1.5 text-[var(--text-3)]">
+                            ·
+                          </span>
+                          {subtitle}
+                        </>
+                      )}
+                    </p>
                   )}
-                </p>
               </div>
               {((route.name === 'tasks' && visibleTotal > 0) ||
                 (showHabitsList && habits.length > 0)) && (

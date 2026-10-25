@@ -211,7 +211,7 @@ export default function DuePicker({
                 ? m.picker.titleDateTime
                 : m.picker.titleDate}
             </h2>
-            <p className="mt-0.5 text-[12.5px] text-[var(--text-3)]">
+            <p className="mt-0.5 text-[13px] text-[var(--text-3)]">
               {summary}
             </p>
           </div>
@@ -234,7 +234,7 @@ export default function DuePicker({
           >
             <ChevronLeft size={16} strokeWidth={2} />
           </button>
-          <span className="text-[14px] font-semibold tabular-nums text-[var(--text)]">
+          <span className="text-[15px] font-semibold tabular-nums text-[var(--text)]">
             {monthLabel}
           </span>
           <button
@@ -279,7 +279,7 @@ export default function DuePicker({
                 aria-pressed={selected}
                 disabled={disabled}
                 onClick={() => selectDay(day)}
-                className={`h-9 w-full rounded-full text-[13.5px] tabular-nums transition-colors ${
+                className={`h-9 w-full rounded-full text-[13px] tabular-nums transition-colors ${
                   disabled
                     ? 'cursor-not-allowed text-[var(--text-3)] opacity-35'
                     : selected
@@ -299,7 +299,7 @@ export default function DuePicker({
           <button
             type="button"
             onClick={goToday}
-            className="h-7 rounded-full px-3 text-[12px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
+            className="h-7 rounded-full px-3 text-[13px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
           >
             {m.picker.today}
           </button>
@@ -316,7 +316,7 @@ export default function DuePicker({
                 />
                 {m.picker.time}
               </span>
-              <span className="text-[11.5px] text-[var(--text-3)]">
+              <span className="text-[11px] text-[var(--text-3)]">
                 {selectedTime}
               </span>
             </div>
@@ -378,7 +378,7 @@ export default function DuePicker({
             </div>
 
             <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-[11.5px] text-[var(--text-3)]">
+              <span className="text-[11px] text-[var(--text-3)]">
                 {m.picker.quickTimes}
               </span>
               <div className="flex gap-1">
@@ -390,7 +390,7 @@ export default function DuePicker({
                       type="button"
                       aria-pressed={active}
                       onClick={() => selectQuickTime(time)}
-                      className={`h-7 rounded-full px-2 font-mono text-[11.5px] tabular-nums transition-colors ${
+                      className={`h-7 rounded-full px-2 font-mono text-[11px] tabular-nums transition-colors ${
                         active
                           ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
                           : 'text-[var(--text-2)] hover:bg-[var(--surface-sunken)]'
@@ -409,7 +409,7 @@ export default function DuePicker({
           <button
             type="button"
             onClick={onClose}
-            className="h-11 flex-1 rounded-[10px] bg-[var(--surface-sunken)] text-[14px] font-medium text-[var(--text)] transition-colors hover:brightness-95"
+            className="h-11 flex-1 rounded-[10px] bg-[var(--surface-sunken)] text-[15px] font-medium text-[var(--text)] transition-colors hover:brightness-95"
           >
             {m.app.cancel}
           </button>
@@ -421,7 +421,7 @@ export default function DuePicker({
                 mode === 'datetime' ? selectedTime : '',
               )
             }
-            className="h-11 flex-1 rounded-[10px] bg-[var(--accent)] text-[14px] font-semibold text-[var(--on-accent)] transition-opacity active:opacity-90"
+            className="h-11 flex-1 rounded-[10px] bg-[var(--accent)] text-[15px] font-semibold text-[var(--on-accent)] transition-opacity active:opacity-90"
           >
             {m.picker.done}
           </button>

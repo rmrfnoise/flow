@@ -15,10 +15,10 @@ export default function EmptyState({ filtered, onAdd }: EmptyStateProps) {
         <ListChecks size={22} strokeWidth={1.6} />
       </div>
 
-      <h2 className="mt-3 text-[16px] font-semibold text-[var(--text)]">
+      <h2 className="mt-3 text-[15px] font-semibold text-[var(--text)]">
         {filtered ? m.empty.filteredTitle : m.empty.title}
       </h2>
-      <p className="mt-1.5 max-w-[250px] text-[13.5px] leading-relaxed text-[var(--text-2)]">
+      <p className="mt-1.5 max-w-[250px] text-[13px] leading-relaxed text-[var(--text-2)]">
         {filtered ? m.empty.filteredBody : m.empty.body}
       </p>
 

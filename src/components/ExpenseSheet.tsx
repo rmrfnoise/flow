@@ -185,7 +185,7 @@ export default function ExpenseSheet({
             type="button"
             aria-pressed={type === 'expense'}
             onClick={() => selectType('expense')}
-            className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+            className={`h-9 rounded-[7px] text-[13px] font-medium transition-colors ${
               type === 'expense'
                 ? 'bg-[var(--segment-active)] text-[var(--text)]'
                 : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -197,7 +197,7 @@ export default function ExpenseSheet({
             type="button"
             aria-pressed={type === 'income'}
             onClick={() => selectType('income')}
-            className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+            className={`h-9 rounded-[7px] text-[13px] font-medium transition-colors ${
               type === 'income'
                 ? 'bg-[var(--segment-active)] text-[var(--text)]'
                 : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -208,7 +208,7 @@ export default function ExpenseSheet({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-          <label className="mt-2 block text-[12px] font-medium text-[var(--text-2)]">
+          <label className="mt-2 block text-[13px] font-medium text-[var(--text-2)]">
             {m.money.amount}
           </label>
           <div
@@ -245,12 +245,12 @@ export default function ExpenseSheet({
             />
           </div>
           {errors.amount && (
-            <p role="alert" className="mt-1.5 text-[12px] text-[var(--danger)]">
+            <p role="alert" className="mt-1.5 text-[13px] text-[var(--danger)]">
               {errors.amount}
             </p>
           )}
 
-          <p className="mt-4 text-[12px] font-medium text-[var(--text-2)]">
+          <p className="mt-4 text-[13px] font-medium text-[var(--text-2)]">
             {m.money.category}
           </p>
           <button
@@ -268,7 +268,7 @@ export default function ExpenseSheet({
               className="shrink-0 text-[var(--text-3)]"
             />
             <span
-              className={`min-w-0 flex-1 truncate text-[14px] ${
+              className={`min-w-0 flex-1 truncate text-[15px] ${
                 selectedCategory
                   ? 'text-[var(--text)]'
                   : 'text-[var(--text-3)]'
@@ -283,14 +283,14 @@ export default function ExpenseSheet({
             />
           </button>
           {errors.category && (
-            <p role="alert" className="mt-1.5 text-[12px] text-[var(--danger)]">
+            <p role="alert" className="mt-1.5 text-[13px] text-[var(--danger)]">
               {errors.category}
             </p>
           )}
 
           <label
             htmlFor="expense-content"
-            className="mt-4 block text-[12px] font-medium text-[var(--text-2)]"
+            className="mt-4 block text-[13px] font-medium text-[var(--text-2)]"
           >
             {m.money.contentLabel}
           </label>
@@ -312,20 +312,20 @@ export default function ExpenseSheet({
                 : m.money.expenseNotePlaceholder
             }
             aria-invalid={Boolean(errors.content)}
-            className={`mt-1.5 h-11 w-full rounded-[10px] border bg-[var(--surface-sunken)] px-3.5 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] ${
+            className={`mt-1.5 h-11 w-full rounded-[10px] border bg-[var(--surface-sunken)] px-3.5 text-[15px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] ${
               errors.content
                 ? 'border-[var(--danger)]'
                 : 'border-[var(--line)] focus:border-[var(--accent)]'
             }`}
           />
           {errors.content && (
-            <p role="alert" className="mt-1.5 text-[12px] text-[var(--danger)]">
+            <p role="alert" className="mt-1.5 text-[13px] text-[var(--danger)]">
               {errors.content}
             </p>
           )}
 
           <div className="mt-4 flex items-center justify-between gap-2">
-            <p className="text-[12px] font-medium text-[var(--text-2)]">
+            <p className="text-[13px] font-medium text-[var(--text-2)]">
               {m.money.date}
             </p>
             <div className="flex items-center gap-1">
@@ -367,7 +367,7 @@ export default function ExpenseSheet({
               strokeWidth={1.9}
               className="shrink-0 text-[var(--text-3)]"
             />
-            <span className="min-w-0 flex-1 text-[14px] text-[var(--text)]">
+            <span className="min-w-0 flex-1 text-[15px] text-[var(--text)]">
               {formatMonthDay(date, locale)}
             </span>
             <ChevronRight
@@ -377,7 +377,7 @@ export default function ExpenseSheet({
             />
           </button>
           {errors.date && (
-            <p role="alert" className="mt-1.5 text-[12px] text-[var(--danger)]">
+            <p role="alert" className="mt-1.5 text-[13px] text-[var(--danger)]">
               {errors.date}
             </p>
           )}
@@ -385,7 +385,7 @@ export default function ExpenseSheet({
           <button
             type="button"
             onClick={handleSave}
-            className="mt-6 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="mt-6 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[15px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
             {initialExpense
               ? m.money.save
@@ -432,4 +432,3 @@ export default function ExpenseSheet({
     </div>
   )
 }
-

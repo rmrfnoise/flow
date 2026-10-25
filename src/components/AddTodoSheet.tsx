@@ -288,13 +288,13 @@ export default function AddTodoSheet({
                 if (error) setError('')
               }}
               onKeyDown={handleTextKeyDown}
-              className="block min-h-[80px] w-full resize-none bg-transparent text-[16px] leading-[1.5] text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
+              className="block min-h-[80px] w-full resize-none bg-transparent text-[15px] leading-[1.5] text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
             />
           </div>
 
           <div className="mt-3">
             <div className="flex items-baseline justify-between">
-              <span className="text-[12px] font-medium text-[var(--text-2)]">
+              <span className="text-[13px] font-medium text-[var(--text-2)]">
                 {m.sheet.tags}
               </span>
               {text.length > 150 && (
@@ -316,7 +316,7 @@ export default function AddTodoSheet({
                       type="button"
                       aria-pressed={active}
                       onClick={() => toggleTag(tag)}
-                      className={`h-7 rounded-full px-2.5 text-[11.5px] font-medium transition-colors ${
+                      className={`h-7 rounded-full px-2.5 text-[11px] font-medium transition-colors ${
                         active
                           ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
                           : 'bg-[var(--surface-sunken)] text-[var(--text-2)] hover:text-[var(--text)]'
@@ -327,7 +327,7 @@ export default function AddTodoSheet({
                   )
                 })
               ) : (
-                <span className="text-[12.5px] text-[var(--text-3)]">
+                <span className="text-[13px] text-[var(--text-3)]">
                   {m.sheet.tagHint}
                 </span>
               )}
@@ -346,7 +346,7 @@ export default function AddTodoSheet({
 
           <div className="mt-5">
             <div className="flex items-baseline justify-between">
-              <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-[var(--text-2)]">
+              <span className="flex items-center gap-1.5 text-[13px] font-medium text-[var(--text-2)]">
                 <CalendarClock
                   size={14}
                   strokeWidth={1.9}
@@ -354,7 +354,7 @@ export default function AddTodoSheet({
                 />
                 {m.sheet.due}
               </span>
-              <span className="text-[11.5px] text-[var(--text-3)]">
+              <span className="text-[11px] text-[var(--text-3)]">
                 {deadlineMode === 'none'
                   ? m.sheet.optional
                   : deadlineMode === 'date'
@@ -376,7 +376,7 @@ export default function AddTodoSheet({
                     type="button"
                     aria-pressed={active}
                     onClick={() => selectDeadlineMode(mode)}
-                    className={`h-9 rounded-[7px] text-[12.5px] font-medium transition-colors ${
+                    className={`h-9 rounded-[7px] text-[13px] font-medium transition-colors ${
                       active
                         ? 'bg-[var(--segment-active)] text-[var(--text)]'
                         : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -395,7 +395,7 @@ export default function AddTodoSheet({
                 aria-haspopup="dialog"
                 className="mt-2 flex h-11 w-full items-center gap-2 rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] px-3 text-left transition-colors hover:border-[var(--line-strong)]"
               >
-                <span className="min-w-0 flex-1 truncate text-[14px] text-[var(--text)]">
+                <span className="min-w-0 flex-1 truncate text-[15px] text-[var(--text)]">
                   {dueLabel || m.sheet.due}
                 </span>
                 <ChevronRight
@@ -410,7 +410,7 @@ export default function AddTodoSheet({
           <button
             type="submit"
             disabled={!text.trim()}
-            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-sunken)] disabled:text-[var(--text-3)]"
+            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] text-[15px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-sunken)] disabled:text-[var(--text-3)]"
           >
             {!isEditing && <Plus size={17} strokeWidth={2.2} />}
             {isEditing ? m.sheet.save : m.sheet.add}

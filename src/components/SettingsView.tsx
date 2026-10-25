@@ -122,7 +122,7 @@ export default function SettingsView({
         <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.appearance}
         </h2>
-        <p className="mt-1 px-1 text-[11.5px] leading-relaxed text-[var(--text-3)]">
+        <p className="mt-1 px-1 text-[11px] leading-relaxed text-[var(--text-3)]">
           {m.settings.appearanceHint}
         </p>
 
@@ -135,7 +135,7 @@ export default function SettingsView({
                 type="button"
                 aria-pressed={active}
                 onClick={() => onAppearanceModeChange(mode)}
-                className={`flex h-10 items-center justify-center gap-1.5 rounded-[8px] text-[11.5px] font-medium transition-colors ${
+                className={`flex h-10 items-center justify-center gap-1.5 rounded-[8px] text-[11px] font-medium transition-colors ${
                   active
                     ? 'bg-[var(--segment-active)] text-[var(--text)]'
                     : 'text-[var(--text-2)] hover:text-[var(--text)]'
@@ -159,7 +159,7 @@ export default function SettingsView({
         <h2 className="type-section px-1 font-semibold text-[var(--text-2)]">
           {m.settings.language}
         </h2>
-        <p className="mt-1 px-1 text-[11.5px] leading-relaxed text-[var(--text-3)]">
+        <p className="mt-1 px-1 text-[11px] leading-relaxed text-[var(--text-3)]">
           {m.settings.languageHint}
         </p>
 
@@ -176,7 +176,7 @@ export default function SettingsView({
                   index > 0 ? 'border-t border-[var(--line)]' : ''
                 }`}
               >
-                <span className="text-[13.5px] text-[var(--text)]">
+                <span className="text-[13px] text-[var(--text)]">
                   {code === 'en' ? 'English' : '简体中文'}
                 </span>
                 {active && (
@@ -245,13 +245,13 @@ export default function SettingsView({
             if (file) void handleImportFile(file)
           }}
         />
-        <p className="mt-2 px-1 text-[11.5px] leading-relaxed text-[var(--text-3)]">
+        <p className="mt-2 px-1 text-[11px] leading-relaxed text-[var(--text-3)]">
           {m.settings.backupHint}
         </p>
         {dataError && (
           <p
             role="alert"
-            className="mt-2 px-1 text-[12px] text-[var(--danger)]"
+            className="mt-2 px-1 text-[13px] text-[var(--danger)]"
           >
             {dataError}
           </p>
@@ -264,10 +264,10 @@ export default function SettingsView({
         </h2>
         <div className="mt-2 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5">
           <BrandMark />
-          <p className="mt-2 text-[12.5px] leading-relaxed text-[var(--text-2)]">
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--text-2)]">
             {m.settings.aboutText}
           </p>
-          <p className="mt-2 text-[10.5px] text-[var(--text-3)]">
+          <p className="mt-2 text-[11px] text-[var(--text-3)]">
             {m.settings.version}
           </p>
         </div>

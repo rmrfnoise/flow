@@ -194,7 +194,7 @@ export default function HabitDetail({
             <button
               type="button"
               onClick={goToday}
-              className="h-7 shrink-0 rounded-full px-2 text-[11.5px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
+              className="h-7 shrink-0 rounded-full px-2 text-[11px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
             >
               {m.habits.today}
             </button>
@@ -245,7 +245,7 @@ export default function HabitDetail({
         </span>
       </div>
 
-      <p className="mt-3 text-center text-[12.5px] text-[var(--text-3)]">
+      <p className="mt-3 text-center text-[13px] text-[var(--text-3)]">
         {viewingBeforeStart
           ? m.habits.startsOn(
               formatMonthDay(habit.startDate, locale),

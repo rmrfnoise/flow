@@ -189,7 +189,7 @@ export default function TodoRow({
           className="flex w-full flex-col items-center justify-center gap-1 text-[var(--on-danger)] transition-opacity active:opacity-80"
         >
           <Trash2 size={17} strokeWidth={1.9} />
-          <span className="text-[12px] font-medium">{m.row.delete}</span>
+          <span className="text-[13px] font-medium">{m.row.delete}</span>
         </button>
       </div>
 
@@ -239,7 +239,7 @@ export default function TodoRow({
 
         <div className="min-w-0 flex-1 pt-[1px]">
           <p
-            className={`break-words text-[15.5px] leading-[1.45] tracking-[-0.004em] sm:text-[16.5px] ${
+            className={`break-words text-[15px] leading-[1.45] tracking-[-0.004em] sm:text-[16.5px] ${
               completed
                 ? 'text-[var(--text-3)] line-through decoration-[var(--text-3)] decoration-[1.5px]'
                 : 'text-[var(--text)]'
@@ -249,7 +249,7 @@ export default function TodoRow({
           </p>
 
           {hasMeta && (
-            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11.5px] leading-[1.4] sm:text-[12px]">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] leading-[1.4] sm:text-[13px]">
               {todo.dueAt !== null && (
                 <span
                   title={`${formatDeadlineLong(todo.dueAt, todo.dueHasTime, locale)} · ${formatCountdown(todo.dueAt, todo.dueHasTime, now, locale)}`}

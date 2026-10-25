@@ -190,7 +190,7 @@ export default function ExpenseRow({
           className="flex w-full flex-col items-center justify-center gap-1 text-[var(--on-danger)] transition-opacity active:opacity-80"
         >
           <Trash2 size={17} strokeWidth={1.9} />
-          <span className="text-[12px] font-medium">{m.row.delete}</span>
+          <span className="text-[13px] font-medium">{m.row.delete}</span>
         </button>
       </div>
 
@@ -232,10 +232,10 @@ export default function ExpenseRow({
           <CategoryIcon size={16} strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15.5px] leading-[1.4] text-[var(--text)]">
+          <p className="truncate text-[15px] leading-[1.4] text-[var(--text)]">
             {displayContent}
           </p>
-          <p className="mt-0.5 truncate text-[11.5px] text-[var(--text-3)]">
+          <p className="mt-0.5 truncate text-[11px] text-[var(--text-3)]">
             {categoryName}
           </p>
         </div>

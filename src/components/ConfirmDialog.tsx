@@ -71,7 +71,7 @@ export default function ConfirmDialog({
         </h2>
         <div
           id="confirm-dialog-description"
-          className="mt-1.5 text-[13.5px] leading-relaxed text-[var(--text-2)]"
+          className="mt-1.5 text-[13px] leading-relaxed text-[var(--text-2)]"
         >
           {description}
         </div>

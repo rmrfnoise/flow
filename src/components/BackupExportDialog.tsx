@@ -88,7 +88,7 @@ export default function BackupExportDialog({
             >
               {m.settings.backupReady}
             </h2>
-            <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--text-3)]">
+            <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-3)]">
               {m.settings.backupReadyHint}
             </p>
           </div>
@@ -112,7 +112,7 @@ export default function BackupExportDialog({
             <p className="truncate font-mono text-[11px] text-[var(--text)]">
               {fileName}
             </p>
-            <p className="mt-0.5 text-[10.5px] text-[var(--text-3)]">
+            <p className="mt-0.5 text-[11px] text-[var(--text-3)]">
               {sizeKb} KB
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function BackupExportDialog({
           ref={downloadRef}
           type="button"
           onClick={handleDownload}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] text-[15px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
         >
           <Download size={16} strokeWidth={2} />
           {m.settings.downloadFile}
@@ -143,7 +143,7 @@ export default function BackupExportDialog({
         {statusText && (
           <p
             role="status"
-            className={`mt-3 text-center text-[11.5px] leading-relaxed ${
+            className={`mt-3 text-center text-[11px] leading-relaxed ${
               status === 'copyError' || status === 'downloadError'
                 ? 'text-[var(--danger)]'
                 : 'text-[var(--text-3)]'
@@ -154,7 +154,7 @@ export default function BackupExportDialog({
         )}
 
         <details className="mt-3 border-t border-[var(--line)] pt-3">
-          <summary className="cursor-pointer text-[11.5px] text-[var(--text-3)]">
+          <summary className="cursor-pointer text-[11px] text-[var(--text-3)]">
             {m.settings.showBackupText}
           </summary>
           <textarea
@@ -162,7 +162,7 @@ export default function BackupExportDialog({
             value={json}
             rows={6}
             spellCheck={false}
-            className="mt-2 w-full resize-none rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] p-2 font-mono text-[10px] leading-relaxed text-[var(--text-2)] outline-none"
+            className="mt-2 w-full resize-none rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] p-2 font-mono text-[11px] leading-relaxed text-[var(--text-2)] outline-none"
           />
         </details>
       </div>

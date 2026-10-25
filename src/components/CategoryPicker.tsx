@@ -189,7 +189,7 @@ export default function CategoryPicker({
               onChange={(event) => setQuery(event.target.value)}
               placeholder={m.money.searchPlaceholder}
               aria-label={m.money.searchPlaceholder}
-              className="h-11 w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] pl-9 pr-3 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+              className="h-11 w-full rounded-[10px] border border-[var(--line)] bg-[var(--surface-sunken)] pl-9 pr-3 text-[15px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
             />
           </div>
 
@@ -211,12 +211,12 @@ export default function CategoryPicker({
                 }}
                 placeholder={m.money.categoryNamePlaceholder}
                 aria-label={m.money.categoryNamePlaceholder}
-                className="h-10 w-full rounded-[8px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[14px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
+                className="h-10 w-full rounded-[8px] border border-[var(--line)] bg-[var(--surface)] px-3 text-[15px] text-[var(--text)] outline-none placeholder:text-[var(--text-3)] focus:border-[var(--accent)]"
               />
               {error && (
                 <p
                   role="alert"
-                  className="mt-2 text-[12px] text-[var(--danger)]"
+                  className="mt-2 text-[13px] text-[var(--danger)]"
                 >
                   {error}
                 </p>
@@ -246,7 +246,7 @@ export default function CategoryPicker({
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="mt-3 flex h-10 w-full items-center gap-2 rounded-[10px] px-1 text-[14px] font-medium text-[var(--accent)]"
+              className="mt-3 flex h-10 w-full items-center gap-2 rounded-[10px] px-1 text-[15px] font-medium text-[var(--accent)]"
             >
               <Plus size={16} strokeWidth={2} />
               {m.money.newCategory}
@@ -262,7 +262,7 @@ export default function CategoryPicker({
           ) : (
             sections.map((section) => (
               <section key={section.key} className="mt-3">
-                <h3 className="px-2 pb-1 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--text-3)]">
+                <h3 className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-3)]">
                   {section.label}
                 </h3>
                 <div className="overflow-hidden rounded-[12px] border border-[var(--line)] bg-[var(--surface)]">
@@ -289,7 +289,7 @@ export default function CategoryPicker({
                             onSelect(category.id)
                             onClose()
                           }}
-                          className={`flex h-11 min-w-0 flex-1 items-center gap-2 px-3 text-left text-[14px] transition-colors ${
+                          className={`flex h-11 min-w-0 flex-1 items-center gap-2 px-3 text-left text-[15px] transition-colors ${
                             selected
                               ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
                               : 'text-[var(--text)] hover:bg-[var(--surface-sunken)]'

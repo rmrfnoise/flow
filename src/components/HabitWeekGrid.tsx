@@ -68,7 +68,7 @@ export default function HabitWeekGrid({
                 : 'hover:bg-[var(--surface-sunken)]'
             } ${disabled ? 'opacity-40' : ''}`}
           >
-            <span className="text-[10px] text-[var(--text-3)]">
+            <span className="text-[11px] text-[var(--text-3)]">
               {labels[index]}
             </span>
             <span

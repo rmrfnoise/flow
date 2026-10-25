@@ -26,6 +26,7 @@ import {
 } from '../lib/expenses'
 import ExpenseRow from './ExpenseRow'
 import ExpenseReports from './ExpenseReports'
+import BalanceRow from './BalanceRow'
 import SegmentedTabs from './SegmentedTabs'
 
 export type MoneyTab = 'records' | 'week' | 'month'
@@ -77,81 +78,6 @@ function RecordsEmpty({
         {action}
       </button>
     </div>
-  )
-}
-
-function BalanceCard({
-  enabled,
-  cents,
-  onToggle,
-  onSet,
-  onCalibrate,
-}: {
-  enabled: boolean
-  cents: number | null
-  onToggle: () => void
-  onSet: () => void
-  onCalibrate: () => void
-}) {
-  const { locale, m } = useI18n()
-
-  return (
-    <section className="mt-3 rounded-[var(--radius-hero)] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10.5px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
-            {m.money.balance}
-          </p>
-          {enabled ? (
-            <p className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.035em] tabular-nums text-[var(--text)]">
-              {cents === null ? '--' : formatMoney(cents, locale)}
-            </p>
-          ) : (
-            <p className="mt-1 text-[15px] font-medium text-[var(--text-2)]">
-              {m.money.balanceOff}
-            </p>
-          )}
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={enabled}
-          aria-label={m.money.trackBalance}
-          onClick={onToggle}
-          className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full transition-colors ${
-            enabled ? 'bg-[var(--accent)]' : 'bg-[var(--line-strong)]'
-          }`}
-        >
-          <span
-            aria-hidden="true"
-            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-              enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
-            }`}
-          />
-        </button>
-      </div>
-
-      {enabled ? (
-        <div className="mt-2 flex items-end justify-between gap-3">
-          <p className="max-w-[250px] text-[11.5px] leading-relaxed text-[var(--text-3)]">
-            {cents === null
-              ? m.money.balanceNotSetHint
-              : m.money.balanceActualHint}
-          </p>
-          <button
-            type="button"
-            onClick={cents === null ? onSet : onCalibrate}
-            className="h-8 shrink-0 rounded-full px-2.5 text-[11.5px] font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
-          >
-            {cents === null ? m.money.setBalance : m.money.calibrate}
-          </button>
-        </div>
-      ) : (
-        <p className="mt-1.5 text-[11.5px] leading-relaxed text-[var(--text-3)]">
-          {m.money.balanceOffHint}
-        </p>
-      )}
-    </section>
   )
 }
 
@@ -226,26 +152,30 @@ export default function MoneyView({
         </button>
       </div>
 
-      <BalanceCard
-        enabled={balanceEnabled}
-        cents={balanceCents}
-        onToggle={onToggleBalance}
-        onSet={onSetBalance}
-        onCalibrate={onCalibrateBalance}
-      />
-
       <div
         key={tab === 'records' ? 'records' : 'reports'}
         className="fade-enter"
       >
         {tab === 'records' ? (
           !hasAnyExpenses ? (
-            <RecordsEmpty
-              title={m.money.emptyTitle}
-              body={m.money.emptyBody}
-              action={m.money.addFirst}
-              onAdd={onAdd}
-            />
+            <>
+              <div className="mt-3 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
+                <BalanceRow
+                  enabled={balanceEnabled}
+                  cents={balanceCents}
+                  onToggle={onToggleBalance}
+                  onSet={onSetBalance}
+                  onCalibrate={onCalibrateBalance}
+                  bordered={false}
+                />
+              </div>
+              <RecordsEmpty
+                title={m.money.emptyTitle}
+                body={m.money.emptyBody}
+                action={m.money.addFirst}
+                onAdd={onAdd}
+              />
+            </>
           ) : (
             <div className="mt-4">
               <section className="overflow-hidden rounded-[16px] border border-[var(--line)] bg-[var(--surface)]">
@@ -262,7 +192,7 @@ export default function MoneyView({
                   >
                     <ChevronLeft size={16} strokeWidth={2} />
                   </button>
-                  <span className="min-w-[96px] truncate text-center text-[12px] font-medium text-[var(--text-2)]">
+                  <span className="min-w-[96px] truncate text-center text-[13px] font-medium text-[var(--text-2)]">
                     {formatMonthLabel(monthKey, locale)}
                   </span>
                   {monthKey !== currentMonthKey && (
@@ -290,7 +220,7 @@ export default function MoneyView({
 
                 <div className="px-5 pb-5 pt-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[10.5px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--text-3)]">
                       {m.money.net}
                     </p>
                     <span className="shrink-0 rounded-full bg-[var(--surface-sunken)] px-2 py-0.5 text-[11px] tabular-nums text-[var(--text-3)]">
@@ -302,23 +232,31 @@ export default function MoneyView({
                   </p>
                   <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[var(--line)] pt-3">
                     <div>
-                      <p className="text-[10.5px] uppercase tracking-[0.08em] text-[var(--text-3)]">
+                      <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--text-3)]">
                         {m.money.income}
                       </p>
-                      <p className="mt-1 text-[14px] font-medium tabular-nums text-[var(--accent)]">
+                      <p className="mt-1 text-[15px] font-medium tabular-nums text-[var(--accent)]">
                         {formatMoney(incomeCents, locale)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-[10.5px] uppercase tracking-[0.08em] text-[var(--text-3)]">
+                      <p className="text-[11px] uppercase tracking-[0.08em] text-[var(--text-3)]">
                         {m.money.expenses}
                       </p>
-                      <p className="mt-1 text-[14px] font-medium tabular-nums text-[var(--text)]">
+                      <p className="mt-1 text-[15px] font-medium tabular-nums text-[var(--text)]">
                         {formatMoney(expenseCents, locale)}
                       </p>
                     </div>
                   </div>
                 </div>
+
+                <BalanceRow
+                  enabled={balanceEnabled}
+                  cents={balanceCents}
+                  onToggle={onToggleBalance}
+                  onSet={onSetBalance}
+                  onCalibrate={onCalibrateBalance}
+                />
               </section>
 
               {groups.length === 0 ? (
@@ -344,7 +282,7 @@ export default function MoneyView({
                       }}
                     >
                       <div className="flex items-center justify-between px-1 pb-2">
-                        <span className="text-[12.5px] font-medium text-[var(--text-2)]">
+                        <span className="text-[13px] font-medium text-[var(--text-2)]">
                           {formatExpenseDayLabel(
                             group.date,
                             todayKey,
@@ -355,11 +293,11 @@ export default function MoneyView({
                             },
                           )}
                         </span>
-                        <span className="text-[11.5px] tabular-nums text-[var(--text-3)]">
+                        <span className="text-[11px] tabular-nums text-[var(--text-3)]">
                           {formatSignedMoney(group.netCents, locale)}
                         </span>
                       </div>
-                      <div className="overflow-hidden rounded-[14px] border border-[var(--line)] bg-[var(--surface)]">
+                      <div className="overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
                         <ul>
                           {group.expenses.map((expense) => (
                             <ExpenseRow
@@ -392,6 +330,11 @@ export default function MoneyView({
             customCategories={customCategories}
             todayKey={todayKey}
             period={tab === 'week' ? 'week' : 'month'}
+            balanceEnabled={balanceEnabled}
+            balanceCents={balanceCents}
+            onToggleBalance={onToggleBalance}
+            onSetBalance={onSetBalance}
+            onCalibrateBalance={onCalibrateBalance}
           />
         )}
       </div>

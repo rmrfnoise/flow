@@ -114,10 +114,10 @@ export default function BalanceSheet({
         >
           {mode === 'calibrate' && currentCents !== null && (
             <div className="mb-4 flex items-center justify-between rounded-[10px] bg-[var(--surface-sunken)] px-3.5 py-3">
-              <span className="text-[12px] text-[var(--text-2)]">
+              <span className="text-[13px] text-[var(--text-2)]">
                 {m.money.balanceCurrent}
               </span>
-              <span className="text-[14px] font-medium tabular-nums text-[var(--text)]">
+              <span className="text-[15px] font-medium tabular-nums text-[var(--text)]">
                 {formatMoney(currentCents, locale)}
               </span>
             </div>
@@ -125,7 +125,7 @@ export default function BalanceSheet({
 
           <label
             htmlFor="balance-amount"
-            className="block text-[12px] font-medium text-[var(--text-2)]"
+            className="block text-[13px] font-medium text-[var(--text-2)]"
           >
             {m.money.balanceActual}
           </label>
@@ -172,7 +172,7 @@ export default function BalanceSheet({
             <p
               id="balance-amount-error"
               role="alert"
-              className="mt-1.5 text-[12px] text-[var(--danger)]"
+              className="mt-1.5 text-[13px] text-[var(--danger)]"
             >
               {error}
             </p>
@@ -181,13 +181,13 @@ export default function BalanceSheet({
           <p className="mt-4 text-[13px] font-medium text-[var(--text)]">
             {hint}
           </p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[var(--text-3)]">
+          <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-3)]">
             {note}
           </p>
 
           <button
             type="submit"
-            className="mt-5 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[14px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+            className="mt-5 flex h-12 w-full items-center justify-center rounded-[10px] bg-[var(--accent)] text-[15px] font-medium text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
           >
             {mode === 'setup'
               ? m.money.balanceSave
