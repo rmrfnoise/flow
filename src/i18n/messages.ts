@@ -517,7 +517,7 @@ const en: Messages = {
     importError: 'Could not read this file.',
     about: 'About',
     aboutText:
-      'A quiet home for what matters. Tasks, habits, and money stay on this device.',
+      'Less noise, more clarity. Tasks, habits, and money stay on this device.',
     version: 'Version 2.0.0',
   },
   habits: {
@@ -970,7 +970,7 @@ const zh: Messages = {
     exportError: '无法创建备份文件。',
     importError: '无法读取这个文件。',
     about: '关于',
-    aboutText: '把重要的事，安静地放在这里。待办、习惯与记账，只保存在本机。',
+    aboutText: '少一点打扰，多一分清楚。待办、习惯与收支，只保存在这台设备上。',
     version: '版本 2.0.0',
   },
   habits: {
