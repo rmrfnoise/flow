@@ -60,7 +60,7 @@ function RecordsEmpty({
 }) {
   return (
     <div className="fade-enter mt-5 flex flex-col items-center rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
         <ReceiptText size={22} strokeWidth={1.7} />
       </div>
       <p className="mt-3 text-[15px] font-semibold text-[var(--text)]">
@@ -142,7 +142,7 @@ export default function MoneyView({
           type="button"
           aria-label={m.money.addEntry}
           onClick={onAdd}
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)] ${
+          className={`grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] transition-[background-color,transform] duration-150 active:scale-95 hover:bg-[var(--accent-hover)] ${
             tab === 'records' && !hasAnyExpenses
               ? 'hidden'
               : ''

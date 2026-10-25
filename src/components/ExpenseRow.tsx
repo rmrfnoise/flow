@@ -218,17 +218,17 @@ export default function ExpenseRow({
         className={`relative flex select-none items-center gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors ${
           isAdjustment
             ? 'cursor-default'
-            : 'cursor-pointer hover:bg-[var(--surface-sunken)]'
+            : 'cursor-pointer hover:bg-[var(--surface-sunken)] active:bg-[var(--surface-sunken)]'
         } ${dragging ? 'bg-[var(--surface-sunken)]' : ''}`}
       >
         <span
-          className={`grid h-8 w-8 shrink-0 place-items-center rounded-[8px] bg-[var(--surface-sunken)] ${
+          className={`grid h-6 w-6 shrink-0 place-items-center ${
             entryType === 'income'
               ? 'text-[var(--accent)]'
-              : 'text-[var(--text-2)]'
+              : 'text-[var(--text-3)]'
           }`}
         >
-          <CategoryIcon size={16} strokeWidth={1.8} />
+          <CategoryIcon size={17} strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[15px] leading-[1.4] text-[var(--text)]">

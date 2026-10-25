@@ -162,7 +162,7 @@ function BottomNavItem({
       className="grid h-12 place-items-center"
     >
       <span
-        className={`grid h-8 w-12 place-items-center rounded-full transition-colors ${
+        className={`grid h-8 w-12 place-items-center rounded-full transition-[background-color,color,transform] duration-200 active:scale-95 ${
           active
             ? 'bg-[var(--accent-soft)] text-[var(--accent)]'
             : 'text-[var(--text-3)]'
@@ -1067,7 +1067,7 @@ export default function App() {
                       ? () => openHabitSheet()
                       : openAddSheet
                   }
-                  className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] transition-colors hover:bg-[var(--accent-hover)]"
+                  className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--on-accent)] transition-[background-color,transform] duration-150 active:scale-95 hover:bg-[var(--accent-hover)]"
                 >
                   <Plus size={19} strokeWidth={2.1} />
                 </button>
@@ -1077,7 +1077,7 @@ export default function App() {
         </header>
 
         {route.name === 'tasks' && allTags.length > 0 && (
-          <div className="relative sticky top-0 z-20 -mx-5 mt-5 bg-[var(--bg)] px-5 pb-1 pt-2">
+          <div className="filter-dock relative sticky top-0 z-20 -mx-5 mt-5 px-5 pb-1 pt-2">
             <FilterBar
               tags={allTags}
               selected={filter}
@@ -1091,7 +1091,7 @@ export default function App() {
         )}
 
         {route.name === 'tasks' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             {visibleTotal === 0 ? (
           <EmptyState
             filtered={filter !== null}
@@ -1203,7 +1203,7 @@ export default function App() {
         )}
 
         {showHabitsList && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             <HabitsView
               habits={habits}
               checkins={habitCheckins}
@@ -1218,7 +1218,7 @@ export default function App() {
         )}
 
         {route.name === 'habit' && activeHabit && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             <HabitDetail
               key={activeHabit.id}
               habit={activeHabit}
@@ -1233,7 +1233,7 @@ export default function App() {
         )}
 
         {route.name === 'money' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-1">
             <MoneyView
               expenses={expenses}
               customCategories={customCategories}
@@ -1253,7 +1253,7 @@ export default function App() {
         )}
 
         {route.name === 'settings' && (
-          <main className="flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-6">
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+96px)] pt-6">
             <SettingsView
               appearanceMode={appearanceMode}
               onAppearanceModeChange={setAppearanceMode}
@@ -1266,7 +1266,7 @@ export default function App() {
       </div>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)]"
+        className="app-nav fixed inset-x-0 bottom-0 z-40 border-t border-[var(--line)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)]"
         aria-label={m.nav.label}
       >
         <div className="mx-auto grid max-w-[500px] grid-cols-4">

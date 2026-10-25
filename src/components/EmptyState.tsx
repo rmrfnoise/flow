@@ -11,7 +11,7 @@ export default function EmptyState({ filtered, onAdd }: EmptyStateProps) {
 
   return (
     <div className="fade-enter flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-6 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
         <ListChecks size={22} strokeWidth={1.6} />
       </div>
 

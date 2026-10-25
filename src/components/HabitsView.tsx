@@ -43,7 +43,7 @@ export default function HabitsView({
   if (habits.length === 0) {
     return (
       <div className="fade-enter flex flex-1 flex-col items-center justify-center px-6 pb-24 pt-8 text-center">
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+        <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
           <Repeat size={22} strokeWidth={1.6} />
         </div>
         <h2 className="mt-3 text-[15px] font-semibold text-[var(--text)]">
@@ -64,7 +64,7 @@ export default function HabitsView({
   }
 
   return (
-    <ul className="mt-1 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
+    <ul className="stagger-list mt-1 overflow-hidden rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)]">
       {habits.map((habit) => {
         const dates = getHabitDates(checkins, habit.id)
         const checkedToday = dates.includes(todayKey)
@@ -102,7 +102,7 @@ export default function HabitsView({
                   onOpen(habit.id)
                 }
               }}
-              className="relative flex cursor-pointer items-start gap-3 bg-[var(--surface)] px-4 py-3.5 transition-colors hover:bg-[var(--surface-sunken)]"
+              className="relative flex cursor-pointer items-start gap-3 bg-[var(--surface)] px-4 py-3 transition-colors hover:bg-[var(--surface-sunken)] active:bg-[var(--surface-sunken)]"
             >
               <button
                 type="button"
@@ -148,27 +148,25 @@ export default function HabitsView({
                   </span>
                   <span className="truncate">{habit.name}</span>
                 </p>
-                <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] leading-[1.4] text-[var(--text-3)]">
-                  <span>{schedule}</span>
-                  {state === 'rest' ? (
-                    <>
-                      <span aria-hidden="true">·</span>
-                      <span>{m.habits.restDay}</span>
-                    </>
-                  ) : streak > 0 ? (
-                    <>
-                      <span aria-hidden="true">·</span>
-                      <span>{m.habits.streak(streak)}</span>
-                    </>
-                  ) : null}
-                </p>
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
-                    {m.habits.week}
-                  </span>
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 text-[11px] leading-[1.4] text-[var(--text-3)]">
+                    <span>{schedule}</span>
+                    {state === 'rest' ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>{m.habits.restDay}</span>
+                      </>
+                    ) : streak > 0 ? (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>{m.habits.streak(streak)}</span>
+                      </>
+                    ) : null}
+                  </p>
                   <div
-                    aria-hidden="true"
-                    className="flex items-center gap-[3px]"
+                    role="img"
+                    aria-label={m.habits.week}
+                    className="flex shrink-0 items-center gap-[3px]"
                   >
                     {weekDays.map((key) => {
                       const done = dates.includes(key)

@@ -210,7 +210,7 @@ export default function TodoRow({
             : 'transform 230ms cubic-bezier(0.22, 1, 0.36, 1)',
           touchAction: 'pan-y',
         }}
-        className={`relative flex cursor-pointer select-none items-start gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors hover:bg-[var(--surface-sunken)] ${
+        className={`relative flex cursor-pointer select-none items-start gap-3 bg-[var(--surface)] px-4 py-3 outline-none transition-colors hover:bg-[var(--surface-sunken)] active:bg-[var(--surface-sunken)] ${
           dragging ? 'bg-[var(--surface-sunken)]' : ''
         }`}
       >

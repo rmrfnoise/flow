@@ -264,12 +264,14 @@ export default function SettingsView({
         </h2>
         <div className="mt-2 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)] px-4 py-3.5">
           <BrandMark />
-          <p className="mt-2 text-[13px] leading-relaxed text-[var(--text-2)]">
-            {m.settings.aboutText}
-          </p>
-          <p className="mt-2 text-[11px] text-[var(--text-3)]">
-            {m.settings.version}
-          </p>
+          <div className="mt-3 border-t border-[var(--line)] pt-3">
+            <p className="text-[13px] leading-relaxed text-[var(--text-2)]">
+              {m.settings.aboutText}
+            </p>
+            <p className="mt-2 text-[11px] text-[var(--text-3)]">
+              {m.settings.version}
+            </p>
+          </div>
         </div>
       </section>
 

@@ -20,8 +20,8 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait-primary',
-        background_color: '#f5f5f7',
-        theme_color: '#f5f5f7',
+        background_color: '#f4f2ed',
+        theme_color: '#f4f2ed',
         categories: ['productivity', 'lifestyle', 'finance'],
         icons: [
           {

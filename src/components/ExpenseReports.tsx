@@ -232,7 +232,7 @@ export default function ExpenseReports({
             />
           </div>
           <div className="mt-4 flex flex-col items-center rounded-[16px] border border-[var(--line)] bg-[var(--surface)] px-6 py-12 text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--surface-sunken)] text-[var(--text-3)]">
+            <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
               <ReceiptText size={22} strokeWidth={1.7} />
             </div>
             <p className="mt-4 text-[15px] font-semibold text-[var(--text)]">
