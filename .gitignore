@@ -1,0 +1,35 @@
+node_modules
+dist
+dist-ssr
+*.local
+*.tsbuildinfo
+
+# Local tooling, signing keys and QA artifacts
+.workbuddy/
+.npm-cache
+.chrome-*
+.qa-*
+.font-*
+.pip-*
+.preview-shots/
+.preview-profile*/
+.dsh-acl-recovery/
+.release-keys/
+*.p12
+*.jks
+*.keystore
+fonts-src
+shot-*.png
+
+# Local design tooling (review captures and screenshot harness)
+.impeccable/review/
+.impeccable/tools/
+.impeccable/mocks/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.log
