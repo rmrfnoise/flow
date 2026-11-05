@@ -2,6 +2,12 @@ import type { Todo } from '../types'
 
 export const TODOS_STORAGE_KEY = 'flow.todos.v1'
 
+/**
+ * UI cap for a single task. The storage validator deliberately stays
+ * permissive so older or imported longer tasks remain readable.
+ */
+export const TODO_TEXT_MAX = 500
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }

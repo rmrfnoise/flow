@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Check, Copy, Download, FileJson, X } from 'lucide-react'
 import { copyText, downloadTextFile } from '../lib/backup'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
+import { useBackHandler, BACK_PRIORITY } from '../hooks/useBackHandler'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useI18n } from '../i18n/I18nProvider'
+import { Z_LAYER } from '../lib/layers'
 
 interface BackupExportDialogProps {
   json: string
@@ -23,6 +26,7 @@ export default function BackupExportDialog({
   const downloadRef = useRef<HTMLButtonElement | null>(null)
   const [status, setStatus] = useState<ExportStatus>('idle')
   useBodyScrollLock()
+  useBackHandler(onClose, { priority: BACK_PRIORITY.floating })
 
   useEffect(() => {
     const timer = window.setTimeout(() => downloadRef.current?.focus(), 80)
@@ -64,8 +68,11 @@ export default function BackupExportDialog({
             ? m.settings.backupDownloadError
             : ''
 
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+  return createPortal(
+    <div
+      className="fixed inset-0 flex items-center justify-center p-4"
+      style={{ zIndex: Z_LAYER.floating }}
+    >
       <button
         type="button"
         tabIndex={-1}
@@ -166,6 +173,7 @@ export default function BackupExportDialog({
           />
         </details>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

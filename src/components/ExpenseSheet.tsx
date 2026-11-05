@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CalendarDays, ChevronRight, X } from 'lucide-react'
+import { useBackHandler, BACK_PRIORITY, hasBackHandlerAbove } from '../hooks/useBackHandler'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
@@ -14,7 +15,9 @@ import {
   type Expense,
 } from '../lib/expenses'
 import { addDaysKey, formatMonthDay } from '../lib/habits'
+import { Z_LAYER } from '../lib/layers'
 import CategoryPicker from './CategoryPicker'
+import ConfirmDialog from './ConfirmDialog'
 import SegmentedTabs from './SegmentedTabs'
 import DuePicker from './DuePicker'
 
@@ -58,23 +61,26 @@ export default function ExpenseSheet({
   onRequestDeleteCategory,
 }: ExpenseSheetProps) {
   const { locale, m } = useI18n()
-  const [type, setType] = useState<'expense' | 'income'>(
-    initialExpense
-      ? getEntryType(initialExpense) === 'income'
-        ? 'income'
-        : 'expense'
-      : 'expense',
-  )
-  const [amount, setAmount] = useState(
-    initialExpense ? formatAmountInput(initialExpense.amountCents) : '',
-  )
-  const [categoryId, setCategoryId] = useState(
-    initialExpense?.categoryId ?? '',
-  )
-  const [content, setContent] = useState(initialExpense?.content ?? '')
-  const [date, setDate] = useState(initialExpense?.date ?? todayKey)
+  const initialType: 'expense' | 'income' = initialExpense
+    ? getEntryType(initialExpense) === 'income'
+      ? 'income'
+      : 'expense'
+    : 'expense'
+  const initialAmount = initialExpense
+    ? formatAmountInput(initialExpense.amountCents)
+    : ''
+  const initialCategoryId = initialExpense?.categoryId ?? ''
+  const initialContent = initialExpense?.content ?? ''
+  const initialDate = initialExpense?.date ?? todayKey
+
+  const [type, setType] = useState<'expense' | 'income'>(initialType)
+  const [amount, setAmount] = useState(initialAmount)
+  const [categoryId, setCategoryId] = useState(initialCategoryId)
+  const [content, setContent] = useState(initialContent)
+  const [date, setDate] = useState(initialDate)
   const [categoryOpen, setCategoryOpen] = useState(false)
   const [dateOpen, setDateOpen] = useState(false)
+  const [discardOpen, setDiscardOpen] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 
   const selectedCategory = getCategoryView(
@@ -90,6 +96,36 @@ export default function ExpenseSheet({
   const trapRef = useFocusTrap<HTMLDivElement>()
   useBodyScrollLock()
   const keyboardInset = useKeyboardInset()
+  const isDirty =
+    type !== initialType ||
+    amount !== initialAmount ||
+    categoryId !== initialCategoryId ||
+    content.trim() !== initialContent.trim() ||
+    date !== initialDate
+
+  const requestClose = useCallback(() => {
+    if (categoryOpen || dateOpen || discardOpen) return
+    if (isDirty) {
+      setDiscardOpen(true)
+      return
+    }
+    onClose()
+  }, [categoryOpen, dateOpen, discardOpen, isDirty, onClose])
+
+  useBackHandler(requestClose, { priority: BACK_PRIORITY.sheet })
+
+  useEffect(() => {
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (
+        event.key === 'Escape' &&
+        !hasBackHandlerAbove(BACK_PRIORITY.sheet)
+      ) {
+        requestClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [requestClose])
 
   function selectType(next: 'expense' | 'income') {
     setType(next)
@@ -144,13 +180,13 @@ export default function ExpenseSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ bottom: keyboardInset }}
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ bottom: keyboardInset, zIndex: Z_LAYER.sheet }}
     >
       <button
         type="button"
         aria-label={m.money.closeBackdrop}
-        onClick={onClose}
+        onClick={requestClose}
         className="absolute inset-0 bg-[var(--scrim)]"
       />
 
@@ -171,7 +207,7 @@ export default function ExpenseSheet({
           <button
             type="button"
             aria-label={m.money.close}
-            onClick={onClose}
+            onClick={requestClose}
             className="-mr-1 grid h-9 w-9 place-items-center text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
           >
             <X size={18} strokeWidth={1.9} />
@@ -406,6 +442,20 @@ export default function ExpenseSheet({
           />
         )}
       </div>
+
+      {discardOpen && (
+        <ConfirmDialog
+          title={m.app.unsavedTitle}
+          description={m.app.unsavedDescription}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.app.discard}
+          onClose={() => setDiscardOpen(false)}
+          onConfirm={() => {
+            setDiscardOpen(false)
+            onClose()
+          }}
+        />
+      )}
     </div>
   )
 }

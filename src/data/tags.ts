@@ -17,9 +17,12 @@ export function parseHashtags(text: string) {
 
 export function stripHashtags(text: string) {
   return text
+    .replace(/\r\n?/gu, '\n')
     .replace(TAG_PATTERN, ' ')
     .replace(/[ \t]+([、，,;；:：])/gu, '$1')
     .replace(/[ \t]+/gu, ' ')
+    .replace(/[ \t]+(?=\n|$)/gu, '')
+    .replace(/\n{3,}/gu, '\n\n')
     .replace(/^[\s、，,;；:：]+/u, '')
     .replace(/[\s、，,;；:：]+$/u, '')
     .trim()

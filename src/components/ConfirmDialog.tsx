@@ -1,8 +1,11 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { AlertTriangle } from 'lucide-react'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
+import { useBackHandler, BACK_PRIORITY } from '../hooks/useBackHandler'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useI18n } from '../i18n/I18nProvider'
+import { Z_LAYER } from '../lib/layers'
 
 interface ConfirmDialogProps {
   title: string
@@ -25,6 +28,7 @@ export default function ConfirmDialog({
   const cancelRef = useRef<HTMLButtonElement | null>(null)
   const trapRef = useFocusTrap<HTMLDivElement>()
   useBodyScrollLock()
+  useBackHandler(onClose, { priority: BACK_PRIORITY.confirm })
 
   useEffect(() => {
     const focusTimer = window.setTimeout(() => {
@@ -41,8 +45,11 @@ export default function ConfirmDialog({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
-  return (
-    <div className="fixed inset-0 z-[60] grid place-items-center p-6">
+  return createPortal(
+    <div
+      className="fixed inset-0 grid place-items-center p-6"
+      style={{ zIndex: Z_LAYER.confirm }}
+    >
       <button
         type="button"
         aria-label={m.confirm.close}
@@ -94,6 +101,7 @@ export default function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

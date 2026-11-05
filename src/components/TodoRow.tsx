@@ -1,4 +1,6 @@
 import {
+  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -47,6 +49,9 @@ export default function TodoRow({
   )
   const elementRef = useRef<HTMLElement | null>(null)
   const suppressClickRef = useRef(false)
+  const textRef = useRef<HTMLParagraphElement | null>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [canExpand, setCanExpand] = useState(false)
 
   const completed = todo.completedAt !== null
   const status = getDueStatus(
@@ -63,6 +68,36 @@ export default function TodoRow({
         ? 'text-[var(--ink-2)]'
         : 'text-[var(--ink-3)]'
   const hasMeta = todo.tags.length > 0 || todo.dueAt !== null
+
+  useEffect(() => {
+    setExpanded(false)
+  }, [todo.text])
+
+  useLayoutEffect(() => {
+    const element = textRef.current
+    if (!element) return
+
+    let active = true
+    const measure = () => {
+      if (!active || expanded) return
+      setCanExpand(element.scrollHeight > element.clientHeight + 1)
+    }
+
+    measure()
+    const observer =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(measure)
+    observer?.observe(element)
+    if (document.fonts?.ready) {
+      void document.fonts.ready.then(measure).catch(() => {})
+    }
+
+    return () => {
+      active = false
+      observer?.disconnect()
+    }
+  }, [expanded, todo.text])
 
   function updateOffset(next: number) {
     offsetRef.current = next
@@ -162,6 +197,7 @@ export default function TodoRow({
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.target !== event.currentTarget) return
     if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault()
       onDelete(todo)
@@ -233,7 +269,14 @@ export default function TodoRow({
 
         <div className="min-w-0 flex-1">
           <p
-            className={`break-words text-[15px] leading-[1.45] tracking-[-0.004em] sm:text-[15.5px] ${
+            ref={textRef}
+            id={`todo-text-${todo.id}`}
+            style={
+              expanded
+                ? undefined
+                : { maxHeight: '5.8em', overflow: 'hidden' }
+            }
+            className={`whitespace-pre-line break-words text-[15px] leading-[1.45] tracking-[-0.004em] sm:text-[15.5px] ${
               completed
                 ? 'text-[var(--ink-3)] line-through decoration-[var(--ink-3)] decoration-1'
                 : 'text-[var(--ink)]'
@@ -241,6 +284,22 @@ export default function TodoRow({
           >
             {todo.text}
           </p>
+
+          {canExpand && (
+            <button
+              type="button"
+              aria-expanded={expanded}
+              aria-controls={`todo-text-${todo.id}`}
+              onClick={(event) => {
+                event.stopPropagation()
+                setExpanded((value) => !value)
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+              className="relative mt-0.5 inline-flex min-h-[44px] items-center pr-2 text-[11px] font-medium tracking-[0.04em] text-[var(--ink-3)] transition-colors after:absolute after:-inset-x-3 after:inset-y-0 after:content-[''] hover:text-[var(--ink)]"
+            >
+              {expanded ? m.row.collapse : m.row.expand}
+            </button>
+          )}
 
           {hasMeta && (
             <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11.5px] leading-[1.3]">

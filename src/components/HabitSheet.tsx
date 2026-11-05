@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -7,6 +8,7 @@ import {
 } from 'react'
 import { X } from 'lucide-react'
 import SegmentedTabs from './SegmentedTabs'
+import { useBackHandler, BACK_PRIORITY, hasBackHandlerAbove } from '../hooks/useBackHandler'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
@@ -24,6 +26,8 @@ import {
   type HabitSchedule,
   type Weekday,
 } from '../lib/habits'
+import { Z_LAYER } from '../lib/layers'
+import ConfirmDialog from './ConfirmDialog'
 
 interface HabitSheetProps {
   initialHabit?: Habit
@@ -43,17 +47,24 @@ export default function HabitSheet({
   onSave,
 }: HabitSheetProps) {
   const { locale, m } = useI18n()
-  const [name, setName] = useState(initialHabit?.name ?? '')
-  const [frequency, setFrequency] = useState<Frequency>(
-    initialHabit?.schedule.type ?? 'daily',
-  )
-  const [weekdays, setWeekdays] = useState<Weekday[]>(
+  const initialName = initialHabit?.name ?? ''
+  const initialFrequency: Frequency =
+    initialHabit?.schedule.type ?? 'daily'
+  const initialWeekdays =
     initialHabit?.schedule.type === 'weekly'
       ? initialHabit.schedule.weekdays
-      : [],
+      : []
+  const initialCheckInIcon = initialHabit?.checkInIcon ?? null
+
+  const [name, setName] = useState(initialName)
+  const [frequency, setFrequency] = useState<Frequency>(
+    initialFrequency,
   )
+  const [weekdays, setWeekdays] = useState<Weekday[]>([
+    ...initialWeekdays,
+  ])
   const [checkInIcon, setCheckInIcon] = useState<HabitIcon | null>(
-    initialHabit?.checkInIcon ?? null,
+    initialCheckInIcon,
   )
   const [iconGroup, setIconGroup] = useState<HabitIconGroupId>(() =>
     initialHabit?.checkInIcon
@@ -61,6 +72,7 @@ export default function HabitSheet({
       : HABIT_ICON_GROUPS[0].id,
   )
   const [error, setError] = useState('')
+  const [discardOpen, setDiscardOpen] = useState(false)
   const SelectedIcon = checkInIcon
     ? findHabitIconOption(checkInIcon)?.Icon ?? null
     : null
@@ -72,6 +84,26 @@ export default function HabitSheet({
   const weekdayLabels = getWeekdayLabels(locale)
   useBodyScrollLock()
   const keyboardInset = useKeyboardInset()
+  const weekdaysChanged =
+    frequency === 'weekly' &&
+    [...weekdays].sort((a, b) => a - b).join(',') !==
+      [...initialWeekdays].sort((a, b) => a - b).join(',')
+  const isDirty =
+    name.trim() !== initialName.trim() ||
+    frequency !== initialFrequency ||
+    weekdaysChanged ||
+    checkInIcon !== initialCheckInIcon
+
+  const requestClose = useCallback(() => {
+    if (discardOpen) return
+    if (isDirty) {
+      setDiscardOpen(true)
+      return
+    }
+    onClose()
+  }, [discardOpen, isDirty, onClose])
+
+  useBackHandler(requestClose, { priority: BACK_PRIORITY.sheet })
 
   useEffect(() => {
     const timer = window.setTimeout(() => inputRef.current?.focus(), 160)
@@ -80,11 +112,16 @@ export default function HabitSheet({
 
   useEffect(() => {
     function handleKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
+      if (
+        event.key === 'Escape' &&
+        !hasBackHandlerAbove(BACK_PRIORITY.sheet)
+      ) {
+        requestClose()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [requestClose])
 
   function selectFrequency(next: Frequency) {
     setFrequency(next)
@@ -135,13 +172,13 @@ export default function HabitSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ bottom: keyboardInset }}
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ bottom: keyboardInset, zIndex: Z_LAYER.sheet }}
     >
       <button
         type="button"
         aria-label={m.habits.closeBackdrop}
-        onClick={onClose}
+        onClick={requestClose}
         className="fade-enter absolute inset-0 cursor-default bg-[var(--scrim)] "
       />
 
@@ -164,7 +201,7 @@ export default function HabitSheet({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label={m.habits.close}
             className="-mr-1 grid h-9 w-9 place-items-center text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
           >
@@ -339,6 +376,20 @@ export default function HabitSheet({
           </button>
         </form>
       </section>
+
+      {discardOpen && (
+        <ConfirmDialog
+          title={m.app.unsavedTitle}
+          description={m.app.unsavedDescription}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.app.discard}
+          onClose={() => setDiscardOpen(false)}
+          onConfirm={() => {
+            setDiscardOpen(false)
+            onClose()
+          }}
+        />
+      )}
     </div>
   )
 }

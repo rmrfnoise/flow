@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Check, Plus, Search, Trash2, X } from 'lucide-react'
 import { getCategoryIcon } from '../lib/categoryIcons'
 import { useFocusTrap } from '../hooks/useFocusTrap'
+import { useBackHandler, BACK_PRIORITY } from '../hooks/useBackHandler'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
 import { useI18n } from '../i18n/I18nProvider'
+import { Z_LAYER } from '../lib/layers'
 import {
   CATEGORY_GROUP_ORDER,
   PRESET_CATEGORIES,
@@ -42,6 +44,7 @@ export default function CategoryPicker({
   const [error, setError] = useState('')
   const trapRef = useFocusTrap<HTMLDivElement>()
   const keyboardInset = useKeyboardInset()
+  useBackHandler(onClose, { priority: BACK_PRIORITY.picker })
 
   const categories = useMemo(
     () => getCategoryViews(customCategories, locale, type),
@@ -139,8 +142,8 @@ export default function CategoryPicker({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-end justify-center"
-      style={{ bottom: keyboardInset }}
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ bottom: keyboardInset, zIndex: Z_LAYER.picker }}
     >
       <button
         type="button"

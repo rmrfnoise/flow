@@ -27,6 +27,7 @@ import SettingsView from './components/SettingsView'
 import Toast from './components/Toast'
 import TodoRow from './components/TodoRow'
 import { useAppearance } from './hooks/useAppearance'
+import { runBack } from './hooks/useBackHandler'
 import { useI18n } from './i18n/I18nProvider'
 import { getActiveDueBucket, type DueBucket } from './lib/date'
 import {
@@ -241,6 +242,7 @@ export default function App() {
   const [now, setNow] = useState(() => Date.now())
 
   const toastTimerRef = useRef<number | null>(null)
+  const backRef = useRef<() => void>(() => {})
   const todayKey = toDateKey(new Date(now))
   const categoryExpenseCount = categoryToDelete
     ? countExpensesForCategory(expenses, categoryToDelete.id)
@@ -294,7 +296,7 @@ export default function App() {
     let handle: { remove: () => void } | undefined
 
     void CapacitorApp.addListener('backButton', () => {
-      void CapacitorApp.exitApp()
+      backRef.current()
     }).then((listener) => {
       if (disposed) {
         void listener.remove()
@@ -618,6 +620,19 @@ export default function App() {
     dismissToast()
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
+
+  function handleBack() {
+    // Overlays consume back first. The only routed subpage is habit detail;
+    // every other screen (including money reports) exits the app.
+    if (runBack()) return
+    if (route.name === 'habit') {
+      navigate('habits')
+      return
+    }
+    void CapacitorApp.exitApp()
+  }
+
+  backRef.current = handleBack
 
   function openHabitSheet(habit?: Habit) {
     setEditingHabit(habit ?? null)

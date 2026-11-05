@@ -1,5 +1,7 @@
 import {
+  useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
@@ -7,6 +9,7 @@ import {
 } from 'react'
 import { CalendarClock, ChevronRight, Plus, X } from 'lucide-react'
 import { parseHashtags, stripHashtags } from '../data/tags'
+import { useBackHandler, BACK_PRIORITY, hasBackHandlerAbove } from '../hooks/useBackHandler'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
@@ -19,6 +22,9 @@ import {
   toDateInputValue,
   toTimeInputValue,
 } from '../lib/date'
+import { TODO_TEXT_MAX } from '../lib/todos'
+import { Z_LAYER } from '../lib/layers'
+import ConfirmDialog from './ConfirmDialog'
 import DuePicker from './DuePicker'
 import SegmentedTabs from './SegmentedTabs'
 import type {
@@ -75,6 +81,7 @@ export default function AddTodoSheet({
   const [dueDate, setDueDate] = useState(initialDeadline.date)
   const [dueTime, setDueTime] = useState(initialDeadline.time)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [discardOpen, setDiscardOpen] = useState(false)
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const trapRef = useFocusTrap<HTMLElement>()
@@ -86,6 +93,24 @@ export default function AddTodoSheet({
     ...availableTags,
     ...parsedTags.filter((tag) => !availableTags.includes(tag)),
   ]
+  const deadlineChanged =
+    deadlineMode !== initialDeadline.mode ||
+    (deadlineMode !== 'none' && dueDate !== initialDeadline.date) ||
+    (deadlineMode === 'datetime' &&
+      dueTime !== initialDeadline.time)
+  const isDirty =
+    text.trim() !== initialText.trim() || deadlineChanged
+
+  const requestClose = useCallback(() => {
+    if (pickerOpen || discardOpen) return
+    if (isDirty) {
+      setDiscardOpen(true)
+      return
+    }
+    onClose()
+  }, [discardOpen, isDirty, onClose, pickerOpen])
+
+  useBackHandler(requestClose, { priority: BACK_PRIORITY.sheet })
 
   useEffect(() => {
     const focusTimer = window.setTimeout(() => {
@@ -94,13 +119,38 @@ export default function AddTodoSheet({
     return () => window.clearTimeout(focusTimer)
   }, [])
 
+  useLayoutEffect(() => {
+    const element = textareaRef.current
+    if (!element) return
+
+    const viewportHeight =
+      window.visualViewport?.height ?? window.innerHeight
+    const maxHeight = Math.max(
+      120,
+      Math.min(viewportHeight * 0.4, 320),
+    )
+
+    element.style.height = 'auto'
+    element.style.height = `${Math.min(
+      element.scrollHeight,
+      maxHeight,
+    )}px`
+    element.style.overflowY =
+      element.scrollHeight > maxHeight ? 'auto' : 'hidden'
+  }, [keyboardInset, text])
+
   useEffect(() => {
     function handleKeyDown(event: globalThis.KeyboardEvent) {
-      if (event.key === 'Escape' && !pickerOpen) onClose()
+      if (
+        event.key === 'Escape' &&
+        !hasBackHandlerAbove(BACK_PRIORITY.sheet)
+      ) {
+        requestClose()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose, pickerOpen])
+  }, [requestClose])
 
   function selectDeadlineMode(mode: DeadlineMode) {
     setError('')
@@ -158,7 +208,7 @@ export default function AddTodoSheet({
   ) {
     if (
       event.key === 'Enter' &&
-      !event.shiftKey &&
+      (event.metaKey || event.ctrlKey) &&
       !event.nativeEvent.isComposing
     ) {
       event.preventDefault()
@@ -181,7 +231,10 @@ export default function AddTodoSheet({
       }
 
       const base = current.trimEnd()
-      return `${base}${base ? ' ' : ''}#${tag}`.slice(0, 180)
+      return `${base}${base ? ' ' : ''}#${tag}`.slice(
+        0,
+        TODO_TEXT_MAX,
+      )
     })
 
     if (error) setError('')
@@ -211,13 +264,13 @@ export default function AddTodoSheet({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ bottom: keyboardInset }}
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ bottom: keyboardInset, zIndex: Z_LAYER.sheet }}
     >
       <button
         type="button"
         aria-label={m.sheet.closeBackdrop}
-        onClick={onClose}
+        onClick={requestClose}
         className="fade-enter absolute inset-0 cursor-default bg-[var(--scrim)] "
       />
 
@@ -240,7 +293,7 @@ export default function AddTodoSheet({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label={m.sheet.close}
             className="-mr-1 grid h-9 w-9 place-items-center text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
           >
@@ -261,9 +314,9 @@ export default function AddTodoSheet({
               ref={textareaRef}
               rows={3}
               value={text}
-              maxLength={180}
+              maxLength={TODO_TEXT_MAX}
               placeholder={m.sheet.placeholder}
-              enterKeyHint="done"
+              enterKeyHint="enter"
               aria-invalid={Boolean(error)}
               aria-describedby={error ? 'todo-text-error' : undefined}
               onChange={(event) => {
@@ -280,9 +333,9 @@ export default function AddTodoSheet({
               <span className="text-[13px] font-medium text-[var(--ink-2)]">
                 {m.sheet.tags}
               </span>
-              {text.length > 150 && (
+              {text.length > TODO_TEXT_MAX - 50 && (
                 <span className="font-mono text-[11px] tabular-nums text-[var(--ink-3)]">
-                  {text.length}/180
+                  {text.length}/{TODO_TEXT_MAX}
                 </span>
               )}
             </div>
@@ -377,6 +430,7 @@ export default function AddTodoSheet({
 
           <button
             type="submit"
+            aria-keyshortcuts="Control+Enter Meta+Enter"
             disabled={!text.trim()}
             className="btn btn-primary mt-7 h-12 w-full"
           >
@@ -397,6 +451,19 @@ export default function AddTodoSheet({
             if (deadlineMode === 'datetime') setDueTime(time)
             setError('')
             setPickerOpen(false)
+          }}
+        />
+      )}
+      {discardOpen && (
+        <ConfirmDialog
+          title={m.app.unsavedTitle}
+          description={m.app.unsavedDescription}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.app.discard}
+          onClose={() => setDiscardOpen(false)}
+          onConfirm={() => {
+            setDiscardOpen(false)
+            onClose()
           }}
         />
       )}

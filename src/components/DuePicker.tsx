@@ -12,7 +12,9 @@ import {
   X,
 } from 'lucide-react'
 import { useFocusTrap } from '../hooks/useFocusTrap'
+import { useBackHandler, BACK_PRIORITY } from '../hooks/useBackHandler'
 import { useI18n } from '../i18n/I18nProvider'
+import { Z_LAYER } from '../lib/layers'
 import { formatHeaderDate } from '../lib/date'
 
 interface DuePickerProps {
@@ -84,6 +86,7 @@ export default function DuePicker({
   const [minute, setMinute] = useState(initialTimeValue.minute)
 
   const panelRef = useFocusTrap<HTMLDivElement>()
+  useBackHandler(onClose, { priority: BACK_PRIORITY.picker })
   const todayValue = toDateValue(new Date())
 
   const days = useMemo(() => {
@@ -185,7 +188,10 @@ export default function DuePicker({
     : summaryDate
 
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center p-5">
+    <div
+      className="fixed inset-0 grid place-items-center p-5"
+      style={{ zIndex: Z_LAYER.picker }}
+    >
       <button
         type="button"
         aria-label={m.sheet.close}

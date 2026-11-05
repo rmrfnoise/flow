@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react'
 import { X } from 'lucide-react'
+import { useBackHandler, BACK_PRIORITY, hasBackHandlerAbove } from '../hooks/useBackHandler'
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { useKeyboardInset } from '../hooks/useKeyboardInset'
@@ -8,6 +15,8 @@ import {
   formatMoney,
   parseSignedAmountInput,
 } from '../lib/expenses'
+import { Z_LAYER } from '../lib/layers'
+import ConfirmDialog from './ConfirmDialog'
 
 export type BalanceSheetMode = 'setup' | 'calibrate'
 
@@ -27,18 +36,36 @@ export default function BalanceSheet({
   const { locale, m } = useI18n()
   const [value, setValue] = useState('')
   const [error, setError] = useState('')
+  const [discardOpen, setDiscardOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const trapRef = useFocusTrap<HTMLDivElement>()
   useBodyScrollLock()
   const keyboardInset = useKeyboardInset()
+  const isDirty = value !== ''
+
+  const requestClose = useCallback(() => {
+    if (discardOpen) return
+    if (isDirty) {
+      setDiscardOpen(true)
+      return
+    }
+    onClose()
+  }, [discardOpen, isDirty, onClose])
+
+  useBackHandler(requestClose, { priority: BACK_PRIORITY.floating })
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
+      if (
+        event.key === 'Escape' &&
+        !hasBackHandlerAbove(BACK_PRIORITY.floating)
+      ) {
+        requestClose()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [requestClose])
 
   const title =
     mode === 'setup'
@@ -66,13 +93,13 @@ export default function BalanceSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end justify-center"
-      style={{ bottom: keyboardInset }}
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ bottom: keyboardInset, zIndex: Z_LAYER.floating }}
     >
       <button
         type="button"
         aria-label={m.money.closeBackdrop}
-        onClick={onClose}
+        onClick={requestClose}
         className="absolute inset-0 bg-[var(--scrim)]"
       />
 
@@ -93,7 +120,7 @@ export default function BalanceSheet({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             aria-label={m.money.close}
             className="-mr-1 grid h-9 w-9 place-items-center text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
           >
@@ -183,6 +210,20 @@ export default function BalanceSheet({
           </button>
         </form>
       </section>
+
+      {discardOpen && (
+        <ConfirmDialog
+          title={m.app.unsavedTitle}
+          description={m.app.unsavedDescription}
+          cancelLabel={m.app.cancel}
+          confirmLabel={m.app.discard}
+          onClose={() => setDiscardOpen(false)}
+          onConfirm={() => {
+            setDiscardOpen(false)
+            onClose()
+          }}
+        />
+      )}
     </div>
   )
 }

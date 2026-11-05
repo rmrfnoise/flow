@@ -51,6 +51,9 @@ export interface Messages {
     clearDescription: (count: number) => string
     clearConfirm: string
     cancel: string
+    unsavedTitle: string
+    unsavedDescription: string
+    discard: string
     addTask: string
   }
   filter: {
@@ -64,6 +67,8 @@ export interface Messages {
     markIncomplete: string
     deleteAria: (text: string) => string
     delete: string
+    expand: string
+    collapse: string
   }
   sheet: {
     newTask: string
@@ -427,6 +432,9 @@ const en: Messages = {
       }. This cannot be undone.`,
     clearConfirm: 'Clear',
     cancel: 'Cancel',
+    unsavedTitle: 'Discard changes?',
+    unsavedDescription: 'Your edits will not be saved.',
+    discard: 'Discard',
     addTask: 'Add task',
   },
   filter: {
@@ -440,6 +448,8 @@ const en: Messages = {
     markIncomplete: 'Mark as not completed',
     deleteAria: (text) => `Delete task: ${text}`,
     delete: 'Delete',
+    expand: 'Show more',
+    collapse: 'Show less',
   },
   sheet: {
     newTask: 'New task',
@@ -534,7 +544,7 @@ const en: Messages = {
     about: 'About',
     aboutText:
       'A simple personal tool that brings tasks, habit check-ins, and spending together. No account, no network — every record stays on your device.',
-    version: 'Version 3.0.0',
+    version: 'Version 3.1.0',
   },
   habits: {
     title: 'Habits',
@@ -982,6 +992,9 @@ const zh: Messages = {
       `这 ${count} 条已完成的待办会被移除，且无法恢复。`,
     clearConfirm: '清空',
     cancel: '取消',
+    unsavedTitle: '放弃未保存的修改？',
+    unsavedDescription: '离开后，这次填写的内容不会保存。',
+    discard: '放弃',
     addTask: '添加待办',
   },
   filter: {
@@ -995,6 +1008,8 @@ const zh: Messages = {
     markIncomplete: '把待办标为未完成',
     deleteAria: (text) => `删除待办：${text}`,
     delete: '删除',
+    expand: '展开',
+    collapse: '收起',
   },
   sheet: {
     newTask: '新建待办',
@@ -1085,7 +1100,7 @@ const zh: Messages = {
     about: '关于',
     aboutText:
       '一款简洁的个人管理工具，集待办事项、习惯打卡和收支记账于一体。无需注册账号，无需联网，所有数据均保存在自己的设备上。',
-    version: '版本 3.0.0',
+    version: '版本 3.1.0',
   },
   habits: {
     title: '习惯',
