@@ -126,6 +126,8 @@ export interface Messages {
     dark: string
     language: string
     languageHint: string
+    startup: string
+    startupHint: string
     data: string
     dataLocal: string
     dataSummary: (
@@ -507,6 +509,9 @@ const en: Messages = {
     dark: 'Dark',
     language: 'Language',
     languageHint: 'Changes apply immediately.',
+    startup: 'Startup',
+    startupHint:
+      'Which page opens when you launch flow. Applies next time.',
     data: 'Data',
     dataLocal: 'Stored on this device',
     dataSummary: (tasks, habits, expenses) =>
@@ -1067,6 +1072,8 @@ const zh: Messages = {
     dark: '深色',
     language: '语言',
     languageHint: '切换后立即生效。',
+    startup: '启动页',
+    startupHint: '打开 flow 时先显示哪一页，下次启动生效。',
     data: '数据',
     dataLocal: '数据只保存在本机',
     dataSummary: (tasks, habits, expenses) =>

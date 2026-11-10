@@ -15,6 +15,10 @@ import {
 import { TODOS_STORAGE_KEY, isTodoArray } from './todos'
 import { LOCALE_STORAGE_KEY } from '../i18n/messages'
 import { APPEARANCE_STORAGE_KEY } from '../hooks/useAppearance'
+import {
+  STARTUP_PAGE_STORAGE_KEY,
+  isStartupPage,
+} from '../hooks/useStartupPage'
 
 export const BACKUP_VERSION = 3
 export const BACKUP_MAX_BYTES = 5 * 1024 * 1024
@@ -32,6 +36,7 @@ const ALL_KEYS = [
   ...DATA_KEYS,
   LOCALE_STORAGE_KEY,
   APPEARANCE_STORAGE_KEY,
+  STARTUP_PAGE_STORAGE_KEY,
 ] as const
 
 export interface BackupSummary {
@@ -217,6 +222,13 @@ export function parseBackup(text: string): BackupParseResult {
     data[APPEARANCE_STORAGE_KEY] !== 'system' &&
     data[APPEARANCE_STORAGE_KEY] !== 'light' &&
     data[APPEARANCE_STORAGE_KEY] !== 'dark'
+  ) {
+    return { ok: false, reason: 'invalid' }
+  }
+
+  if (
+    data[STARTUP_PAGE_STORAGE_KEY] !== undefined &&
+    !isStartupPage(data[STARTUP_PAGE_STORAGE_KEY])
   ) {
     return { ok: false, reason: 'invalid' }
   }

@@ -28,6 +28,11 @@ import Toast from './components/Toast'
 import TodoRow from './components/TodoRow'
 import { useAppearance } from './hooks/useAppearance'
 import { runBack } from './hooks/useBackHandler'
+import {
+  DEFAULT_STARTUP_PAGE,
+  useStartupPage,
+  type StartupPage,
+} from './hooks/useStartupPage'
 import { useI18n } from './i18n/I18nProvider'
 import { getActiveDueBucket, type DueBucket } from './lib/date'
 import {
@@ -83,7 +88,15 @@ type Route =
   | { name: 'money'; tab: MoneyTab }
   | { name: 'settings' }
 
-function readRoute(): Route {
+function startupRoute(page: StartupPage): Route {
+  if (page === 'habits') return { name: 'habits' }
+  if (page === 'money') return { name: 'money', tab: 'records' }
+  return { name: 'tasks' }
+}
+
+function readRoute(
+  startup: StartupPage = DEFAULT_STARTUP_PAGE,
+): Route {
   const hash = window.location.hash
   if (hash === '#/settings') return { name: 'settings' }
   if (hash === '#/habits') return { name: 'habits' }
@@ -106,7 +119,7 @@ function readRoute(): Route {
     }
   }
 
-  return { name: 'tasks' }
+  return startupRoute(startup)
 }
 
 const GROUPS: Array<{
@@ -219,8 +232,9 @@ export default function App() {
 
   const { mode: appearanceMode, setMode: setAppearanceMode } =
     useAppearance()
+  const { page: startupPage, setPage: setStartupPage } = useStartupPage()
   const { locale, m } = useI18n()
-  const [route, setRoute] = useState<Route>(readRoute)
+  const [route, setRoute] = useState<Route>(() => readRoute(startupPage))
   const [filter, setFilter] = useState<string | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
@@ -284,11 +298,11 @@ export default function App() {
 
   useEffect(() => {
     function handleHashChange() {
-      setRoute(readRoute())
+      setRoute(readRoute(startupPage))
     }
     window.addEventListener('hashchange', handleHashChange)
     return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
+  }, [startupPage])
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
@@ -1261,6 +1275,8 @@ export default function App() {
             <SettingsView
               appearanceMode={appearanceMode}
               onAppearanceModeChange={setAppearanceMode}
+              startupPage={startupPage}
+              onStartupPageChange={setStartupPage}
               taskCount={todos.length}
               habitCount={habits.length}
               expenseCount={expenses.length}

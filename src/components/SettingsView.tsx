@@ -7,6 +7,7 @@ import SegmentedTabs from './SegmentedTabs'
 import { useI18n } from '../i18n/I18nProvider'
 import { LANGUAGE_NAMES, type Locale } from '../i18n/messages'
 import type { AppearanceMode } from '../hooks/useAppearance'
+import type { StartupPage } from '../hooks/useStartupPage'
 import {
   applyBackup,
   backupFileName,
@@ -21,6 +22,8 @@ import {
 interface SettingsViewProps {
   appearanceMode: AppearanceMode
   onAppearanceModeChange: (mode: AppearanceMode) => void
+  startupPage: StartupPage
+  onStartupPageChange: (page: StartupPage) => void
   taskCount: number
   habitCount: number
   expenseCount: number
@@ -29,10 +32,13 @@ interface SettingsViewProps {
 
 const APPEARANCE_OPTIONS: AppearanceMode[] = ['system', 'light', 'dark']
 const LANGUAGE_OPTIONS: Locale[] = ['en', 'zh']
+const STARTUP_OPTIONS: StartupPage[] = ['tasks', 'habits', 'money']
 
 export default function SettingsView({
   appearanceMode,
   onAppearanceModeChange,
+  startupPage,
+  onStartupPageChange,
   taskCount,
   habitCount,
   expenseCount,
@@ -157,6 +163,45 @@ export default function SettingsView({
                   }`}
                 >
                   {LANGUAGE_NAMES[code]}
+                </span>
+                {active && (
+                  <Check
+                    size={15}
+                    strokeWidth={2.4}
+                    className="text-[var(--red)]"
+                  />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="label">{m.settings.startup}</h2>
+        <p className="mt-1.5 text-[12.5px] text-[var(--ink-3)]">
+          {m.settings.startupHint}
+        </p>
+
+        <div className="ledger mt-3">
+          {STARTUP_OPTIONS.map((page) => {
+            const active = startupPage === page
+            return (
+              <button
+                key={page}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onStartupPageChange(page)}
+                className="flex h-12 w-full items-center justify-between text-left transition-colors hover:bg-[var(--sunken)]"
+              >
+                <span
+                  className={`text-[14px] ${
+                    active
+                      ? 'text-[var(--ink)]'
+                      : 'text-[var(--ink-2)]'
+                  }`}
+                >
+                  {m.nav[page]}
                 </span>
                 {active && (
                   <Check
