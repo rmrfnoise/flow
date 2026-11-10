@@ -162,7 +162,7 @@ export default function ExpenseReports({
       buckets.push({
         key: `week-${index / 7}`,
         label: m.money.weekBucket(index / 7 + 1),
-        range: `${formatMonthDay(first.date, locale)} –?${formatMonthDay(
+        range: `${formatMonthDay(first.date, locale)} – ${formatMonthDay(
           last.date,
           locale,
         )}`,
