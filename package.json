@@ -1,7 +1,7 @@
 {
   "name": "flow",
   "private": true,
-  "version": "3.1.0",
+  "version": "3.2.0",
   "type": "module",
   "description": "flow，一个本地优先的待办、习惯与记账 PWA",
   "scripts": {

@@ -549,7 +549,7 @@ const en: Messages = {
     about: 'About',
     aboutText:
       'A simple personal tool that brings tasks, habit check-ins, and spending together. No account, no network — every record stays on your device.',
-    version: 'Version 3.1.0',
+    version: 'Version 3.2.0',
   },
   habits: {
     title: 'Habits',
@@ -1107,7 +1107,7 @@ const zh: Messages = {
     about: '关于',
     aboutText:
       '一款简洁的个人管理工具，集待办事项、习惯打卡和收支记账于一体。无需注册账号，无需联网，所有数据均保存在自己的设备上。',
-    version: '版本 3.1.0',
+    version: '版本 3.2.0',
   },
   habits: {
     title: '习惯',
