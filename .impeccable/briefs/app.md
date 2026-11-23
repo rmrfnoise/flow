@@ -2,17 +2,18 @@
 
 ## Scope and mode
 
-Every screen in the app: the day page (tasks), habits list and habit detail, money
-(records, weekly report, monthly report), settings, and the sheets that create and
-edit entries. Visitor mode: **Operate**. One person, on a phone, several times a
-day, offline; they are completing a small task, not being persuaded.
+Every screen in the app: the day page (tasks), habits list and habit detail, goals
+list and goal detail, money (records, weekly report, monthly report), settings, and
+the sheets that create and edit entries. Visitor mode: **Operate**. One person, on a
+phone, several times a day, offline; they are completing a small task, not being
+persuaded.
 
 ## Audience, job, action, constraints
 
-The maintainer themself. Job: capture a task in seconds, tick today's habits, log a
-purchase and check the month's balance. Constraints: touch targets ≥44px, two
-languages (en/zh) at the same density, light and dark from the same tokens, no
-network, all state in localStorage, existing behaviour and data formats unchanged.
+The maintainer themself. Job: capture a task in seconds, tick today's habits, light a
+goal node, log a purchase and check the month's balance. Constraints: touch targets
+≥44px, two languages (en/zh) at the same density, light and dark from the same tokens,
+no network, all state in localStorage, existing behaviour and data formats unchanged.
 
 ## Direction contract
 

@@ -6,6 +6,7 @@ import {
   isCustomCategoryArray,
   isExpenseArray,
 } from './expenses'
+import { GOALS_STORAGE_KEY, isGoalArray } from './goals'
 import {
   HABITS_STORAGE_KEY,
   HABIT_CHECKINS_STORAGE_KEY,
@@ -20,7 +21,7 @@ import {
   isStartupPage,
 } from '../hooks/useStartupPage'
 
-export const BACKUP_VERSION = 3
+export const BACKUP_VERSION = 4
 export const BACKUP_MAX_BYTES = 5 * 1024 * 1024
 
 const DATA_KEYS = [
@@ -30,6 +31,7 @@ const DATA_KEYS = [
   EXPENSES_STORAGE_KEY,
   CUSTOM_CATEGORIES_STORAGE_KEY,
   BALANCE_STORAGE_KEY,
+  GOALS_STORAGE_KEY,
 ] as const
 
 const ALL_KEYS = [
@@ -44,6 +46,7 @@ export interface BackupSummary {
   habits: number
   expenses: number
   categories: number
+  goals: number
 }
 
 export interface FlowBackup {
@@ -163,6 +166,7 @@ export function parseBackup(text: string): BackupParseResult {
     habits: 0,
     expenses: 0,
     categories: 0,
+    goals: 0,
   }
 
   const decode = (key: string) => {
@@ -208,6 +212,12 @@ export function parseBackup(text: string): BackupParseResult {
   if (balance !== undefined && !isBalanceState(balance)) {
     return { ok: false, reason: 'invalid' }
   }
+
+  const goals = decode(GOALS_STORAGE_KEY)
+  if (goals !== undefined && !isGoalArray(goals)) {
+    return { ok: false, reason: 'invalid' }
+  }
+  if (goals) summary.goals = goals.length
 
   if (
     data[LOCALE_STORAGE_KEY] !== undefined &&

@@ -27,12 +27,18 @@ interface SettingsViewProps {
   taskCount: number
   habitCount: number
   expenseCount: number
+  goalCount: number
   hasAnyData: boolean
 }
 
 const APPEARANCE_OPTIONS: AppearanceMode[] = ['system', 'light', 'dark']
 const LANGUAGE_OPTIONS: Locale[] = ['en', 'zh']
-const STARTUP_OPTIONS: StartupPage[] = ['tasks', 'habits', 'money']
+const STARTUP_OPTIONS: StartupPage[] = [
+  'tasks',
+  'habits',
+  'money',
+  'goals',
+]
 
 export default function SettingsView({
   appearanceMode,
@@ -42,6 +48,7 @@ export default function SettingsView({
   taskCount,
   habitCount,
   expenseCount,
+  goalCount,
   hasAnyData,
 }: SettingsViewProps) {
   const { locale, setLocale, m } = useI18n()
@@ -228,6 +235,7 @@ export default function SettingsView({
                 taskCount,
                 habitCount,
                 expenseCount,
+                goalCount,
               )}
             </p>
           </div>
@@ -318,6 +326,7 @@ export default function SettingsView({
             importCandidate.summary.habits,
             importCandidate.summary.expenses,
             importCandidate.summary.categories,
+            importCandidate.summary.goals,
           )}
           cancelLabel={m.app.cancel}
           confirmLabel={m.settings.importConfirm}
@@ -333,6 +342,7 @@ export default function SettingsView({
             taskCount,
             habitCount,
             expenseCount,
+            goalCount,
           )}
           cancelLabel={m.app.cancel}
           confirmLabel={m.settings.clearConfirm}

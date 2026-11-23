@@ -1,7 +1,20 @@
 import type { Locale } from '../i18n/messages'
+import {
+  addDaysKey,
+  isDateKey,
+  parseDateKey,
+  toDateKey,
+} from './date'
 import { isHabitIcon, type HabitIcon } from './habitIcons'
 
 export type { HabitIcon } from './habitIcons'
+export {
+  addDaysKey,
+  daysBetween,
+  isDateKey,
+  parseDateKey,
+  toDateKey,
+} from './date'
 
 export type Weekday = 1 | 2 | 3 | 4 | 5 | 6 | 7
 
@@ -33,44 +46,8 @@ export const HABITS_STORAGE_KEY = 'flow.habits.v1'
 export const HABIT_CHECKINS_STORAGE_KEY = 'flow.habitCheckins.v1'
 export const MAKEUP_WINDOW_DAYS = 30
 
-const MS_PER_DAY = 86_400_000
-
 function pad(value: number) {
   return String(value).padStart(2, '0')
-}
-
-export function toDateKey(date = new Date()) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-    date.getDate(),
-  )}`
-}
-
-export function parseDateKey(key: string): Date | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(key)
-  if (!match) return null
-  const year = Number(match[1])
-  const month = Number(match[2])
-  const day = Number(match[3])
-  const date = new Date(year, month - 1, day, 12)
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return null
-  }
-  return date
-}
-
-export function isDateKey(key: string) {
-  return parseDateKey(key) !== null
-}
-
-export function addDaysKey(key: string, days: number) {
-  const date = parseDateKey(key)
-  if (!date) return key
-  date.setDate(date.getDate() + days)
-  return toDateKey(date)
 }
 
 export function weekdayOfKey(key: string): Weekday {
@@ -205,13 +182,25 @@ export function formatHabitScheduleCompact(
     : formatWeekdaysCompact(habit.schedule.weekdays, locale, terms)
 }
 
+const monthDayFormatters = new Map<string, Intl.DateTimeFormat>()
+
+function monthDayFormatter(locale: Locale) {
+  const tag = locale === 'zh' ? 'zh-CN' : 'en-US'
+  let formatter = monthDayFormatters.get(tag)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(tag, {
+      month: locale === 'zh' ? 'long' : 'short',
+      day: 'numeric',
+    })
+    monthDayFormatters.set(tag, formatter)
+  }
+  return formatter
+}
+
 export function formatMonthDay(key: string, locale: Locale) {
   const date = parseDateKey(key)
   if (!date) return key
-  return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
-    month: locale === 'zh' ? 'long' : 'short',
-    day: 'numeric',
-  }).format(date)
+  return monthDayFormatter(locale).format(date)
 }
 
 export function formatMonthLabel(monthKey: string, locale: Locale) {
@@ -335,12 +324,6 @@ export function countChecked(
   return count
 }
 
-export function daysBetween(fromKey: string, toKey: string) {
-  const from = parseDateKey(fromKey)
-  const to = parseDateKey(toKey)
-  if (!from || !to) return 0
-  return Math.round((to.getTime() - from.getTime()) / MS_PER_DAY)
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null

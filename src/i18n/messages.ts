@@ -20,6 +20,7 @@ export interface Messages {
     settingsTitle: string
     habitsTitle: string
     moneyTitle: string
+    goalsTitle: string
     description: string
   }
   nav: {
@@ -27,6 +28,7 @@ export interface Messages {
     tasks: string
     habits: string
     money: string
+    goals: string
     settings: string
   }
   app: {
@@ -134,6 +136,7 @@ export interface Messages {
       tasks: number,
       habits: number,
       expenses: number,
+      goals: number,
     ) => string
     backup: string
     backupHint: string
@@ -154,6 +157,7 @@ export interface Messages {
       tasks: number,
       habits: number,
       expenses: number,
+      goals: number,
     ) => string
     clearConfirm: string
     importTitle: string
@@ -162,6 +166,7 @@ export interface Messages {
       habits: number,
       expenses: number,
       categories: number,
+      goals: number,
     ) => string
     importConfirm: string
     importInvalid: string
@@ -237,6 +242,101 @@ export interface Messages {
     stateUnavailable: string
     close: string
     closeBackdrop: string
+  }
+  goals: {
+    title: string
+    activeCount: (count: number) => string
+    behindCount: (count: number) => string
+    achievedThisYear: (count: number) => string
+    addGoal: string
+    emptyTitle: string
+    emptyBody: string
+    addFirst: string
+    endedSection: string
+    newGoal: string
+    editGoal: string
+    titleLabel: string
+    titlePlaceholder: string
+    startDate: string
+    endDate: string
+    nodes: string
+    nodesHint: string
+    nodesEditHint: string
+    addNode: string
+    nodePlaceholder: string
+    editNode: (title: string) => string
+    nodeActions: (title: string) => string
+    insertNode: string
+    insertShort: string
+    saveNode: string
+    markLit: (title: string) => string
+    markUnlit: (title: string) => string
+    deleteNode: (title: string) => string
+    noNodes: string
+    noNodesHint: string
+    openGoal: (title: string) => string
+    deadline: (date: string) => string
+    daysLeft: (days: number) => string
+    dueToday: string
+    overdueDays: (days: number) => string
+    nodesLeft: (count: number) => string
+    pacePerDay: (count: number) => string
+    paceEveryDays: (days: number) => string
+    paceEveryWeeks: (weeks: number) => string
+    paceEveryMonths: (months: number) => string
+    timeProgress: string
+    nodeProgress: string
+    achieved: string
+    abandoned: string
+    archived: string
+    achievedOn: (date: string) => string
+    abandonedOn: (date: string) => string
+    archivedOn: (date: string) => string
+    early: (days: number) => string
+    late: (days: number) => string
+    onTime: string
+    markAchieved: string
+    markAchievedTitle: string
+    markAchievedDescription: (lit: number, total: number) => string
+    abandon: string
+    abandonTitle: string
+    abandonDescription: (title: string) => string
+    archive: string
+    archiveTitle: string
+    archiveDescription: (title: string) => string
+    reopen: string
+    reopenTitle: string
+    reopenDescription: (title: string) => string
+    deleteGoal: string
+    deleteTitle: string
+    deleteDescription: (title: string) => string
+    deleteConfirm: string
+    verdict: {
+      ahead: string
+      onTrack: string
+      behind: string
+      overdue: string
+      notStarted: string
+      noNodes: string
+    }
+    verdictDetail: (diff: number) => string
+    toastAchieved: string
+    toastArchived: string
+    toastAbandoned: string
+    toastNodeRemoved: string
+    toastGoalDeleted: string
+    back: string
+    edit: string
+    close: string
+    closeBackdrop: string
+    create: string
+    save: string
+    errors: {
+      title: string
+      titleTooLong: string
+      nodeTooMany: string
+      endBeforeStart: string
+    }
   }
   money: {
     title: string
@@ -399,14 +499,16 @@ const en: Messages = {
     settingsTitle: 'flow · Settings',
     habitsTitle: 'flow · Habits',
     moneyTitle: 'flow · Money',
+    goalsTitle: 'flow · Goals',
     description:
-      'A quiet, local-first home for tasks, habits, and money. Organize with #tags, build routines, and track income, spending, and actual balance — stored only on your device.',
+      'A quiet, local-first home for tasks, habits, goals, and money. Organize with #tags, build routines, and track income, spending, and actual balance — stored only on your device.',
   },
   nav: {
     label: 'Main',
     tasks: 'Tasks',
     habits: 'Habits',
     money: 'Money',
+    goals: 'Goals',
     settings: 'Settings',
   },
   app: {
@@ -514,10 +616,10 @@ const en: Messages = {
       'Which page opens when you launch flow. Applies next time.',
     data: 'Data',
     dataLocal: 'Stored on this device',
-    dataSummary: (tasks, habits, expenses) =>
+    dataSummary: (tasks, habits, expenses, goals) =>
       `${tasks} ${tasks === 1 ? 'task' : 'tasks'} · ${habits} ${
         habits === 1 ? 'habit' : 'habits'
-      } · ${expenses} ${
+      } · ${goals} ${goals === 1 ? 'goal' : 'goals'} · ${expenses} ${
         expenses === 1 ? 'entry' : 'entries'
       }`,
     backup: 'Backup',
@@ -535,12 +637,12 @@ const en: Messages = {
     importBackup: 'Import',
     clearData: 'Erase all data',
     clearTitle: 'Erase all data?',
-    clearDescription: (tasks, habits, expenses) =>
-      `This removes ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, and ${expenses} ${expenses === 1 ? 'entry' : 'entries'}. This cannot be undone.`,
+    clearDescription: (tasks, habits, expenses, goals) =>
+      `This removes ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, ${goals} ${goals === 1 ? 'goal' : 'goals'}, and ${expenses} ${expenses === 1 ? 'entry' : 'entries'}. This cannot be undone.`,
     clearConfirm: 'Erase',
     importTitle: 'Restore this backup?',
-    importDescription: (tasks, habits, expenses, categories) =>
-      `This replaces current data with ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, ${expenses} ${expenses === 1 ? 'entry' : 'entries'}, and ${categories} custom ${categories === 1 ? 'category' : 'categories'}.`,
+    importDescription: (tasks, habits, expenses, categories, goals) =>
+      `This replaces current data with ${tasks} ${tasks === 1 ? 'task' : 'tasks'}, ${habits} ${habits === 1 ? 'habit' : 'habits'}, ${goals} ${goals === 1 ? 'goal' : 'goals'}, ${expenses} ${expenses === 1 ? 'entry' : 'entries'}, and ${categories} custom ${categories === 1 ? 'category' : 'categories'}.`,
     importConfirm: 'Restore',
     importInvalid: 'This is not a valid flow backup.',
     importUnsupported: 'This backup was created by a newer version of flow.',
@@ -548,8 +650,8 @@ const en: Messages = {
     importError: 'Could not read this file.',
     about: 'About',
     aboutText:
-      'A simple personal tool that brings tasks, habit check-ins, and spending together. No account, no network — every record stays on your device.',
-    version: 'Version 3.2.0',
+      'A simple personal tool that brings tasks, habit check-ins, goals, and spending together. No account, no network — every record stays on your device.',
+    version: 'Version 3.3.0',
   },
   habits: {
     title: 'Habits',
@@ -792,6 +894,114 @@ const en: Messages = {
     close: 'Close',
     closeBackdrop: 'Close habit sheet',
   },
+  goals: {
+    title: 'Goals',
+    activeCount: (count) => `${count} active`,
+    behindCount: (count) => `${count} behind`,
+    achievedThisYear: (count) => `${count} achieved this year`,
+    addGoal: 'Add goal',
+    emptyTitle: 'No goals yet',
+    emptyBody: 'Set a goal, then break it into nodes.',
+    addFirst: 'Set your first goal',
+    endedSection: 'Finished',
+    newGoal: 'New goal',
+    editGoal: 'Edit goal',
+    titleLabel: 'Goal',
+    titlePlaceholder: 'What are you working towards?',
+    startDate: 'Starts',
+    endDate: 'Ends',
+    nodes: 'Nodes',
+    nodesHint: 'Each lit node moves progress forward.',
+    nodesEditHint: 'Tap ⋯ to edit, insert, or delete.',
+    addNode: 'Add node',
+    nodePlaceholder: 'Next step',
+    editNode: (title) => `Edit node: ${title}`,
+    nodeActions: (title) => `Node actions: ${title}`,
+    insertNode: 'Insert node below',
+    insertShort: 'Insert',
+    saveNode: 'Save node',
+    markLit: (title) => `Light up node: ${title}`,
+    markUnlit: (title) => `Dim node: ${title}`,
+    deleteNode: (title) => `Delete node: ${title}`,
+    noNodes: 'No nodes yet',
+    noNodesHint: 'Break the goal into steps you can light up.',
+    openGoal: (title) => `Open goal: ${title}`,
+    deadline: (date) => `Ends ${date}`,
+    daysLeft: (days) => `${days} ${days === 1 ? 'day' : 'days'} left`,
+    dueToday: 'Ends today',
+    overdueDays: (days) =>
+      `Overdue by ${days} ${days === 1 ? 'day' : 'days'}`,
+    nodesLeft: (count) =>
+      `${count} ${count === 1 ? 'node' : 'nodes'} to go`,
+    pacePerDay: (count) =>
+      `${count} ${count === 1 ? 'node' : 'nodes'} a day`,
+    paceEveryDays: (days) =>
+      `about one node every ${days} ${days === 1 ? 'day' : 'days'}`,
+    paceEveryWeeks: (weeks) =>
+      `about one node every ${weeks} ${weeks === 1 ? 'week' : 'weeks'}`,
+    paceEveryMonths: (months) =>
+      `about one node every ${months} ${months === 1 ? 'month' : 'months'}`,
+    timeProgress: 'Time',
+    nodeProgress: 'Nodes',
+    achieved: 'Achieved',
+    abandoned: 'Abandoned',
+    archived: 'Archived',
+    achievedOn: (date) => `Achieved ${date}`,
+    abandonedOn: (date) => `Abandoned ${date}`,
+    archivedOn: (date) => `Archived ${date}`,
+    early: (days) =>
+      `${days} ${days === 1 ? 'day' : 'days'} early`,
+    late: (days) => `${days} ${days === 1 ? 'day' : 'days'} late`,
+    onTime: 'On the deadline',
+    markAchieved: 'Mark achieved',
+    markAchievedTitle: 'Mark this goal achieved?',
+    markAchievedDescription: (lit, total) =>
+      `${lit} of ${total} nodes are lit. The goal ends today and the rest stay unlit.`,
+    abandon: 'Abandon',
+    abandonTitle: 'Abandon this goal?',
+    abandonDescription: (title) =>
+      `“${title}” ends today. Its nodes stay as they are.`,
+    archive: 'Archive',
+    archiveTitle: 'Archive this goal?',
+    archiveDescription: (title) =>
+      `“${title}” ends today and moves to the finished list.`,
+    reopen: 'Reopen',
+    reopenTitle: 'Reopen this goal?',
+    reopenDescription: (title) =>
+      `“${title}” becomes active again. Its end date stays the same.`,
+    deleteGoal: 'Delete goal',
+    deleteTitle: 'Delete this goal?',
+    deleteDescription: (title) =>
+      `“${title}” and its nodes will be removed. This cannot be undone.`,
+    deleteConfirm: 'Delete',
+    verdict: {
+      ahead: 'Ahead',
+      onTrack: 'On track',
+      behind: 'Behind',
+      overdue: 'Overdue',
+      notStarted: 'Not started',
+      noNodes: 'No nodes',
+    },
+    verdictDetail: (diff) =>
+      `${diff > 0 ? '+' : ''}${diff} points`,
+    toastAchieved: 'Goal achieved',
+    toastArchived: 'Goal archived',
+    toastAbandoned: 'Goal abandoned',
+    toastNodeRemoved: 'Node removed',
+    toastGoalDeleted: 'Goal deleted',
+    back: 'Back',
+    edit: 'Edit',
+    close: 'Close',
+    closeBackdrop: 'Close goal sheet',
+    create: 'Create goal',
+    save: 'Save changes',
+    errors: {
+      title: 'Give the goal a name.',
+      titleTooLong: 'Keep the goal under 40 characters.',
+      nodeTooMany: 'A goal can have up to 999 nodes.',
+      endBeforeStart: 'The end date must be after the start date.',
+    },
+  },
   money: {
     title: 'Money',
     subtitle: 'Income, spending, and what you actually have.',
@@ -964,14 +1174,16 @@ const zh: Messages = {
     settingsTitle: 'flow · 设置',
     habitsTitle: 'flow · 习惯',
     moneyTitle: 'flow · 记账',
+    goalsTitle: 'flow · 目标',
     description:
-      '一个安静、本地优先的待办、习惯与记账工具：用 #标签 整理待办，按天养成习惯，记录收入、支出和实际余额，数据只留在本机。',
+      '一个安静、本地优先的待办、习惯、目标与记账工具：用 #标签 整理待办，按天养成习惯，沿着节点推进目标，记录收入、支出和实际余额，数据只留在本机。',
   },
   nav: {
     label: '主导航',
     tasks: '待办',
     habits: '习惯',
     money: '记账',
+    goals: '目标',
     settings: '设置',
   },
   app: {
@@ -1076,8 +1288,8 @@ const zh: Messages = {
     startupHint: '打开 flow 时先显示哪一页，下次启动生效。',
     data: '数据',
     dataLocal: '数据只保存在本机',
-    dataSummary: (tasks, habits, expenses) =>
-      `${tasks} 条待办 · ${habits} 个习惯 · ${expenses} 笔流水`,
+    dataSummary: (tasks, habits, expenses, goals) =>
+      `${tasks} 条待办 · ${habits} 个习惯 · ${goals} 个目标 · ${expenses} 笔流水`,
     backup: '备份',
     backupHint: '导出 JSON 备份，或从另一台设备恢复。',
     backupReady: '备份已生成',
@@ -1093,12 +1305,12 @@ const zh: Messages = {
     importBackup: '导入',
     clearData: '清空所有数据',
     clearTitle: '清空所有数据？',
-    clearDescription: (tasks, habits, expenses) =>
-      `这会移除 ${tasks} 条待办、${habits} 个习惯和 ${expenses} 笔流水，且无法恢复。`,
+    clearDescription: (tasks, habits, expenses, goals) =>
+      `这会移除 ${tasks} 条待办、${habits} 个习惯、${goals} 个目标和 ${expenses} 笔流水，且无法恢复。`,
     clearConfirm: '清空',
     importTitle: '恢复这个备份？',
-    importDescription: (tasks, habits, expenses, categories) =>
-      `这会用 ${tasks} 条待办、${habits} 个习惯、${expenses} 笔流水和 ${categories} 个自定义分类替换当前数据。`,
+    importDescription: (tasks, habits, expenses, categories, goals) =>
+      `这会用 ${tasks} 条待办、${habits} 个习惯、${goals} 个目标、${expenses} 笔流水和 ${categories} 个自定义分类替换当前数据。`,
     importConfirm: '恢复',
     importInvalid: '这不是有效的 flow 备份文件。',
     importUnsupported: '这个备份来自更新版本的 flow。',
@@ -1106,8 +1318,8 @@ const zh: Messages = {
     importError: '无法读取这个文件。',
     about: '关于',
     aboutText:
-      '一款简洁的个人管理工具，集待办事项、习惯打卡和收支记账于一体。无需注册账号，无需联网，所有数据均保存在自己的设备上。',
-    version: '版本 3.2.0',
+      '一款简洁的个人管理工具，集待办事项、习惯打卡、目标推进和收支记账于一体。无需注册账号，无需联网，所有数据均保存在自己的设备上。',
+    version: '版本 3.3.0',
   },
   habits: {
     title: '习惯',
@@ -1348,6 +1560,107 @@ const zh: Messages = {
     stateUnavailable: '不可操作',
     close: '关闭',
     closeBackdrop: '关闭习惯面板',
+  },
+  goals: {
+    title: '目标',
+    activeCount: (count) => `${count} 个进行中`,
+    behindCount: (count) => `${count} 个滞后`,
+    achievedThisYear: (count) => `今年达成 ${count} 个`,
+    addGoal: '新建目标',
+    emptyTitle: '还没有目标',
+    emptyBody: '先定一个目标，再把它拆成几个节点。',
+    addFirst: '设定第一个目标',
+    endedSection: '已结束',
+    newGoal: '新建目标',
+    editGoal: '编辑目标',
+    titleLabel: '目标',
+    titlePlaceholder: '想做成什么？',
+    startDate: '开始',
+    endDate: '截止',
+    nodes: '节点',
+    nodesHint: '点亮一个节点，进度就往前一步。',
+    nodesEditHint: '点行尾 ⋯ 可以编辑、插入或删除。',
+    addNode: '添加节点',
+    nodePlaceholder: '下一步',
+    editNode: (title) => `编辑节点：${title}`,
+    nodeActions: (title) => `节点操作：${title}`,
+    insertNode: '在下方插入节点',
+    insertShort: '插入',
+    saveNode: '保存节点',
+    markLit: (title) => `点亮节点：${title}`,
+    markUnlit: (title) => `取消点亮：${title}`,
+    deleteNode: (title) => `删除节点：${title}`,
+    noNodes: '还没有节点',
+    noNodesHint: '把目标拆成几件能点亮的事。',
+    openGoal: (title) => `打开目标：${title}`,
+    deadline: (date) => `截止 ${date}`,
+    daysLeft: (days) => `还剩 ${days} 天`,
+    dueToday: '今天截止',
+    overdueDays: (days) => `已超期 ${days} 天`,
+    nodesLeft: (count) => `还差 ${count} 个节点`,
+    pacePerDay: (count) => `每天点亮 ${count} 个`,
+    paceEveryDays: (days) => `平均每 ${days} 天点亮 1 个`,
+    paceEveryWeeks: (weeks) => `平均每 ${weeks} 周点亮 1 个`,
+    paceEveryMonths: (months) => `平均每 ${months} 个月点亮 1 个`,
+    timeProgress: '时间',
+    nodeProgress: '节点',
+    achieved: '已达成',
+    abandoned: '已放弃',
+    archived: '已归档',
+    achievedOn: (date) => `达成于 ${date}`,
+    abandonedOn: (date) => `放弃于 ${date}`,
+    archivedOn: (date) => `归档于 ${date}`,
+    early: (days) => `提前 ${days} 天`,
+    late: (days) => `超期 ${days} 天`,
+    onTime: '准时达成',
+    markAchieved: '标记达成',
+    markAchievedTitle: '标记这个目标达成？',
+    markAchievedDescription: (lit, total) =>
+      `已点亮 ${lit}/${total} 个节点。目标今天结束，未点亮的节点保持原样。`,
+    abandon: '放弃',
+    abandonTitle: '放弃这个目标？',
+    abandonDescription: (title) =>
+      `“${title}”会在今天结束，节点保持原样。`,
+    archive: '归档',
+    archiveTitle: '归档这个目标？',
+    archiveDescription: (title) =>
+      `“${title}”会在今天结束，并移到已结束区。`,
+    reopen: '重新开始',
+    reopenTitle: '重新开始这个目标？',
+    reopenDescription: (title) =>
+      `“${title}”会回到进行中，截止日期不变。`,
+    deleteGoal: '删除目标',
+    deleteTitle: '删除这个目标？',
+    deleteDescription: (title) =>
+      `“${title}”和它的节点会被删除，且无法恢复。`,
+    deleteConfirm: '删除',
+    verdict: {
+      ahead: '超前',
+      onTrack: '正常',
+      behind: '滞后',
+      overdue: '已超期',
+      notStarted: '未开始',
+      noNodes: '未拆解',
+    },
+    verdictDetail: (diff) =>
+      `${diff > 0 ? '+' : ''}${diff} 个百分点`,
+    toastAchieved: '目标达成',
+    toastArchived: '已归档这个目标',
+    toastAbandoned: '已放弃这个目标',
+    toastNodeRemoved: '已删除节点',
+    toastGoalDeleted: '已删除目标',
+    back: '返回',
+    edit: '编辑',
+    close: '关闭',
+    closeBackdrop: '关闭目标面板',
+    create: '创建目标',
+    save: '保存修改',
+    errors: {
+      title: '给目标起个名字。',
+      titleTooLong: '目标名称最多 40 个字。',
+      nodeTooMany: '一个目标最多 999 个节点。',
+      endBeforeStart: '截止日期必须晚于开始日期。',
+    },
   },
   money: {
     title: '记账',

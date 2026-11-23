@@ -12,6 +12,7 @@ interface ConfirmDialogProps {
   description: ReactNode
   confirmLabel: string
   cancelLabel?: string
+  tone?: 'danger' | 'primary'
   onConfirm: () => void
   onClose: () => void
 }
@@ -21,6 +22,7 @@ export default function ConfirmDialog({
   description,
   confirmLabel,
   cancelLabel = 'Cancel',
+  tone = 'danger',
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -95,7 +97,11 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            className="btn h-11 min-w-0 px-3 bg-[var(--red)] text-[#fdf7f4] hover:bg-[var(--red-hover)]"
+            className={`btn h-11 min-w-0 px-3 ${
+              tone === 'danger'
+                ? 'bg-[var(--red)] text-[#fdf7f4] hover:bg-[var(--red-hover)]'
+                : 'btn-primary'
+            }`}
           >
             {confirmLabel}
           </button>

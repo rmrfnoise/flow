@@ -19,6 +19,9 @@ import ExpenseSheet, {
   type ExpenseSaveInput,
 } from './components/ExpenseSheet'
 import FilterBar from './components/FilterBar'
+import GoalDetail from './components/GoalDetail'
+import GoalSheet from './components/GoalSheet'
+import GoalsView from './components/GoalsView'
 import HabitDetail from './components/HabitDetail'
 import HabitSheet from './components/HabitSheet'
 import HabitsView from './components/HabitsView'
@@ -55,6 +58,16 @@ import {
   type Expense,
 } from './lib/expenses'
 import {
+  GOAL_NODE_LIMIT,
+  GOALS_STORAGE_KEY,
+  getGoalVerdict,
+  getLitNodeCount,
+  isGoalArray,
+  isGoalEnded,
+  type Goal,
+  type NewGoalInput,
+} from './lib/goals'
+import {
   HABITS_STORAGE_KEY,
   HABIT_CHECKINS_STORAGE_KEY,
   formatHabitSchedule,
@@ -85,12 +98,24 @@ type Route =
   | { name: 'tasks' }
   | { name: 'habits' }
   | { name: 'habit'; id: string }
+  | { name: 'goals' }
+  | { name: 'goal'; id: string }
   | { name: 'money'; tab: MoneyTab }
   | { name: 'settings' }
+
+type NavPage = 'tasks' | 'habits' | 'money' | 'goals' | 'settings'
+
+type GoalPromptKind =
+  | 'achieved'
+  | 'abandoned'
+  | 'archived'
+  | 'reopen'
+  | 'delete'
 
 function startupRoute(page: StartupPage): Route {
   if (page === 'habits') return { name: 'habits' }
   if (page === 'money') return { name: 'money', tab: 'records' }
+  if (page === 'goals') return { name: 'goals' }
   return { name: 'tasks' }
 }
 
@@ -100,6 +125,7 @@ function readRoute(
   const hash = window.location.hash
   if (hash === '#/settings') return { name: 'settings' }
   if (hash === '#/habits') return { name: 'habits' }
+  if (hash === '#/goals') return { name: 'goals' }
   if (hash === '#/money') {
     return { name: 'money', tab: 'records' }
   }
@@ -108,6 +134,15 @@ function readRoute(
   }
   if (hash === '#/money/month') {
     return { name: 'money', tab: 'month' }
+  }
+
+  const goalMatch = /^#\/goals\/([^/]+)$/u.exec(hash)
+  if (goalMatch) {
+    try {
+      return { name: 'goal', id: decodeURIComponent(goalMatch[1]) }
+    } catch {
+      return { name: 'goals' }
+    }
   }
 
   const match = /^#\/habits\/([^/]+)$/u.exec(hash)
@@ -158,7 +193,7 @@ function NavTab({
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
     >
-      <span>{label}</span>
+      <span className="whitespace-nowrap">{label}</span>
       <span className="nav-mark" aria-hidden="true" />
     </button>
   )
@@ -229,6 +264,11 @@ export default function App() {
     DEFAULT_BALANCE_STATE,
     isBalanceState,
   )
+  const [goals, setGoals] = usePersistentState<Goal[]>(
+    GOALS_STORAGE_KEY,
+    [],
+    isGoalArray,
+  )
 
   const { mode: appearanceMode, setMode: setAppearanceMode } =
     useAppearance()
@@ -243,6 +283,12 @@ export default function App() {
   const [habitSheetOpen, setHabitSheetOpen] = useState(false)
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
   const [habitToDelete, setHabitToDelete] = useState<Habit | null>(null)
+  const [goalSheetOpen, setGoalSheetOpen] = useState(false)
+  const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
+  const [goalPrompt, setGoalPrompt] = useState<{
+    goal: Goal
+    kind: GoalPromptKind
+  } | null>(null)
   const [expenseSheetOpen, setExpenseSheetOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(
     null,
@@ -284,12 +330,19 @@ export default function App() {
     route.name === 'habit'
       ? habits.find((habit) => habit.id === route.id) ?? null
       : null
+  const activeGoal =
+    route.name === 'goal'
+      ? goals.find((goal) => goal.id === route.id) ?? null
+      : null
   const ActiveHabitIcon = activeHabit
     ? findHabitIconOption(activeHabit.checkInIcon)?.Icon
     : null
   const showHabitsList =
     route.name === 'habits' ||
     (route.name === 'habit' && activeHabit === null)
+  const showGoalsList =
+    route.name === 'goals' ||
+    (route.name === 'goal' && activeGoal === null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000)
@@ -332,16 +385,30 @@ export default function App() {
   }, [activeHabit, route])
 
   useEffect(() => {
+    if (route.name === 'goal' && !activeGoal) {
+      window.location.hash = '#/goals'
+    }
+  }, [activeGoal, route])
+
+  useEffect(() => {
     let title = m.meta.title
     if (route.name === 'settings') title = m.meta.settingsTitle
     else if (route.name === 'habits') title = m.meta.habitsTitle
+    else if (route.name === 'goals') title = m.meta.goalsTitle
     else if (route.name === 'money') title = m.meta.moneyTitle
     else if (route.name === 'habit' && activeHabit) {
       title = `flow · ${activeHabit.name}`
+    } else if (route.name === 'goal' && activeGoal) {
+      title = `flow · ${activeGoal.title}`
     }
     document.title = title
+  }, [activeGoal, activeHabit, m, route])
+
+  // Only a route change scrolls to the top. Editing data (lighting a node,
+  // renaming a goal) must leave the reader where they were.
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
-  }, [activeHabit, m, route])
+  }, [route])
 
   useEffect(() => {
     return () => {
@@ -454,6 +521,27 @@ export default function App() {
       : todayPlannedCount === 0
         ? m.habits.restDay
         : m.habits.todaySummary(todayDone, todayPlannedCount)
+  const goalSummary = useMemo(() => {
+    const active = goals.filter((goal) => !isGoalEnded(goal))
+    const behind = active.filter((goal) => {
+      const verdict = getGoalVerdict(goal, todayKey)
+      return verdict === 'behind' || verdict === 'overdue'
+    }).length
+    const year = new Date(now).getFullYear()
+    const achievedThisYear = goals.filter(
+      (goal) =>
+        goal.outcome === 'achieved' &&
+        goal.endedAt !== null &&
+        new Date(goal.endedAt).getFullYear() === year,
+    ).length
+
+    const parts = [m.goals.activeCount(active.length)]
+    if (behind > 0) parts.push(m.goals.behindCount(behind))
+    if (achievedThisYear > 0) {
+      parts.push(m.goals.achievedThisYear(achievedThisYear))
+    }
+    return parts.join(' · ')
+  }, [goals, m.goals, now, todayKey])
   const visibleTotal = activeVisible.length + completedVisible.length
   const subtitle =
     totalCount === 0
@@ -580,17 +668,17 @@ export default function App() {
     )
   }
 
-  function navigate(
-    next: 'tasks' | 'habits' | 'money' | 'settings',
-  ) {
+  function navigate(next: NavPage) {
     const hash =
       next === 'settings'
         ? '#/settings'
         : next === 'habits'
           ? '#/habits'
-          : next === 'money'
-            ? '#/money'
-            : '#/tasks'
+          : next === 'goals'
+            ? '#/goals'
+            : next === 'money'
+              ? '#/money'
+              : '#/tasks'
     if (window.location.hash !== hash) {
       window.location.hash = hash
     } else {
@@ -599,9 +687,11 @@ export default function App() {
           ? { name: 'tasks' }
           : next === 'habits'
             ? { name: 'habits' }
-            : next === 'money'
-              ? { name: 'money', tab: 'records' }
-              : { name: 'settings' },
+            : next === 'goals'
+              ? { name: 'goals' }
+              : next === 'money'
+                ? { name: 'money', tab: 'records' }
+                : { name: 'settings' },
       )
     }
     dismissToast()
@@ -635,12 +725,27 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'auto' })
   }
 
+  function openGoal(id: string) {
+    const hash = `#/goals/${encodeURIComponent(id)}`
+    if (window.location.hash !== hash) {
+      window.location.hash = hash
+    } else {
+      setRoute({ name: 'goal', id })
+    }
+    dismissToast()
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
   function handleBack() {
-    // Overlays consume back first. The only routed subpage is habit detail;
+    // Overlays consume back first. Routed subpages are habit and goal detail;
     // every other screen (including money reports) exits the app.
     if (runBack()) return
     if (route.name === 'habit') {
       navigate('habits')
+      return
+    }
+    if (route.name === 'goal') {
+      navigate('goals')
       return
     }
     void CapacitorApp.exitApp()
@@ -791,6 +896,344 @@ export default function App() {
     setHabitToDelete(null)
     navigate('habits')
     showToast({ message: m.habits.toastDeleted }, 3000)
+  }
+
+  function openGoalSheet(goal?: Goal) {
+    setEditingGoal(goal ?? null)
+    setGoalSheetOpen(true)
+  }
+
+  function closeGoalSheet() {
+    setGoalSheetOpen(false)
+    setEditingGoal(null)
+  }
+
+  function handleSaveGoal(input: NewGoalInput) {
+    const timestamp = Date.now()
+
+    if (editingGoal) {
+      const previous = new Map(
+        editingGoal.nodes.map((node) => [node.id, node]),
+      )
+      const nodes = input.nodes.map((node) => {
+        const existing = previous.get(node.id)
+        return existing
+          ? { ...existing, title: node.title }
+          : {
+              id: node.id,
+              title: node.title,
+              litAt: null,
+              createdAt: timestamp,
+            }
+      })
+
+      setGoals((current) =>
+        current.map((goal) =>
+          goal.id === editingGoal.id
+            ? {
+                ...goal,
+                title: input.title,
+                startDate: input.startDate,
+                endDate: input.endDate,
+                nodes,
+                updatedAt: timestamp,
+              }
+            : goal,
+        ),
+      )
+      showToast({ message: m.toast.saved }, 2600)
+    } else {
+      const goal: Goal = {
+        id: makeId('goal'),
+        title: input.title,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        nodes: input.nodes.map((node) => ({
+          id: node.id,
+          title: node.title,
+          litAt: null,
+          createdAt: timestamp,
+        })),
+        outcome: null,
+        endedAt: null,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+      setGoals((current) => [goal, ...current])
+    }
+
+    setNow(timestamp)
+    closeGoalSheet()
+  }
+
+  function toggleGoalNode(goal: Goal, nodeId: string) {
+    if (isGoalEnded(goal)) return
+    const node = goal.nodes.find((item) => item.id === nodeId)
+    if (!node) return
+
+    const timestamp = Date.now()
+    const willLight = node.litAt === null
+    const nodes = goal.nodes.map((item) =>
+      item.id === nodeId
+        ? { ...item, litAt: willLight ? timestamp : null }
+        : item,
+    )
+    const allLit =
+      willLight && nodes.every((item) => item.litAt !== null)
+
+    setGoals((current) =>
+      current.map((item) =>
+        item.id === goal.id
+          ? {
+              ...item,
+              nodes,
+              ...(allLit
+                ? { outcome: 'achieved' as const, endedAt: timestamp }
+                : {}),
+              updatedAt: timestamp,
+            }
+          : item,
+      ),
+    )
+    setNow(timestamp)
+
+    if (allLit) {
+      showToast(
+        {
+          message: m.goals.toastAchieved,
+          actionLabel: m.toast.undo,
+          onAction: () => {
+            // Undo the tap that closed the goal, not just the outcome.
+            setGoals((current) =>
+              current.map((item) =>
+                item.id === goal.id ? goal : item,
+              ),
+            )
+            setNow(Date.now())
+            dismissToast()
+          },
+        },
+        5200,
+      )
+    }
+  }
+
+  function addGoalNode(goal: Goal, title: string) {
+    if (isGoalEnded(goal) || goal.nodes.length >= GOAL_NODE_LIMIT) return
+    const timestamp = Date.now()
+
+    setGoals((current) =>
+      current.map((item) =>
+        item.id === goal.id
+          ? {
+              ...item,
+              nodes: [
+                ...item.nodes,
+                {
+                  id: makeId('goal-node'),
+                  title,
+                  litAt: null,
+                  createdAt: timestamp,
+                },
+              ],
+              updatedAt: timestamp,
+            }
+          : item,
+      ),
+    )
+    setNow(timestamp)
+  }
+
+  function insertGoalNode(goal: Goal, index: number, title: string) {
+    if (isGoalEnded(goal) || goal.nodes.length >= GOAL_NODE_LIMIT) {
+      return
+    }
+    const timestamp = Date.now()
+
+    setGoals((current) =>
+      current.map((item) => {
+        if (item.id !== goal.id) return item
+        const nodes = [...item.nodes]
+        nodes.splice(index, 0, {
+          id: makeId('goal-node'),
+          title,
+          litAt: null,
+          createdAt: timestamp,
+        })
+        return { ...item, nodes, updatedAt: timestamp }
+      }),
+    )
+    setNow(timestamp)
+  }
+
+  function renameGoalNode(goal: Goal, nodeId: string, title: string) {
+    if (isGoalEnded(goal)) return
+    const timestamp = Date.now()
+
+    setGoals((current) =>
+      current.map((item) =>
+        item.id === goal.id
+          ? {
+              ...item,
+              nodes: item.nodes.map((node) =>
+                node.id === nodeId ? { ...node, title } : node,
+              ),
+              updatedAt: timestamp,
+            }
+          : item,
+      ),
+    )
+    setNow(timestamp)
+  }
+
+  function deleteGoalNode(goal: Goal, nodeId: string) {
+    if (isGoalEnded(goal)) return
+    const index = goal.nodes.findIndex((node) => node.id === nodeId)
+    if (index < 0) return
+    const node = goal.nodes[index]
+    const timestamp = Date.now()
+
+    setGoals((current) =>
+      current.map((item) =>
+        item.id === goal.id
+          ? {
+              ...item,
+              nodes: item.nodes.filter((entry) => entry.id !== nodeId),
+              updatedAt: timestamp,
+            }
+          : item,
+      ),
+    )
+    setNow(timestamp)
+    showToast(
+      {
+        message: m.goals.toastNodeRemoved,
+        actionLabel: m.toast.undo,
+        onAction: () => {
+          setGoals((current) =>
+            current.map((item) => {
+              if (item.id !== goal.id) return item
+              if (item.nodes.some((entry) => entry.id === nodeId)) {
+                return item
+              }
+              const nodes = [...item.nodes]
+              nodes.splice(Math.min(index, nodes.length), 0, node)
+              return { ...item, nodes, updatedAt: Date.now() }
+            }),
+          )
+          setNow(Date.now())
+          dismissToast()
+        },
+      },
+      5200,
+    )
+  }
+
+  function confirmGoalPrompt() {
+    if (!goalPrompt) return
+    const { goal, kind } = goalPrompt
+    const timestamp = Date.now()
+
+    if (kind === 'delete') {
+      setGoals((current) =>
+        current.filter((item) => item.id !== goal.id),
+      )
+      setGoalPrompt(null)
+      navigate('goals')
+      showToast({ message: m.goals.toastGoalDeleted }, 3000)
+      return
+    }
+
+    if (kind === 'reopen') {
+      setGoals((current) =>
+        current.map((item) =>
+          item.id === goal.id
+            ? {
+                ...item,
+                outcome: null,
+                endedAt: null,
+                updatedAt: timestamp,
+              }
+            : item,
+        ),
+      )
+      setGoalPrompt(null)
+      setNow(timestamp)
+      return
+    }
+
+    setGoals((current) =>
+      current.map((item) =>
+        item.id === goal.id
+          ? {
+              ...item,
+              outcome: kind,
+              endedAt: timestamp,
+              updatedAt: timestamp,
+            }
+          : item,
+      ),
+    )
+    setGoalPrompt(null)
+    setNow(timestamp)
+    showToast(
+      {
+        message:
+          kind === 'achieved'
+            ? m.goals.toastAchieved
+            : kind === 'abandoned'
+              ? m.goals.toastAbandoned
+              : m.goals.toastArchived,
+      },
+      3200,
+    )
+  }
+
+  function goalPromptCopy() {
+    if (!goalPrompt) return null
+    const { goal, kind } = goalPrompt
+
+    if (kind === 'achieved') {
+      return {
+        title: m.goals.markAchievedTitle,
+        description: m.goals.markAchievedDescription(
+          getLitNodeCount(goal),
+          goal.nodes.length,
+        ),
+        confirm: m.goals.markAchieved,
+        tone: 'primary' as const,
+      }
+    }
+    if (kind === 'abandoned') {
+      return {
+        title: m.goals.abandonTitle,
+        description: m.goals.abandonDescription(goal.title),
+        confirm: m.goals.abandon,
+        tone: 'danger' as const,
+      }
+    }
+    if (kind === 'archived') {
+      return {
+        title: m.goals.archiveTitle,
+        description: m.goals.archiveDescription(goal.title),
+        confirm: m.goals.archive,
+        tone: 'primary' as const,
+      }
+    }
+    if (kind === 'reopen') {
+      return {
+        title: m.goals.reopenTitle,
+        description: m.goals.reopenDescription(goal.title),
+        confirm: m.goals.reopen,
+        tone: 'primary' as const,
+      }
+    }
+    return {
+      title: m.goals.deleteTitle,
+      description: m.goals.deleteDescription(goal.title),
+      confirm: m.goals.deleteConfirm,
+      tone: 'danger' as const,
+    }
   }
 
   function handleFilterSelect(next: string | null) {
@@ -992,6 +1435,8 @@ export default function App() {
     showToast({ message: m.money.toastCategoryDeleted }, 3000)
   }
 
+  const goalDialog = goalPromptCopy()
+
   return (
     <div className="app-frame mx-auto flex min-h-dvh w-full max-w-[560px] flex-col px-5 sm:px-6">
       <div className="flex min-w-0 flex-1 flex-col">
@@ -1037,6 +1482,39 @@ export default function App() {
               </div>
               <div className="rule mt-4" />
             </>
+          ) : route.name === 'goal' && activeGoal ? (
+            <>
+              <div className="flex items-start gap-2">
+                <button
+                  type="button"
+                  aria-label={m.goals.back}
+                  onClick={() => navigate('goals')}
+                  className="-ml-2 grid h-10 w-10 shrink-0 place-items-center text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
+                >
+                  <ChevronLeft size={20} strokeWidth={1.8} />
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="label">
+                    {formatMonthDay(activeGoal.startDate, locale)} –{' '}
+                    {formatMonthDay(activeGoal.endDate, locale)}
+                  </p>
+                  <h1 className="page-title mt-1.5 truncate">
+                    {activeGoal.title}
+                  </h1>
+                </div>
+                {!isGoalEnded(activeGoal) && (
+                  <button
+                    type="button"
+                    aria-label={m.goals.edit}
+                    onClick={() => openGoalSheet(activeGoal)}
+                    className="-mr-1 grid h-10 w-10 shrink-0 place-items-center text-[var(--ink-2)] transition-colors hover:text-[var(--ink)]"
+                  >
+                    <Pencil size={16} strokeWidth={1.8} />
+                  </button>
+                )}
+              </div>
+              <div className="rule mt-4" />
+            </>
           ) : (
             <>
               <div className="flex items-start justify-between gap-4">
@@ -1059,11 +1537,14 @@ export default function App() {
                       ? m.settings.title
                       : route.name === 'money'
                         ? m.money.title
-                        : m.habits.title}
+                        : showGoalsList
+                          ? m.goals.title
+                          : m.habits.title}
                   </h1>
                 )}
                 {((route.name === 'tasks' && visibleTotal > 0) ||
                   (showHabitsList && habits.length > 0) ||
+                  (showGoalsList && goals.length > 0) ||
                   route.name === 'money') && (
                   <button
                     type="button"
@@ -1072,14 +1553,18 @@ export default function App() {
                         ? m.money.addEntry
                         : showHabitsList
                           ? m.habits.addHabit
-                          : m.app.addTask
+                          : showGoalsList
+                            ? m.goals.addGoal
+                            : m.app.addTask
                     }
                     onClick={
                       route.name === 'money'
                         ? () => openExpenseSheet()
                         : showHabitsList
                           ? () => openHabitSheet()
-                          : openAddSheet
+                          : showGoalsList
+                            ? () => openGoalSheet()
+                            : openAddSheet
                     }
                     className="stamp shrink-0"
                   >
@@ -1093,6 +1578,8 @@ export default function App() {
                 </p>
               ) : showHabitsList && habits.length > 0 ? (
                 <p className="meta mt-1.5">{habitSubtitle}</p>
+              ) : showGoalsList && goals.length > 0 ? (
+                <p className="meta mt-1.5">{goalSummary}</p>
               ) : null}
               {route.name === 'tasks' ? (
                 <div className="mt-4 h-[2px] bg-[var(--ink)]">
@@ -1250,6 +1737,55 @@ export default function App() {
           </main>
         )}
 
+        {showGoalsList && (
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+88px)] pt-1">
+            <GoalsView
+              goals={goals}
+              todayKey={todayKey}
+              onOpen={openGoal}
+              onAdd={() => openGoalSheet()}
+            />
+          </main>
+        )}
+
+        {route.name === 'goal' && activeGoal && (
+          <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+88px)] pt-1">
+            <GoalDetail
+              key={activeGoal.id}
+              goal={activeGoal}
+              todayKey={todayKey}
+              onToggleNode={(nodeId) =>
+                toggleGoalNode(activeGoal, nodeId)
+              }
+              onAddNode={(title) => addGoalNode(activeGoal, title)}
+              onInsertNode={(index, title) =>
+                insertGoalNode(activeGoal, index, title)
+              }
+              onRenameNode={(nodeId, title) =>
+                renameGoalNode(activeGoal, nodeId, title)
+              }
+              onDeleteNode={(nodeId) =>
+                deleteGoalNode(activeGoal, nodeId)
+              }
+              onMarkAchieved={() =>
+                setGoalPrompt({ goal: activeGoal, kind: 'achieved' })
+              }
+              onAbandon={() =>
+                setGoalPrompt({ goal: activeGoal, kind: 'abandoned' })
+              }
+              onArchive={() =>
+                setGoalPrompt({ goal: activeGoal, kind: 'archived' })
+              }
+              onReopen={() =>
+                setGoalPrompt({ goal: activeGoal, kind: 'reopen' })
+              }
+              onDelete={() =>
+                setGoalPrompt({ goal: activeGoal, kind: 'delete' })
+              }
+            />
+          </main>
+        )}
+
         {route.name === 'money' && (
           <main className="page-enter flex flex-1 flex-col pb-[calc(env(safe-area-inset-bottom)+88px)] pt-1">
             <MoneyView
@@ -1280,10 +1816,12 @@ export default function App() {
               taskCount={todos.length}
               habitCount={habits.length}
               expenseCount={expenses.length}
+              goalCount={goals.length}
               hasAnyData={
                 todos.length > 0 ||
                 habits.length > 0 ||
                 expenses.length > 0 ||
+                goals.length > 0 ||
                 customCategories.length > 0 ||
                 balance.enabled ||
                 balance.startCents !== null
@@ -1297,7 +1835,7 @@ export default function App() {
         className="app-nav fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)]"
         aria-label={m.nav.label}
       >
-        <div className="mx-auto grid max-w-[560px] grid-cols-4">
+        <div className="mx-auto grid max-w-[560px] grid-cols-5">
           <NavTab
             label={m.nav.tasks}
             active={route.name === 'tasks'}
@@ -1314,6 +1852,13 @@ export default function App() {
             label={m.nav.money}
             active={route.name === 'money'}
             onClick={() => navigate('money')}
+          />
+          <NavTab
+            label={m.nav.goals}
+            active={
+              route.name === 'goals' || route.name === 'goal'
+            }
+            onClick={() => navigate('goals')}
           />
           <NavTab
             label={m.nav.settings}
@@ -1337,6 +1882,26 @@ export default function App() {
           initialHabit={editingHabit ?? undefined}
           onClose={closeHabitSheet}
           onSave={handleSaveHabit}
+        />
+      )}
+
+      {goalSheetOpen && (
+        <GoalSheet
+          initialGoal={editingGoal ?? undefined}
+          onClose={closeGoalSheet}
+          onSave={handleSaveGoal}
+        />
+      )}
+
+      {goalDialog && goalPrompt && (
+        <ConfirmDialog
+          title={goalDialog.title}
+          description={goalDialog.description}
+          cancelLabel={m.app.cancel}
+          confirmLabel={goalDialog.confirm}
+          tone={goalDialog.tone}
+          onClose={() => setGoalPrompt(null)}
+          onConfirm={confirmGoalPrompt}
         />
       )}
 

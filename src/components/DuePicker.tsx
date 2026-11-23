@@ -22,6 +22,7 @@ interface DuePickerProps {
   initialDate: string
   initialTime: string
   maxDate?: string
+  minDate?: string
   onClose: () => void
   onConfirm: (date: string, time: string) => void
 }
@@ -67,6 +68,7 @@ export default function DuePicker({
   initialDate,
   initialTime,
   maxDate,
+  minDate,
   onClose,
   onConfirm,
 }: DuePickerProps) {
@@ -273,7 +275,9 @@ export default function DuePicker({
             const value = toDateValue(new Date(viewYear, viewMonth, day))
             const selected = value === selectedDate
             const today = value === todayValue
-            const disabled = maxDate ? value > maxDate : false
+            const disabled =
+              (maxDate ? value > maxDate : false) ||
+              (minDate ? value < minDate : false)
 
             return (
               <button
@@ -304,8 +308,9 @@ export default function DuePicker({
         <div className="mt-2 flex justify-center">
           <button
             type="button"
+            disabled={minDate ? todayValue < minDate : false}
             onClick={goToday}
-            className="border-b border-transparent px-2 py-1 text-[12px] text-[var(--ink-3)] transition-colors hover:border-[var(--red)] hover:text-[var(--ink)]"
+            className="border-b border-transparent px-2 py-1 text-[12px] text-[var(--ink-3)] transition-colors hover:border-[var(--red)] hover:text-[var(--ink)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-transparent disabled:hover:text-[var(--ink-3)]"
           >
             {m.picker.today}
           </button>

@@ -265,3 +265,50 @@ export function toTimeInputValue(timestamp: number | null) {
     date.getMinutes(),
   ).padStart(2, '0')}`
 }
+
+/**
+ * Date keys are the app's calendar-day currency ("YYYY-MM-DD" in local
+ * time). They live here so features that count days — habits, goals,
+ * reports — share one implementation instead of importing each other.
+ */
+export function toDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+export function parseDateKey(key: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(key)
+  if (!match) return null
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const date = new Date(year, month - 1, day, 12)
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null
+  }
+  return date
+}
+
+export function isDateKey(key: string) {
+  return parseDateKey(key) !== null
+}
+
+export function addDaysKey(key: string, days: number) {
+  const date = parseDateKey(key)
+  if (!date) return key
+  date.setDate(date.getDate() + days)
+  return toDateKey(date)
+}
+
+export function daysBetween(fromKey: string, toKey: string) {
+  const from = parseDateKey(fromKey)
+  const to = parseDateKey(toKey)
+  if (!from || !to) return 0
+  return Math.round((to.getTime() - from.getTime()) / 86_400_000)
+}

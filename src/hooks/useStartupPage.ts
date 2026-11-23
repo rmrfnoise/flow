@@ -1,12 +1,17 @@
 import { useCallback, useState } from 'react'
 
-export type StartupPage = 'tasks' | 'habits' | 'money'
+export type StartupPage = 'tasks' | 'habits' | 'money' | 'goals'
 
 export const STARTUP_PAGE_STORAGE_KEY = 'flow.startupPage.v1'
 export const DEFAULT_STARTUP_PAGE: StartupPage = 'tasks'
 
 export function isStartupPage(value: unknown): value is StartupPage {
-  return value === 'tasks' || value === 'habits' || value === 'money'
+  return (
+    value === 'tasks' ||
+    value === 'habits' ||
+    value === 'money' ||
+    value === 'goals'
+  )
 }
 
 function readStartupPage(): StartupPage {
